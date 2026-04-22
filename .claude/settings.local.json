@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:3000/api/games)",
+      "Bash(npx tsc *)",
+      "Bash(npm install *)",
+      "Bash(magick identify *)",
+      "Bash(where magick *)",
+      "Bash(node -e \"const fs=require\\('fs'\\); const b=fs.readFileSync\\('c:/Users/Usuario/Documents/Programming/Chesskit/public/favicon.ico'\\); console.log\\('Size bytes:', b.length\\); const count=b.readUInt16LE\\(4\\); console.log\\('Images in ICO:', count\\); for\\(let i=0;i<count;i++\\){const o=6+i*16; console.log\\('  Image',i,': w=',b[o]||256,'h=',b[o+1]||256,'bpp=',b[o+6]\\)};\")",
+      "Bash(node scripts/make-icon.mjs)",
+      "Bash(powershell -NoProfile -Command \"Test-Path 'C:/Users/Usuario/Documents/Programming/Chesskit/public/android-chrome-512x512.png'\")",
+      "Bash(node -e ' *)",
+      "Bash(tasklist)",
+      "Bash(taskkill /F /IM Chesskit.exe)",
+      "Bash(cmd /c \"taskkill /F /IM Chesskit.exe\")",
+      "Bash(awk '{print $2}')",
+      "Bash(xargs -I{} cmd /c \"taskkill /PID {} /F\")",
+      "Bash(powershell.exe -Command \"Stop-Process -Name 'Chesskit' -Force\")"
+    ]
+  }
+}

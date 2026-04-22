@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# build
+dist-electron/
+.electron-standalone/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# misc
+.DS_Store
+*.pem
+*.pgn
+
+# env files
+.env
+.env*.local
+
+# typescript
+tsconfig.tsbuildinfo
+
+# AWS CDK
+.cdk.staging/
+cdk.out/
+cdk.context.json
