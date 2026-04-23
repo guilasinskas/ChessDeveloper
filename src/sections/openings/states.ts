@@ -29,6 +29,8 @@ export const trainingStatsAtom = atom<{
 
 export const repertoireBoardOrientationAtom = atom<Color>(Color.White);
 
+export const hasUnsavedChangesAtom = atom<boolean>(false);
+
 export const updateBoardForNode = (
   tree: RepertoireTree,
   nodeId: string

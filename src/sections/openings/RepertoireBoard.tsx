@@ -4,14 +4,16 @@ import { Color } from "@/types/enums";
 import { Repertoire } from "@/types/openings";
 import { Move } from "chess.js";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import {
   repertoireBoardAtom,
   repertoireBoardOrientationAtom,
   trainingActiveAtom,
 } from "./states";
-import { useTrainingActions } from "./useTrainingActions";
-import { playRepertoireMoveAction } from "./actions";
+import {
+  playRepertoireMoveAction,
+  playTrainingMoveAction,
+} from "./actions";
 
 interface Props {
   repertoire: Repertoire;
@@ -22,16 +24,17 @@ export default function RepertoireBoard({ repertoire }: Props) {
   const orientation = useAtomValue(repertoireBoardOrientationAtom);
   const trainingActive = useAtomValue(trainingActiveAtom);
   const playMove = useSetAtom(playRepertoireMoveAction);
-  const { handleTrainingMove } = useTrainingActions();
+  const playTraining = useSetAtom(playTrainingMoveAction);
+
+  const trainingActiveRef = useRef(trainingActive);
+  trainingActiveRef.current = trainingActive;
 
   const onPlayMove = useCallback(
     (params: { from: string; to: string; promotion?: string }): Move | null => {
-      if (trainingActive) {
-        return handleTrainingMove(params);
-      }
+      if (trainingActiveRef.current) return playTraining(params);
       return playMove(params);
     },
-    [trainingActive, handleTrainingMove, playMove]
+    [playMove, playTraining]
   );
 
   const boardSize = useMemo(() => {

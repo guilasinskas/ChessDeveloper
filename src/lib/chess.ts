@@ -18,10 +18,41 @@ export const getEvaluateGameParams = (game: Chess): EvaluateGameParams => {
   return { fens, uciMoves };
 };
 
+export const stripPgnVariations = (pgn: string): string => {
+  let depth = 0;
+  let result = "";
+  for (let i = 0; i < pgn.length; i++) {
+    const c = pgn[i];
+    if (c === "{") {
+      const end = pgn.indexOf("}", i);
+      if (end === -1) {
+        result += pgn.slice(i);
+        break;
+      }
+      if (depth === 0) result += pgn.slice(i, end + 1);
+      i = end;
+      continue;
+    }
+    if (c === "(") {
+      depth++;
+      continue;
+    }
+    if (c === ")") {
+      if (depth > 0) depth--;
+      continue;
+    }
+    if (depth === 0) result += c;
+  }
+  return result.replace(/[ \t]+/g, " ").replace(/\n /g, "\n");
+};
+
 export const getGameFromPgn = (pgn: string): Chess => {
   const game = new Chess();
-  game.loadPgn(pgn);
-
+  try {
+    game.loadPgn(pgn);
+  } catch {
+    game.loadPgn(stripPgnVariations(pgn));
+  }
   return game;
 };
 
@@ -40,7 +71,12 @@ export const getGamesFromPgn = (pgn: string): Chess[] => {
     }
   }
 
-  return games.length > 0 ? games : [getGameFromPgn(pgn)];
+  if (games.length > 0) return games;
+  try {
+    return [getGameFromPgn(pgn)];
+  } catch {
+    return [getGameFromPgn(stripPgnVariations(pgn))];
+  }
 };
 
 export const formatGameToDatabase = (game: Chess): Omit<Game, "id"> => {

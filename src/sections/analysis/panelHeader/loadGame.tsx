@@ -15,6 +15,7 @@ import { useRouter } from "next/router";
 import { GameEval } from "@/types/eval";
 import { fetchLichessGame } from "@/lib/lichess";
 import { useAnalysisActions } from "@/hooks/useAnalysisActions";
+import { stripPgnVariations } from "@/lib/chess";
 
 export default function LoadGame() {
   const router = useRouter();
@@ -31,18 +32,24 @@ export default function LoadGame() {
 
   const resetAndSetGamePgn = useCallback(
     (pgn: string, orientation?: boolean, gameEval?: GameEval) => {
+      const mainlinePgn = stripPgnVariations(pgn);
       const gameFromPgn = new Chess();
       try {
-        gameFromPgn.loadPgn(pgn);
+        gameFromPgn.loadPgn(mainlinePgn);
       } catch {
         return;
       }
-      if (joinedGameHistory === gameFromPgn.history().join()) return;
+      if (
+        joinedGameHistory === gameFromPgn.history().join() &&
+        joinedGameHistory.length > 0
+      ) {
+        return;
+      }
 
       setEval(gameEval);
-      setGamePgn(pgn);
+      setGamePgn(mainlinePgn);
       initializeFromPgn(pgn);
-      resetBoard(pgn);
+      resetBoard(mainlinePgn);
       setBoardOrientation(orientation ?? true);
     },
     [

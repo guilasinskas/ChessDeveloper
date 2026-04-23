@@ -15,12 +15,25 @@ const splitHeadersFromMoves = (
   pgn: string
 ): { headers: string; moves: string } => {
   const trimmed = pgn.trim();
-  const match = trimmed.match(/^([\s\S]*?\])\s*\n\s*\n([\s\S]*)$/);
-  if (match) return { headers: match[1], moves: match[2] };
-  if (trimmed.startsWith("[")) {
-    return { headers: trimmed, moves: "" };
+  if (!trimmed.startsWith("[")) return { headers: "", moves: trimmed };
+
+  const lines = trimmed.split(/\r?\n/);
+  const headerLines: string[] = [];
+  let i = 0;
+  for (; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line === "") {
+      if (headerLines.length > 0) break;
+      continue;
+    }
+    if (line.startsWith("[") && line.endsWith("]")) {
+      headerLines.push(line);
+      continue;
+    }
+    break;
   }
-  return { headers: "", moves: trimmed };
+  const moves = lines.slice(i).join("\n").trim();
+  return { headers: headerLines.join("\n"), moves };
 };
 
 const extractFenHeader = (headers: string): string | null => {

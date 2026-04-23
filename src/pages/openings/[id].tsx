@@ -7,11 +7,15 @@ import { PageTitle } from "@/components/pageTitle";
 import { useRepertoireDatabase } from "@/hooks/useRepertoireDatabase";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
+  hasUnsavedChangesAtom,
   repertoireBoardOrientationAtom,
   repertoireTreeAtom,
   studyColorAtom,
 } from "@/sections/openings/states";
-import { initializeRepertoireAction } from "@/sections/openings/actions";
+import {
+  initializeRepertoireAction,
+  markRepertoireSavedAction,
+} from "@/sections/openings/actions";
 import RepertoireBoard from "@/sections/openings/RepertoireBoard";
 import MoveTree from "@/sections/openings/MoveTree";
 import RepertoirePanel from "@/sections/openings/RepertoirePanel";
@@ -32,42 +36,32 @@ export default function RepertoireEditorPage() {
   const repertoire = !isNaN(id) ? getRepertoire(id) : undefined;
 
   const tree = useAtomValue(repertoireTreeAtom);
+  const hasUnsavedChanges = useAtomValue(hasUnsavedChangesAtom);
   const initializeRepertoire = useSetAtom(initializeRepertoireAction);
+  const markSaved = useSetAtom(markRepertoireSavedAction);
   const setStudyColor = useSetAtom(studyColorAtom);
   const setOrientation = useSetAtom(repertoireBoardOrientationAtom);
 
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const loadedRepertoireIdRef = useRef<number | null>(null);
-  const initialTreeRef = useRef<typeof tree | null>(null);
 
   useEffect(() => {
     if (!repertoire) return;
     if (loadedRepertoireIdRef.current === repertoire.id) return;
 
     loadedRepertoireIdRef.current = repertoire.id;
-    initialTreeRef.current = repertoire.tree;
-
     initializeRepertoire({ tree: repertoire.tree });
     setStudyColor(repertoire.color);
     setOrientation(repertoire.color);
-    setHasUnsavedChanges(false);
   }, [repertoire, initializeRepertoire, setStudyColor, setOrientation]);
-
-  useEffect(() => {
-    if (!initialTreeRef.current) return;
-    if (tree === initialTreeRef.current) return;
-    setHasUnsavedChanges(true);
-  }, [tree]);
 
   const handleSave = async () => {
     if (!repertoire) return;
     setIsSaving(true);
     try {
       await updateRepertoire(repertoire.id, { tree });
-      initialTreeRef.current = tree;
-      setHasUnsavedChanges(false);
+      markSaved();
     } finally {
       setIsSaving(false);
     }

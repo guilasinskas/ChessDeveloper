@@ -57,7 +57,12 @@ export default function NewGameDialog({ open, onClose, setGame }: Props) {
       setSentryContext("loadedGame", { pgn });
 
       if (setGame) {
-        await setGame(games[0], pgn);
+        const blocks = pgn
+          .split(/\n(?=\[Event )/)
+          .map((b) => b.trim())
+          .filter((b) => b.length > 0);
+        const firstBlockPgn = blocks[0] ?? pgn;
+        await setGame(games[0], firstBlockPgn);
       } else if (games.length === 1) {
         await addGame(games[0]);
       } else {

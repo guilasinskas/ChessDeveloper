@@ -15,18 +15,22 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { CC } from "@/constants";
 import { REPERTOIRE_ROOT_ID } from "@/lib/repertoireTree";
-import { useTrainingActions } from "./useTrainingActions";
 import {
   currentNodeIdAtom,
   repertoireBoardOrientationAtom,
   repertoireTreeAtom,
   studyColorAtom,
+  trainingActiveAtom,
+  trainingStatsAtom,
 } from "./states";
 import {
+  cancelTrainingTimeoutsAction,
   goNextRepertoireAction,
   goPrevRepertoireAction,
   goStartRepertoireAction,
   setRepertoireCommentAction,
+  startTrainingAction,
+  stopTrainingAction,
   toggleRepertoireImportantAction,
 } from "./actions";
 import { Color } from "@/types/enums";
@@ -53,21 +57,33 @@ export default function RepertoirePanel({
   const studyColor = useAtomValue(studyColorAtom);
   const setStudyColor = useSetAtom(studyColorAtom);
 
+  const trainingActive = useAtomValue(trainingActiveAtom);
+  const stats = useAtomValue(trainingStatsAtom);
+
   const setComment = useSetAtom(setRepertoireCommentAction);
   const toggleImportant = useSetAtom(toggleRepertoireImportantAction);
   const goPrev = useSetAtom(goPrevRepertoireAction);
   const goNext = useSetAtom(goNextRepertoireAction);
   const goStart = useSetAtom(goStartRepertoireAction);
+  const startTraining = useSetAtom(startTrainingAction);
+  const stopTraining = useSetAtom(stopTrainingAction);
+  const cancelTrainingTimeouts = useSetAtom(cancelTrainingTimeoutsAction);
 
   const [commentDraft, setCommentDraft] = useState("");
-  const { trainingActive, stats, startTraining, stopTraining } =
-    useTrainingActions();
 
   const currentNode = tree.nodes[currentNodeId];
+  const currentComment = currentNode?.comment ?? "";
 
   useEffect(() => {
-    setCommentDraft(currentNode?.comment ?? "");
-  }, [currentNodeId, currentNode]);
+    setCommentDraft(currentComment);
+  }, [currentNodeId, currentComment]);
+
+  useEffect(
+    () => () => {
+      cancelTrainingTimeouts();
+    },
+    [cancelTrainingTimeouts]
+  );
 
   const handleSaveComment = () => {
     if (!currentNode || currentNodeId === REPERTOIRE_ROOT_ID) return;
