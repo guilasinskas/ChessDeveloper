@@ -55,6 +55,21 @@ export default function LoadGame() {
     ]
   );
 
+  const setGameFromDialog = useCallback(
+    async (game: Chess, originalPgn?: string) => {
+      await router.replace(
+        {
+          query: {},
+          pathname: router.pathname,
+        },
+        undefined,
+        { shallow: true, scroll: false }
+      );
+      resetAndSetGamePgn(originalPgn ?? game.pgn());
+    },
+    [router, resetAndSetGamePgn]
+  );
+
   const { lichessGameId, orientation: orientationParam } = router.query;
 
   useEffect(() => {
@@ -114,17 +129,7 @@ export default function LoadGame() {
     <LoadGameButton
       label={isGameLoaded ? "Load another game" : "Load game"}
       size="small"
-      setGame={async (game) => {
-        await router.replace(
-          {
-            query: {},
-            pathname: router.pathname,
-          },
-          undefined,
-          { shallow: true, scroll: false }
-        );
-        resetAndSetGamePgn(game.pgn());
-      }}
+      setGame={setGameFromDialog}
     />
   );
 }

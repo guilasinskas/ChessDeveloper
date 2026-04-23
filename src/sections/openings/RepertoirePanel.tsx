@@ -14,13 +14,7 @@ import { Icon } from "@iconify/react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { CC } from "@/constants";
-import {
-  REPERTOIRE_ROOT_ID,
-  setNodeComment,
-  toggleNodeImportant,
-  getNextNodeId,
-  getParentNodeId,
-} from "@/lib/repertoireTree";
+import { REPERTOIRE_ROOT_ID } from "@/lib/repertoireTree";
 import { useTrainingActions } from "./useTrainingActions";
 import {
   currentNodeIdAtom,
@@ -28,12 +22,18 @@ import {
   repertoireTreeAtom,
   studyColorAtom,
 } from "./states";
+import {
+  goNextRepertoireAction,
+  goPrevRepertoireAction,
+  goStartRepertoireAction,
+  setRepertoireCommentAction,
+  toggleRepertoireImportantAction,
+} from "./actions";
 import { Color } from "@/types/enums";
 import { Repertoire } from "@/types/openings";
 
 interface Props {
   repertoire: Repertoire;
-  onTreeChange: () => void;
   onSave: () => void;
   isSaving: boolean;
   hasUnsavedChanges: boolean;
@@ -41,18 +41,23 @@ interface Props {
 
 export default function RepertoirePanel({
   repertoire,
-  onTreeChange,
   onSave,
   isSaving,
   hasUnsavedChanges,
 }: Props) {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
-  const [tree, setTree] = useAtom(repertoireTreeAtom);
-  const [currentNodeId, setCurrentNodeId] = useAtom(currentNodeIdAtom);
+  const tree = useAtomValue(repertoireTreeAtom);
+  const currentNodeId = useAtomValue(currentNodeIdAtom);
   const [orientation, setOrientation] = useAtom(repertoireBoardOrientationAtom);
   const studyColor = useAtomValue(studyColorAtom);
   const setStudyColor = useSetAtom(studyColorAtom);
+
+  const setComment = useSetAtom(setRepertoireCommentAction);
+  const toggleImportant = useSetAtom(toggleRepertoireImportantAction);
+  const goPrev = useSetAtom(goPrevRepertoireAction);
+  const goNext = useSetAtom(goNextRepertoireAction);
+  const goStart = useSetAtom(goStartRepertoireAction);
 
   const [commentDraft, setCommentDraft] = useState("");
   const { trainingActive, stats, startTraining, stopTraining } =
@@ -66,23 +71,13 @@ export default function RepertoirePanel({
 
   const handleSaveComment = () => {
     if (!currentNode || currentNodeId === REPERTOIRE_ROOT_ID) return;
-    const next = setNodeComment(tree, currentNodeId, commentDraft);
-    setTree(next);
-    onTreeChange();
+    setComment({ nodeId: currentNodeId, comment: commentDraft });
   };
 
   const handleToggleImportant = () => {
     if (!currentNode || currentNodeId === REPERTOIRE_ROOT_ID) return;
-    setTree(toggleNodeImportant(tree, currentNodeId));
-    onTreeChange();
+    toggleImportant(currentNodeId);
   };
-
-  const goPrev = () => setCurrentNodeId(getParentNodeId(tree, currentNodeId));
-  const goNext = () => {
-    const next = getNextNodeId(tree, currentNodeId);
-    if (next) setCurrentNodeId(next);
-  };
-  const goStart = () => setCurrentNodeId(REPERTOIRE_ROOT_ID);
 
   const accuracy =
     stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
@@ -127,17 +122,17 @@ export default function RepertoirePanel({
 
         <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
           <Tooltip title="Start">
-            <IconButton size="small" onClick={goStart}>
+            <IconButton size="small" onClick={() => goStart()}>
               <Icon icon="material-symbols:first-page" width={18} />
             </IconButton>
           </Tooltip>
           <Tooltip title="Previous">
-            <IconButton size="small" onClick={goPrev}>
+            <IconButton size="small" onClick={() => goPrev()}>
               <Icon icon="material-symbols:chevron-left" width={20} />
             </IconButton>
           </Tooltip>
           <Tooltip title="Next">
-            <IconButton size="small" onClick={goNext}>
+            <IconButton size="small" onClick={() => goNext()}>
               <Icon icon="material-symbols:chevron-right" width={20} />
             </IconButton>
           </Tooltip>

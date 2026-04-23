@@ -4,6 +4,7 @@ import {
   getAllNodesForTraining,
   getRepertoireChess,
 } from "@/lib/repertoireTree";
+import { playSoundFromMove, playIllegalMoveSound } from "@/lib/sounds";
 import { Color } from "@/types/enums";
 import { RepertoireTree } from "@/types/openings";
 import { Move } from "chess.js";
@@ -53,7 +54,22 @@ export const useTrainingActions = () => {
   }, [setTrainingActive, setCurrentNodeId, setBoard, tree]);
 
   const handleTrainingMove = useCallback(
-    (move: Move) => {
+    (params: {
+      from: string;
+      to: string;
+      promotion?: string;
+    }): Move | null => {
+      const board = getRepertoireChess(tree, currentNodeId);
+
+      let move: Move | null = null;
+      try {
+        move = board.move(params);
+      } catch {
+        playIllegalMoveSound();
+        return null;
+      }
+      if (!move) return null;
+
       const expected = getExpectedRepliesAt(tree, currentNodeId);
       const playedUci = move.from + move.to + (move.promotion || "");
       const matched = expected.find((n) => n.uci === playedUci);
@@ -63,9 +79,9 @@ export const useTrainingActions = () => {
 
       if (matched) {
         const myNodeId = matched.id;
-
+        setBoard(board);
         setCurrentNodeId(myNodeId);
-        setBoard(getRepertoireChess(tree, myNodeId));
+        playSoundFromMove(move);
 
         const opponentReplies = getExpectedRepliesAt(tree, myNodeId);
         if (opponentReplies.length === 0) {
@@ -78,7 +94,7 @@ export const useTrainingActions = () => {
             setCurrentNodeId(restartedFromId);
             setBoard(getRepertoireChess(tree, restartedFromId));
           }, 1000);
-          return;
+          return move;
         }
 
         const reply =
@@ -88,20 +104,24 @@ export const useTrainingActions = () => {
           setCurrentNodeId(reply.id);
           setBoard(getRepertoireChess(tree, reply.id));
         }, 500);
-      } else {
-        setStats({
-          total: newTotal,
-          correct: newCorrect,
-          current: {
-            fen: move.before,
-            expected: expected.map((n) => n.san || n.uci || "?"),
-            played: move.san,
-          },
-        });
-        setTimeout(() => {
-          setBoard(getRepertoireChess(tree, currentNodeId));
-        }, 1500);
+        return move;
       }
+
+      setBoard(board);
+      playSoundFromMove(move);
+      setStats({
+        total: newTotal,
+        correct: newCorrect,
+        current: {
+          fen: move.before,
+          expected: expected.map((n) => n.san || n.uci || "?"),
+          played: move.san,
+        },
+      });
+      setTimeout(() => {
+        setBoard(getRepertoireChess(tree, currentNodeId));
+      }, 1500);
+      return move;
     },
     [tree, currentNodeId, stats, setStats, setCurrentNodeId, setBoard, studyColor]
   );

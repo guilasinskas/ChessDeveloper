@@ -4,7 +4,7 @@ import NewGameDialog from "./loadGameDialog";
 import { Chess } from "chess.js";
 
 interface Props {
-  setGame?: (game: Chess) => Promise<void>;
+  setGame?: (game: Chess, originalPgn?: string) => Promise<void>;
   label?: string;
   size?: "small" | "medium" | "large";
 }

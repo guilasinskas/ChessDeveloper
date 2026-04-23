@@ -1,77 +1,37 @@
 import Board from "@/components/board";
 import { useScreenSize } from "@/hooks/useScreenSize";
-import {
-  addMoveToTree,
-  getRepertoireChess,
-} from "@/lib/repertoireTree";
 import { Color } from "@/types/enums";
 import { Repertoire } from "@/types/openings";
 import { Move } from "chess.js";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useEffect, useMemo } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useCallback, useMemo } from "react";
 import {
-  currentNodeIdAtom,
   repertoireBoardAtom,
   repertoireBoardOrientationAtom,
-  repertoireTreeAtom,
   trainingActiveAtom,
 } from "./states";
 import { useTrainingActions } from "./useTrainingActions";
+import { playRepertoireMoveAction } from "./actions";
 
 interface Props {
   repertoire: Repertoire;
-  onTreeChange: () => void;
 }
 
-export default function RepertoireBoard({ repertoire, onTreeChange }: Props) {
+export default function RepertoireBoard({ repertoire }: Props) {
   const screenSize = useScreenSize();
-  const setBoard = useSetAtom(repertoireBoardAtom);
-  const [tree, setTree] = useAtom(repertoireTreeAtom);
-  const [currentNodeId, setCurrentNodeId] = useAtom(currentNodeIdAtom);
   const orientation = useAtomValue(repertoireBoardOrientationAtom);
   const trainingActive = useAtomValue(trainingActiveAtom);
+  const playMove = useSetAtom(playRepertoireMoveAction);
   const { handleTrainingMove } = useTrainingActions();
-
-  useEffect(() => {
-    const board = getRepertoireChess(tree, currentNodeId);
-    setBoard(board);
-  }, [tree, currentNodeId, setBoard]);
 
   const onPlayMove = useCallback(
     (params: { from: string; to: string; promotion?: string }): Move | null => {
-      const board = getRepertoireChess(tree, currentNodeId);
-      let result: Move | null = null;
-      try {
-        result = board.move(params);
-      } catch {
-        return null;
-      }
-      if (!result) return null;
-
       if (trainingActive) {
-        handleTrainingMove(result);
-        return result;
+        return handleTrainingMove(params);
       }
-
-      const { tree: newTree, nodeId } = addMoveToTree(
-        tree,
-        currentNodeId,
-        result
-      );
-      setTree(newTree);
-      setCurrentNodeId(nodeId);
-      onTreeChange();
-      return result;
+      return playMove(params);
     },
-    [
-      tree,
-      currentNodeId,
-      setTree,
-      setCurrentNodeId,
-      onTreeChange,
-      trainingActive,
-      handleTrainingMove,
-    ]
+    [trainingActive, handleTrainingMove, playMove]
   );
 
   const boardSize = useMemo(() => {

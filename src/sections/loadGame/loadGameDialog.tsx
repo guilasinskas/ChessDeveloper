@@ -29,7 +29,7 @@ import { boardOrientationAtom } from "../analysis/states";
 interface Props {
   open: boolean;
   onClose: () => void;
-  setGame?: (game: Chess) => Promise<void>;
+  setGame?: (game: Chess, originalPgn?: string) => Promise<void>;
 }
 
 export default function NewGameDialog({ open, onClose, setGame }: Props) {
@@ -57,7 +57,7 @@ export default function NewGameDialog({ open, onClose, setGame }: Props) {
       setSentryContext("loadedGame", { pgn });
 
       if (setGame) {
-        await setGame(games[0]);
+        await setGame(games[0], pgn);
       } else if (games.length === 1) {
         await addGame(games[0]);
       } else {

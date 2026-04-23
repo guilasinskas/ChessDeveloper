@@ -1,22 +1,20 @@
 import { Box, IconButton, Tooltip, Typography, useTheme } from "@mui/material";
 import { Icon } from "@iconify/react";
-import { useAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useMemo } from "react";
 import { CC } from "@/constants";
-import {
-  REPERTOIRE_ROOT_ID,
-  deleteSubtree,
-  promoteNodeToMainline,
-} from "@/lib/repertoireTree";
+import { REPERTOIRE_ROOT_ID } from "@/lib/repertoireTree";
 import { RepertoireNode, RepertoireTree } from "@/types/openings";
 import {
   currentNodeIdAtom,
   repertoireTreeAtom,
 } from "./states";
-
-interface Props {
-  onTreeChange: () => void;
-}
+import {
+  deleteRepertoireSubtreeAction,
+  goStartRepertoireAction,
+  goToRepertoireNodeAction,
+  promoteRepertoireNodeAction,
+} from "./actions";
 
 interface RenderItem {
   node: RepertoireNode;
@@ -44,28 +42,17 @@ const buildRenderList = (tree: RepertoireTree): RenderItem[] => {
   return items;
 };
 
-export default function MoveTree({ onTreeChange }: Props) {
+export default function MoveTree() {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
-  const [tree, setTree] = useAtom(repertoireTreeAtom);
-  const [currentNodeId, setCurrentNodeId] = useAtom(currentNodeIdAtom);
+  const tree = useAtomValue(repertoireTreeAtom);
+  const currentNodeId = useAtomValue(currentNodeIdAtom);
+  const goToNode = useSetAtom(goToRepertoireNodeAction);
+  const deleteSubtreeAct = useSetAtom(deleteRepertoireSubtreeAction);
+  const promoteAct = useSetAtom(promoteRepertoireNodeAction);
+  const goStart = useSetAtom(goStartRepertoireAction);
 
   const items = useMemo(() => buildRenderList(tree), [tree]);
-
-  const handleClickNode = (id: string) => setCurrentNodeId(id);
-
-  const handleDeleteNode = (id: string) => {
-    const { tree: newTree, newCurrentId } = deleteSubtree(tree, id);
-    setTree(newTree);
-    setCurrentNodeId(newCurrentId);
-    onTreeChange();
-  };
-
-  const handlePromote = (id: string) => {
-    const newTree = promoteNodeToMainline(tree, id);
-    setTree(newTree);
-    onTreeChange();
-  };
 
   return (
     <Box
@@ -100,10 +87,7 @@ export default function MoveTree({ onTreeChange }: Props) {
           Move tree
         </Typography>
         <Tooltip title="Back to start">
-          <IconButton
-            size="small"
-            onClick={() => setCurrentNodeId(REPERTOIRE_ROOT_ID)}
-          >
+          <IconButton size="small" onClick={() => goStart()}>
             <Icon icon="material-symbols:first-page" width={16} />
           </IconButton>
         </Tooltip>
@@ -165,7 +149,7 @@ export default function MoveTree({ onTreeChange }: Props) {
                   "& .move-actions": { opacity: 1 },
                 },
               }}
-              onClick={() => handleClickNode(node.id)}
+              onClick={() => goToNode(node.id)}
             >
               {moveLabel && (
                 <Typography
@@ -231,7 +215,7 @@ export default function MoveTree({ onTreeChange }: Props) {
                     <IconButton
                       size="small"
                       sx={{ p: 0.25 }}
-                      onClick={() => handlePromote(node.id)}
+                      onClick={() => promoteAct(node.id)}
                     >
                       <Icon icon="material-symbols:arrow-upward" width={13} />
                     </IconButton>
@@ -241,7 +225,7 @@ export default function MoveTree({ onTreeChange }: Props) {
                   <IconButton
                     size="small"
                     sx={{ p: 0.25, color: "#c45c5c" }}
-                    onClick={() => handleDeleteNode(node.id)}
+                    onClick={() => deleteSubtreeAct(node.id)}
                   >
                     <Icon icon="mdi:delete-outline" width={13} />
                   </IconButton>

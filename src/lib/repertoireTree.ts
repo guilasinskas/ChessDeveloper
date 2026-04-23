@@ -83,9 +83,27 @@ export const getRepertoireChess = (
   tree: RepertoireTree,
   nodeId: string = REPERTOIRE_ROOT_ID
 ): Chess => {
-  const node = tree.nodes[nodeId];
-  if (!node) return new Chess(tree.rootFen);
-  return new Chess(node.afterFen ?? tree.rootFen);
+  const chess = new Chess(tree.rootFen);
+
+  const path: RepertoireNode[] = [];
+  let currentId: string | null = nodeId;
+  while (currentId && currentId !== tree.rootId) {
+    const node = tree.nodes[currentId];
+    if (!node) break;
+    path.unshift(node);
+    currentId = node.parentId;
+  }
+
+  for (const node of path) {
+    if (!node.san) continue;
+    try {
+      chess.move(node.san);
+    } catch {
+      return chess;
+    }
+  }
+
+  return chess;
 };
 
 export const findChildByUci = (
