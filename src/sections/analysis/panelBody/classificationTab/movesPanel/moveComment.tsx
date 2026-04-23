@@ -1,24 +1,24 @@
-import { Box, IconButton, TextField, Typography } from "@mui/material";
+import { Box, IconButton, TextField, Tooltip, Typography } from "@mui/material";
 import { Icon } from "@iconify/react";
 import { useState, useRef, useEffect } from "react";
 
 interface Props {
   comment?: string;
-  moveIdx: number;
   moveColor: "w" | "b";
   isEditing?: boolean;
   onEditStart?: () => void;
   onEditEnd?: () => void;
-  onSave: (moveIdx: number, text: string) => void;
+  onDelete?: () => void;
+  onSave: (text: string) => void;
 }
 
 export default function MoveComment({
   comment,
-  moveIdx,
   moveColor,
   isEditing: externalEditing,
   onEditStart,
   onEditEnd,
+  onDelete,
   onSave,
 }: Props) {
   const [draft, setDraft] = useState("");
@@ -38,7 +38,7 @@ export default function MoveComment({
   };
 
   const handleSave = () => {
-    onSave(moveIdx, draft);
+    onSave(draft);
     onEditEnd?.();
   };
 
@@ -47,7 +47,7 @@ export default function MoveComment({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       handleSave();
     }
@@ -68,13 +68,31 @@ export default function MoveComment({
           placeholder="Add a comment..."
           sx={{ "& .MuiInputBase-root": { fontSize: "0.8rem" } }}
         />
-        <Box sx={{ display: "flex", gap: 0.5, mt: 0.5, justifyContent: "flex-end" }}>
-          <IconButton size="small" onClick={handleCancel} color="default">
-            <Icon icon="material-symbols:close" width={16} />
-          </IconButton>
-          <IconButton size="small" onClick={handleSave} color="primary">
-            <Icon icon="material-symbols:check" width={16} />
-          </IconButton>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 0.5,
+            mt: 0.5,
+            justifyContent: "space-between",
+          }}
+        >
+          {onDelete && comment ? (
+            <Tooltip title="Delete comment">
+              <IconButton size="small" onClick={onDelete} color="error">
+                <Icon icon="material-symbols:delete-outline" width={16} />
+              </IconButton>
+            </Tooltip>
+          ) : (
+            <Box />
+          )}
+          <Box sx={{ display: "flex", gap: 0.5 }}>
+            <IconButton size="small" onClick={handleCancel} color="default">
+              <Icon icon="material-symbols:close" width={16} />
+            </IconButton>
+            <IconButton size="small" onClick={handleSave} color="primary">
+              <Icon icon="material-symbols:check" width={16} />
+            </IconButton>
+          </Box>
         </Box>
       </Box>
     );
@@ -93,7 +111,7 @@ export default function MoveComment({
         display: "flex",
         alignItems: "flex-start",
         gap: 0.5,
-        "&:hover .edit-icon": { opacity: 1 },
+        "&:hover .comment-actions": { opacity: 1 },
       }}
     >
       <Typography
@@ -114,17 +132,37 @@ export default function MoveComment({
       >
         {comment}
       </Typography>
-      <Icon
-        icon="material-symbols:edit-outline"
-        width={13}
-        className="edit-icon"
-        style={{
+      <Box
+        className="comment-actions"
+        sx={{
+          display: "flex",
+          gap: 0.25,
           opacity: 0,
           transition: "opacity 0.15s",
           flexShrink: 0,
-          marginTop: 2,
+          marginTop: 0.25,
         }}
-      />
+      >
+        <Icon
+          icon="material-symbols:edit-outline"
+          width={13}
+        />
+        {onDelete && (
+          <Box
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            sx={{
+              cursor: "pointer",
+              color: "inherit",
+              "&:hover": { color: "#e57373" },
+            }}
+          >
+            <Icon icon="material-symbols:delete-outline" width={13} />
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 }

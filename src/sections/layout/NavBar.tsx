@@ -12,12 +12,6 @@ import { CC } from "@/constants";
 import { useTheme } from "@mui/material";
 import NavLink from "@/components/NavLink";
 
-const NAV_LINKS = [
-  { text: "Play", icon: "streamline:chess-pawn", href: "/play" },
-  { text: "Analysis", icon: "streamline:magnifying-glass-solid", href: "/" },
-  { text: "Database", icon: "streamline:database", href: "/database" },
-];
-
 interface Props {
   darkMode: boolean;
   switchDarkMode: () => void;
@@ -33,28 +27,29 @@ export default function NavBar({ darkMode: d, switchDarkMode }: Props) {
   const isDark = theme.palette.mode === "dark";
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box sx={{ flexGrow: 1, display: { xs: "block", md: "none" } }}>
       <AppBar position="static" enableColorOnDark elevation={0}>
         <Toolbar
           sx={{
-            minHeight: "64px !important",
-            height: 64,
+            minHeight: "56px !important",
+            height: 56,
             px: { xs: 1.5, sm: 3 },
             gap: 0,
           }}
         >
-          {/* Hamburger — mobile only */}
           <IconButton
             size="small"
             color="inherit"
             aria-label="menu"
             onClick={() => setDrawerOpen((v) => !v)}
             sx={{
-              display: { md: "none" },
               mr: 1,
               borderRadius: 1,
               color: isDark ? CC.textSub : CC.lTextSub,
-              "&:hover": { backgroundColor: isDark ? CC.bg3 : CC.lBg3, color: isDark ? CC.text : CC.lText },
+              "&:hover": {
+                backgroundColor: isDark ? CC.bg3 : CC.lBg3,
+                color: isDark ? CC.text : CC.lText,
+              },
             }}
           >
             <Icon icon="mdi:menu" width={22} />
@@ -95,75 +90,6 @@ export default function NavBar({ darkMode: d, switchDarkMode }: Props) {
               </Typography>
             </Box>
           </NavLink>
-
-          {/* Nav links — desktop */}
-          <Box
-            sx={{
-              display: { xs: "none", md: "flex" },
-              alignItems: "center",
-              height: "100%",
-              gap: 0,
-            }}
-          >
-            {NAV_LINKS.map(({ text, icon, href }) => {
-              const isActive =
-                href === "/" ? router.pathname === "/" : router.pathname.startsWith(href);
-              return (
-                <NavLink key={href} href={href}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "7px",
-                      px: "16px",
-                      height: 64,
-                      cursor: "pointer",
-                      position: "relative",
-                      color: isActive
-                        ? CC.primary
-                        : isDark ? CC.textSub : CC.lTextSub,
-                      fontFamily: `var(--font-space-grotesk), "Space Grotesk", sans-serif`,
-                      fontWeight: isActive ? 600 : 400,
-                      fontSize: 14,
-                      letterSpacing: "-0.01em",
-                      transition: "color 120ms ease, background-color 120ms ease",
-                      "&:hover": {
-                        backgroundColor: isDark ? CC.bg3 : CC.lBg3,
-                        color: isDark ? CC.text : CC.lText,
-                      },
-                      "&::after": isActive ? {
-                        content: '""',
-                        position: "absolute",
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: 2,
-                        backgroundColor: CC.primary,
-                      } : {},
-                    }}
-                  >
-                    <Icon
-                      icon={icon}
-                      width={16}
-                      color={isActive ? CC.primary : undefined}
-                    />
-                    <Typography
-                      sx={{
-                        fontFamily: "inherit",
-                        fontSize: "inherit",
-                        fontWeight: "inherit",
-                        color: "inherit",
-                        letterSpacing: "inherit",
-                        lineHeight: 1,
-                      }}
-                    >
-                      {text}
-                    </Typography>
-                  </Box>
-                </NavLink>
-              );
-            })}
-          </Box>
 
           {/* Spacer */}
           <Box sx={{ flexGrow: 1 }} />

@@ -17,6 +17,8 @@ const MenuOptions = [
   { text: "Play", icon: "streamline:chess-pawn", href: "/play" },
   { text: "Analysis", icon: "streamline:magnifying-glass-solid", href: "/" },
   { text: "Database", icon: "streamline:database", href: "/database" },
+  { text: "Openings", icon: "streamline:book-reading", href: "/openings" },
+  { text: "Notes", icon: "material-symbols:sticky-note-2-outline", href: "/notes" },
 ];
 
 interface Props {

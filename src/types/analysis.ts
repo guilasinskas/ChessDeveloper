@@ -9,6 +9,8 @@ export interface AnalysisNode {
   ply: number;
   color?: "w" | "b";
   isMainline: boolean;
+  comment?: string;
+  nags?: number[];
 }
 
 export interface AnalysisTree {
@@ -17,4 +19,5 @@ export interface AnalysisTree {
   nextId: number;
   nodes: Record<string, AnalysisNode>;
   mainlineNodeIds: string[];
+  rootComment?: string;
 }

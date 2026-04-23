@@ -1,4 +1,5 @@
 import {
+  Box,
   CssBaseline,
   GlobalStyles,
   ThemeProvider,
@@ -8,6 +9,7 @@ import type {} from "@mui/lab/themeAugmentation";
 import type {} from "@mui/x-data-grid/themeAugmentation";
 import { PropsWithChildren, useMemo } from "react";
 import NavBar from "./NavBar";
+import SideBar, { SIDEBAR_WIDTH } from "./SideBar";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { CC } from "@/constants";
 
@@ -490,11 +492,23 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
         className={fontVariable}
         style={{ display: "contents" }}
       >
+        <SideBar
+          darkMode={!!isDark}
+          switchDarkMode={() => setDark((v) => !v)}
+        />
         <NavBar
           darkMode={!!isDark}
           switchDarkMode={() => setDark((v) => !v)}
         />
-        <main style={{ margin: "0 0 2vh" }}>{children}</main>
+        <Box
+          component="main"
+          sx={{
+            ml: { xs: 0, md: `${SIDEBAR_WIDTH}px` },
+            mb: "2vh",
+          }}
+        >
+          {children}
+        </Box>
       </div>
     </ThemeProvider>
   );

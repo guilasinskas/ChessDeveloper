@@ -4,25 +4,29 @@ import {
   Box,
   Grid2 as Grid,
   IconButton,
+  Tooltip,
   Typography,
   useTheme,
 } from "@mui/material";
 import MoveItem from "./moveItem";
 import MoveComment from "./moveComment";
 import { Icon } from "@iconify/react";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, memo, useCallback, useMemo, useState } from "react";
 import { CC } from "@/constants";
-import { getCommentDisplay } from "@/lib/chess";
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  promoteVariationAction,
+  removeNodeAction,
+  setCommentAction,
+} from "../../../actions";
+import { analysisTreeAtom } from "../../../states";
 
 interface Props {
-  commentMap: Map<string, string>;
   gameEvalPositions?: {
     moveClassification?: MoveClassification;
   }[];
   indent?: number;
-  onEditComment?: (moveIdx: number, text: string) => void;
   startNodeId: string;
-  tree: AnalysisTree;
 }
 
 interface DisplayMove {
@@ -31,54 +35,26 @@ interface DisplayMove {
   comment?: string;
 }
 
-export default function MovesBranch({
-  commentMap,
+interface RowEntry {
+  white?: DisplayMove;
+  black?: DisplayMove;
+  whiteVariationIds: string[];
+  blackVariationIds: string[];
+  whiteIsFirstChild: boolean;
+  blackIsFirstChild: boolean;
+}
+
+function MovesBranchInner({
   gameEvalPositions,
   indent = 0,
-  onEditComment,
   startNodeId,
-  tree,
 }: Props) {
-  const rows = useMemo(() => {
-    const items: { white?: DisplayMove; black?: DisplayMove }[] = [];
-    let cursorId: string | undefined = startNodeId;
+  const tree = useAtomValue(analysisTreeAtom);
 
-    while (cursorId) {
-      const firstNode: AnalysisNode | undefined = tree.nodes[cursorId];
-      if (!firstNode) break;
-
-      if (firstNode.color === "w") {
-        const white = buildDisplayMove(
-          firstNode,
-          commentMap,
-          gameEvalPositions
-        );
-        const blackId: string | undefined = firstNode.children[0];
-        const blackNode: AnalysisNode | undefined = blackId
-          ? tree.nodes[blackId]
-          : undefined;
-
-        if (blackNode?.color === "b") {
-          items.push({
-            white,
-            black: buildDisplayMove(blackNode, commentMap, gameEvalPositions),
-          });
-          cursorId = blackNode.children[0];
-        } else {
-          items.push({ white });
-          cursorId = firstNode.children[0];
-        }
-        continue;
-      }
-
-      items.push({
-        black: buildDisplayMove(firstNode, commentMap, gameEvalPositions),
-      });
-      cursorId = firstNode.children[0];
-    }
-
-    return items;
-  }, [commentMap, gameEvalPositions, startNodeId, tree]);
+  const rows = useMemo(
+    () => buildRows(tree, startNodeId, gameEvalPositions),
+    [gameEvalPositions, startNodeId, tree]
+  );
 
   return (
     <>
@@ -88,12 +64,13 @@ export default function MovesBranch({
         >
           <MovesLine
             blackMove={row.black}
-            commentMap={commentMap}
+            blackVariationIds={row.blackVariationIds}
+            blackIsFirstChild={row.blackIsFirstChild}
             gameEvalPositions={gameEvalPositions}
             indent={indent}
-            onEditComment={onEditComment}
-            tree={tree}
             whiteMove={row.white}
+            whiteVariationIds={row.whiteVariationIds}
+            whiteIsFirstChild={row.whiteIsFirstChild}
           />
         </Fragment>
       ))}
@@ -101,28 +78,197 @@ export default function MovesBranch({
   );
 }
 
-function MovesLine({
-  blackMove,
-  commentMap,
-  gameEvalPositions,
-  indent,
-  onEditComment,
-  tree,
-  whiteMove,
-}: {
-  blackMove?: DisplayMove;
-  commentMap: Map<string, string>;
-  gameEvalPositions?: {
-    moveClassification?: MoveClassification;
-  }[];
-  indent: number;
-  onEditComment?: (moveIdx: number, text: string) => void;
-  tree: AnalysisTree;
-  whiteMove?: DisplayMove;
-}) {
+const MovesBranch = memo(MovesBranchInner);
+export default MovesBranch;
+
+const buildRows = (
+  tree: AnalysisTree,
+  startNodeId: string,
+  gameEvalPositions?: { moveClassification?: MoveClassification }[]
+): RowEntry[] => {
+  const items: RowEntry[] = [];
+  let cursorId: string | undefined = startNodeId;
+
+  while (cursorId) {
+    const firstNode: AnalysisNode | undefined = tree.nodes[cursorId];
+    if (!firstNode) break;
+
+    if (firstNode.color === "w") {
+      const white = buildDisplayMove(firstNode, gameEvalPositions);
+      const blackId: string | undefined = firstNode.children[0];
+      const blackNode: AnalysisNode | undefined = blackId
+        ? tree.nodes[blackId]
+        : undefined;
+      const whiteVariationIds = firstNode.children.slice(1);
+      const whiteIsFirstChild = isFirstChildOf(tree, firstNode);
+
+      if (blackNode?.color === "b") {
+        const blackVariationIds = blackNode.children.slice(1);
+        const blackIsFirstChild = isFirstChildOf(tree, blackNode);
+        items.push({
+          white,
+          black: buildDisplayMove(blackNode, gameEvalPositions),
+          whiteVariationIds,
+          blackVariationIds,
+          whiteIsFirstChild,
+          blackIsFirstChild,
+        });
+        cursorId = blackNode.children[0];
+      } else {
+        items.push({
+          white,
+          whiteVariationIds,
+          blackVariationIds: [],
+          whiteIsFirstChild,
+          blackIsFirstChild: false,
+        });
+        cursorId = firstNode.children[0];
+      }
+      continue;
+    }
+
+    items.push({
+      black: buildDisplayMove(firstNode, gameEvalPositions),
+      whiteVariationIds: [],
+      blackVariationIds: firstNode.children.slice(1),
+      whiteIsFirstChild: false,
+      blackIsFirstChild: isFirstChildOf(tree, firstNode),
+    });
+    cursorId = firstNode.children[0];
+  }
+
+  return items;
+};
+
+const isFirstChildOf = (tree: AnalysisTree, node: AnalysisNode): boolean =>
+  !!node.parentId && tree.nodes[node.parentId]?.children?.[0] === node.id;
+
+interface MoveActionsProps {
+  nodeId: string;
+  isMainline: boolean;
+  isFirstChild: boolean;
+  hasParent: boolean;
+  onEdit: () => void;
+}
+
+const MoveActions = memo(function MoveActions({
+  nodeId,
+  isMainline,
+  isFirstChild,
+  hasParent,
+  onEdit,
+}: MoveActionsProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
-  const [editingMoveIdx, setEditingMoveIdx] = useState<number | null>(null);
+  const removeNode = useSetAtom(removeNodeAction);
+  const promoteVariation = useSetAtom(promoteVariationAction);
+
+  const canPromote = !isMainline && hasParent && !isFirstChild;
+
+  return (
+    <Box
+      className="move-actions"
+      sx={{
+        display: "inline-flex",
+        gap: "1px",
+        alignItems: "center",
+        flexShrink: 0,
+        ml: "2px",
+        opacity: 0,
+        transition: "opacity 80ms ease",
+      }}
+    >
+      <Tooltip title="Add / edit comment">
+        <IconButton
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
+          sx={{
+            p: "1px",
+            borderRadius: "2px",
+            color: isDark ? CC.textMuted : "#a0a09e",
+            "&:hover": { color: isDark ? CC.text : CC.lText },
+          }}
+        >
+          <Icon icon="material-symbols:add-comment-outline" width={12} />
+        </IconButton>
+      </Tooltip>
+
+      {canPromote && (
+        <Tooltip title="Promote to main line">
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              promoteVariation(nodeId);
+            }}
+            sx={{
+              p: "1px",
+              borderRadius: "2px",
+              color: isDark ? CC.textMuted : "#a0a09e",
+              "&:hover": { color: isDark ? CC.text : CC.lText },
+            }}
+          >
+            <Icon icon="material-symbols:arrow-upward-alt" width={12} />
+          </IconButton>
+        </Tooltip>
+      )}
+
+      <Tooltip title="Delete this branch">
+        <IconButton
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            removeNode(nodeId);
+          }}
+          sx={{
+            p: "1px",
+            borderRadius: "2px",
+            color: isDark ? CC.textMuted : "#a0a09e",
+            "&:hover": { color: "#e57373" },
+          }}
+        >
+          <Icon icon="material-symbols:delete-outline" width={12} />
+        </IconButton>
+      </Tooltip>
+    </Box>
+  );
+});
+
+interface MovesLineProps {
+  blackMove?: DisplayMove;
+  blackVariationIds: string[];
+  blackIsFirstChild: boolean;
+  gameEvalPositions?: { moveClassification?: MoveClassification }[];
+  indent: number;
+  whiteMove?: DisplayMove;
+  whiteVariationIds: string[];
+  whiteIsFirstChild: boolean;
+}
+
+function MovesLine({
+  blackMove,
+  blackVariationIds,
+  blackIsFirstChild,
+  gameEvalPositions,
+  indent,
+  whiteMove,
+  whiteVariationIds,
+  whiteIsFirstChild,
+}: MovesLineProps) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+  const setCommentRaw = useSetAtom(setCommentAction);
+  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
+
+  const setComment = useCallback(
+    (nodeId: string, comment: string) => {
+      setCommentRaw({ nodeId, comment });
+    },
+    [setCommentRaw]
+  );
 
   const moveLabel = whiteMove
     ? `${Math.ceil(whiteMove.node.ply / 2)}.`
@@ -130,22 +276,20 @@ function MovesLine({
       ? `${Math.ceil(blackMove.node.ply / 2)}...`
       : "";
 
-  const whiteVariationIds = whiteMove
-    ? tree.nodes[whiteMove.node.id].children.slice(1)
-    : [];
-  const blackVariationIds = blackMove
-    ? tree.nodes[blackMove.node.id].children.slice(1)
-    : [];
-
   const hasAnyComment = !!whiteMove?.comment || !!blackMove?.comment;
   const hasAnyVariation =
     whiteVariationIds.length > 0 || blackVariationIds.length > 0;
   const showDetailsSection =
-    hasAnyVariation ||
-    (!!onEditComment && (hasAnyComment || editingMoveIdx !== null));
+    hasAnyVariation || hasAnyComment || editingNodeId !== null;
 
   return (
-    <Grid container size={12}>
+    <Grid
+      container
+      size={12}
+      sx={{
+        "&:hover .move-actions": { opacity: 1 },
+      }}
+    >
       <Grid
         container
         alignItems="center"
@@ -174,46 +318,61 @@ function MovesLine({
         </Typography>
 
         {whiteMove ? (
-          <MoveItem
-            moveClassification={whiteMove.moveClassification}
-            moveColor="w"
-            nodeId={whiteMove.node.id}
-            ply={whiteMove.node.ply}
-            san={whiteMove.node.san ?? ""}
-          />
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              flexGrow: 1,
+              flexBasis: 0,
+              minWidth: 0,
+            }}
+          >
+            <MoveItem
+              moveClassification={whiteMove.moveClassification}
+              moveColor="w"
+              nodeId={whiteMove.node.id}
+              ply={whiteMove.node.ply}
+              san={whiteMove.node.san ?? ""}
+            />
+            <MoveActions
+              nodeId={whiteMove.node.id}
+              isMainline={whiteMove.node.isMainline}
+              isFirstChild={whiteIsFirstChild}
+              hasParent={!!whiteMove.node.parentId}
+              onEdit={() => setEditingNodeId(whiteMove.node.id)}
+            />
+          </Box>
         ) : (
           <Box sx={{ flexGrow: 1, flexBasis: 0 }} />
         )}
 
         {blackMove ? (
-          <MoveItem
-            moveClassification={blackMove.moveClassification}
-            moveColor="b"
-            nodeId={blackMove.node.id}
-            ply={blackMove.node.ply}
-            san={blackMove.node.san ?? ""}
-          />
-        ) : (
-          <Box sx={{ flexGrow: 1, flexBasis: 0 }} />
-        )}
-
-        {onEditComment && whiteMove?.node.isMainline && (
-          <IconButton
-            className="add-comment-btn"
-            size="small"
-            onClick={() => setEditingMoveIdx(whiteMove.node.ply)}
+          <Box
             sx={{
-              p: "2px",
-              opacity: 0,
-              transition: "opacity 80ms ease",
-              flexShrink: 0,
-              borderRadius: "2px",
-              color: isDark ? CC.textMuted : "#a0a09e",
-              "&:hover": { color: isDark ? CC.text : CC.lText },
+              display: "flex",
+              alignItems: "center",
+              flexGrow: 1,
+              flexBasis: 0,
+              minWidth: 0,
             }}
           >
-            <Icon icon="material-symbols:add-comment-outline" width={13} />
-          </IconButton>
+            <MoveItem
+              moveClassification={blackMove.moveClassification}
+              moveColor="b"
+              nodeId={blackMove.node.id}
+              ply={blackMove.node.ply}
+              san={blackMove.node.san ?? ""}
+            />
+            <MoveActions
+              nodeId={blackMove.node.id}
+              isMainline={blackMove.node.isMainline}
+              isFirstChild={blackIsFirstChild}
+              hasParent={!!blackMove.node.parentId}
+              onEdit={() => setEditingNodeId(blackMove.node.id)}
+            />
+          </Box>
+        ) : (
+          <Box sx={{ flexGrow: 1, flexBasis: 0 }} />
         )}
       </Grid>
 
@@ -225,80 +384,81 @@ function MovesLine({
             pl: `calc(2.2rem + ${indent * 1.25}rem)`,
             backgroundColor: isDark ? CC.bg0 : CC.lBg2,
             borderBottom: `1px solid ${isDark ? CC.border : CC.lBorder}`,
-            "&:hover .add-comment-btn": { opacity: 1 },
           }}
         >
-          {onEditComment &&
-            whiteMove?.node.isMainline &&
-            (editingMoveIdx === whiteMove.node.ply ? (
+          {whiteMove &&
+            (editingNodeId === whiteMove.node.id ? (
               <MoveComment
                 comment={whiteMove.comment}
                 isEditing
                 moveColor="w"
-                moveIdx={whiteMove.node.ply}
-                onEditEnd={() => setEditingMoveIdx(null)}
-                onSave={(idx, text) => {
-                  onEditComment(idx, text);
-                  setEditingMoveIdx(null);
+                onDelete={() => {
+                  setComment(whiteMove.node.id, "");
+                  setEditingNodeId(null);
+                }}
+                onEditEnd={() => setEditingNodeId(null)}
+                onSave={(text) => {
+                  setComment(whiteMove.node.id, text);
+                  setEditingNodeId(null);
                 }}
               />
             ) : (
-              <MoveComment
-                comment={whiteMove?.comment}
-                moveColor="w"
-                moveIdx={whiteMove.node.ply}
-                onEditEnd={() => setEditingMoveIdx(null)}
-                onEditStart={() => setEditingMoveIdx(whiteMove.node.ply)}
-                onSave={onEditComment}
-              />
+              whiteMove.comment && (
+                <MoveComment
+                  comment={whiteMove.comment}
+                  moveColor="w"
+                  onDelete={() => setComment(whiteMove.node.id, "")}
+                  onEditEnd={() => setEditingNodeId(null)}
+                  onEditStart={() => setEditingNodeId(whiteMove.node.id)}
+                  onSave={(text) => setComment(whiteMove.node.id, text)}
+                />
+              )
             ))}
 
           {whiteVariationIds.map((variationId) => (
             <MovesBranch
               key={variationId}
-              commentMap={commentMap}
               gameEvalPositions={gameEvalPositions}
               indent={indent + 1}
-              onEditComment={onEditComment}
               startNodeId={variationId}
-              tree={tree}
             />
           ))}
 
-          {onEditComment &&
-            blackMove?.node.isMainline &&
-            (editingMoveIdx === blackMove.node.ply ? (
+          {blackMove &&
+            (editingNodeId === blackMove.node.id ? (
               <MoveComment
                 comment={blackMove.comment}
                 isEditing
                 moveColor="b"
-                moveIdx={blackMove.node.ply}
-                onEditEnd={() => setEditingMoveIdx(null)}
-                onSave={(idx, text) => {
-                  onEditComment(idx, text);
-                  setEditingMoveIdx(null);
+                onDelete={() => {
+                  setComment(blackMove.node.id, "");
+                  setEditingNodeId(null);
+                }}
+                onEditEnd={() => setEditingNodeId(null)}
+                onSave={(text) => {
+                  setComment(blackMove.node.id, text);
+                  setEditingNodeId(null);
                 }}
               />
             ) : (
-              <MoveComment
-                comment={blackMove?.comment}
-                moveColor="b"
-                moveIdx={blackMove.node.ply}
-                onEditEnd={() => setEditingMoveIdx(null)}
-                onEditStart={() => setEditingMoveIdx(blackMove.node.ply)}
-                onSave={onEditComment}
-              />
+              blackMove.comment && (
+                <MoveComment
+                  comment={blackMove.comment}
+                  moveColor="b"
+                  onDelete={() => setComment(blackMove.node.id, "")}
+                  onEditEnd={() => setEditingNodeId(null)}
+                  onEditStart={() => setEditingNodeId(blackMove.node.id)}
+                  onSave={(text) => setComment(blackMove.node.id, text)}
+                />
+              )
             ))}
 
           {blackVariationIds.map((variationId) => (
             <MovesBranch
               key={variationId}
-              commentMap={commentMap}
               gameEvalPositions={gameEvalPositions}
               indent={indent + 1}
-              onEditComment={onEditComment}
               startNodeId={variationId}
-              tree={tree}
             />
           ))}
         </Grid>
@@ -309,7 +469,6 @@ function MovesLine({
 
 const buildDisplayMove = (
   node: AnalysisNode,
-  commentMap: Map<string, string>,
   gameEvalPositions?: {
     moveClassification?: MoveClassification;
   }[]
@@ -318,8 +477,6 @@ const buildDisplayMove = (
   moveClassification: node.isMainline
     ? gameEvalPositions?.[node.ply]?.moveClassification
     : undefined,
-  comment:
-    node.isMainline && commentMap.get(node.afterFen)
-      ? getCommentDisplay(commentMap.get(node.afterFen) ?? "")
-      : undefined,
+  comment: node.comment,
 });
+

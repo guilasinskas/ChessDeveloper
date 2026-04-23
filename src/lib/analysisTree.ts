@@ -1,6 +1,5 @@
 import { AnalysisNode, AnalysisTree } from "@/types/analysis";
 import { Chess, DEFAULT_POSITION, Move } from "chess.js";
-import { uciMoveParams } from "./chess";
 
 export const ANALYSIS_ROOT_ID = "root";
 
@@ -70,15 +69,9 @@ export const getAnalysisChess = (
   tree: AnalysisTree,
   nodeId: string = ANALYSIS_ROOT_ID
 ): Chess => {
-  const game = new Chess(tree.rootFen);
-  const path = getAnalysisPath(tree, nodeId).slice(1);
-
-  for (const node of path) {
-    if (!node.uci) continue;
-    game.move(uciMoveParams(node.uci));
-  }
-
-  return game;
+  const node = tree.nodes[nodeId];
+  if (!node) return new Chess(tree.rootFen);
+  return new Chess(node.afterFen ?? tree.rootFen);
 };
 
 export const findChildByUci = (
@@ -167,4 +160,216 @@ export const getLastReachableNodeId = (
 };
 
 export const isNodeInMainline = (tree: AnalysisTree, nodeId: string): boolean =>
-  tree.mainlineNodeIds.includes(nodeId);
+  nodeId === tree.rootId || !!tree.nodes[nodeId]?.isMainline;
+
+export const setNodeComment = (
+  tree: AnalysisTree,
+  nodeId: string,
+  comment: string
+): AnalysisTree => {
+  if (nodeId === tree.rootId) {
+    const trimmed = comment.trim();
+    return { ...tree, rootComment: trimmed || undefined };
+  }
+  const node = tree.nodes[nodeId];
+  if (!node) return tree;
+  const trimmed = comment.trim();
+  return {
+    ...tree,
+    nodes: {
+      ...tree.nodes,
+      [nodeId]: { ...node, comment: trimmed || undefined },
+    },
+  };
+};
+
+export const deleteNode = (
+  tree: AnalysisTree,
+  nodeId: string
+): { tree: AnalysisTree; newCurrentId: string } => {
+  if (nodeId === tree.rootId) return { tree, newCurrentId: nodeId };
+  const node = tree.nodes[nodeId];
+  if (!node || node.parentId === null) return { tree, newCurrentId: nodeId };
+
+  const toDelete = new Set<string>();
+  const stack = [nodeId];
+  while (stack.length) {
+    const id = stack.pop()!;
+    if (toDelete.has(id)) continue;
+    toDelete.add(id);
+    const n = tree.nodes[id];
+    if (n) stack.push(...n.children);
+  }
+
+  const newNodes: Record<string, AnalysisNode> = {};
+  for (const [id, n] of Object.entries(tree.nodes)) {
+    if (toDelete.has(id)) continue;
+    newNodes[id] = n;
+  }
+
+  const parent = newNodes[node.parentId];
+  if (parent) {
+    newNodes[node.parentId] = {
+      ...parent,
+      children: parent.children.filter((c) => !toDelete.has(c)),
+    };
+  }
+
+  const wasMainline = tree.mainlineNodeIds.includes(nodeId);
+  const newMainlineNodeIds = wasMainline
+    ? tree.mainlineNodeIds.filter((id) => !toDelete.has(id))
+    : tree.mainlineNodeIds;
+
+  return {
+    tree: {
+      ...tree,
+      nodes: newNodes,
+      mainlineNodeIds: newMainlineNodeIds,
+    },
+    newCurrentId: node.parentId,
+  };
+};
+
+export const exportTreeToPgn = (
+  tree: AnalysisTree,
+  headers: Record<string, string | undefined> = {}
+): string => {
+  const headerLines: string[] = [];
+  const headerKeysOrder = [
+    "Event",
+    "Site",
+    "Date",
+    "Round",
+    "White",
+    "Black",
+    "Result",
+    "WhiteElo",
+    "BlackElo",
+    "TimeControl",
+    "Termination",
+    "FEN",
+  ];
+  for (const key of headerKeysOrder) {
+    const v = headers[key];
+    if (v) headerLines.push(`[${key} "${v.replace(/"/g, '\\"')}"]`);
+  }
+  for (const [k, v] of Object.entries(headers)) {
+    if (headerKeysOrder.includes(k) || !v) continue;
+    headerLines.push(`[${k} "${v.replace(/"/g, '\\"')}"]`);
+  }
+
+  const result = headers.Result ?? "*";
+  const root = tree.nodes[tree.rootId];
+  if (!root) {
+    return [...headerLines, "", result].join("\n");
+  }
+
+  const renderNode = (
+    nodeId: string,
+    needsMoveNumber: boolean
+  ): { text: string; needsMoveNumber: boolean } => {
+    const node = tree.nodes[nodeId];
+    if (!node || !node.san) return { text: "", needsMoveNumber };
+
+    const isWhite = node.color === "w";
+    const fullMove = Math.ceil(node.ply / 2);
+    const moveNumber = isWhite
+      ? `${fullMove}.`
+      : needsMoveNumber
+        ? `${fullMove}...`
+        : "";
+
+    const parts: string[] = [];
+    if (moveNumber) parts.push(moveNumber);
+    parts.push(node.san);
+    if (node.nags && node.nags.length) {
+      for (const nag of node.nags) parts.push(`$${nag}`);
+    }
+    if (node.comment) parts.push(`{${node.comment}}`);
+
+    let text = parts.join(" ");
+    let nextNeedsMoveNumber = !isWhite ? false : true;
+
+    if (node.children.length > 1) {
+      for (let i = 1; i < node.children.length; i++) {
+        const branch = renderBranch(node.children[i], true);
+        text += ` (${branch})`;
+      }
+      nextNeedsMoveNumber = true;
+    }
+
+    if (node.children.length > 0) {
+      const next = renderNode(node.children[0], nextNeedsMoveNumber);
+      if (next.text) text += " " + next.text;
+    }
+
+    return { text, needsMoveNumber: nextNeedsMoveNumber };
+  };
+
+  const renderBranch = (startNodeId: string, forceMoveNumber: boolean): string => {
+    const start = tree.nodes[startNodeId];
+    if (!start) return "";
+    const startsWithBlack = start.color === "b";
+    const result = renderNode(startNodeId, forceMoveNumber || startsWithBlack);
+    return result.text.trim();
+  };
+
+  const rootCommentText = tree.rootComment ? `{${tree.rootComment}} ` : "";
+
+  let body = rootCommentText;
+  if (root.children.length > 0) {
+    body += renderBranch(root.children[0], true);
+    for (let i = 1; i < root.children.length; i++) {
+      body += " (" + renderBranch(root.children[i], true) + ")";
+    }
+  }
+
+  body = (body.trim() + " " + result).trim();
+
+  return [...headerLines, "", body].join("\n");
+};
+
+export const promoteToMainline = (
+  tree: AnalysisTree,
+  nodeId: string
+): AnalysisTree => {
+  const node = tree.nodes[nodeId];
+  if (!node || !node.parentId) return tree;
+  const parent = tree.nodes[node.parentId];
+  if (!parent) return tree;
+
+  const idx = parent.children.indexOf(nodeId);
+  if (idx <= 0) return tree;
+
+  const newChildren = [...parent.children];
+  newChildren.splice(idx, 1);
+  newChildren.unshift(nodeId);
+
+  const newNodes = {
+    ...tree.nodes,
+    [node.parentId]: { ...parent, children: newChildren },
+  };
+
+  const newMainlineIds: string[] = [];
+  let cursor: string | undefined = tree.rootId;
+  while (cursor) {
+    const n = newNodes[cursor];
+    if (!n) break;
+    if (cursor !== tree.rootId) newMainlineIds.push(cursor);
+    cursor = n.children[0];
+  }
+
+  for (const id of Object.keys(newNodes)) {
+    const n = newNodes[id];
+    const inMainline = newMainlineIds.includes(id);
+    if (n.isMainline !== inMainline) {
+      newNodes[id] = { ...n, isMainline: inMainline };
+    }
+  }
+
+  return {
+    ...tree,
+    nodes: newNodes,
+    mainlineNodeIds: newMainlineIds,
+  };
+};

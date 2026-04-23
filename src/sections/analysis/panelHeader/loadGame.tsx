@@ -25,24 +25,28 @@ export default function LoadGame() {
   const setEval = useSetAtom(gameEvalAtom);
   const setBoardOrientation = useSetAtom(boardOrientationAtom);
   const evaluationProgress = useAtomValue(evaluationProgressAtom);
-  const { initializeFromGame } = useAnalysisActions();
+  const { initializeFromPgn } = useAnalysisActions();
 
   const joinedGameHistory = useMemo(() => game.history().join(), [game]);
 
   const resetAndSetGamePgn = useCallback(
     (pgn: string, orientation?: boolean, gameEval?: GameEval) => {
       const gameFromPgn = new Chess();
-      gameFromPgn.loadPgn(pgn);
+      try {
+        gameFromPgn.loadPgn(pgn);
+      } catch {
+        return;
+      }
       if (joinedGameHistory === gameFromPgn.history().join()) return;
 
       setEval(gameEval);
       setGamePgn(pgn);
-      initializeFromGame(gameFromPgn);
+      initializeFromPgn(pgn);
       resetBoard(pgn);
       setBoardOrientation(orientation ?? true);
     },
     [
-      initializeFromGame,
+      initializeFromPgn,
       joinedGameHistory,
       resetBoard,
       setGamePgn,

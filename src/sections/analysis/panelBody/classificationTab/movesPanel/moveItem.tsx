@@ -1,13 +1,14 @@
 import { MoveClassification } from "@/types/enums";
 import { Grid2 as Grid } from "@mui/material";
 import Image from "next/image";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
+import { selectAtom } from "jotai/utils";
 import { currentAnalysisNodeIdAtom } from "../../../states";
-import { useEffect } from "react";
+import { goToNodeAction } from "../../../actions";
+import { memo, useEffect, useMemo } from "react";
 import { isInViewport } from "@/lib/helpers";
 import { CC, CLASSIFICATION_COLORS } from "@/constants";
 import PrettyMoveSan from "@/components/prettyMoveSan";
-import { useAnalysisActions } from "@/hooks/useAnalysisActions";
 
 interface Props {
   san: string;
@@ -17,17 +18,55 @@ interface Props {
   moveColor: "w" | "b";
 }
 
-export default function MoveItem({
-  san,
-  moveClassification,
-  nodeId,
-  moveColor,
-}: Props) {
-  const { goToNode } = useAnalysisActions();
-  const currentNodeId = useAtomValue(currentAnalysisNodeIdAtom);
-  const color = getMoveColor(moveClassification);
+const baseSx = {
+  flexGrow: 1,
+  flexBasis: 0,
+  minWidth: 0,
+  pl: "6px",
+  pr: "6px",
+  py: "4px",
+  cursor: "pointer",
+  borderRadius: "2px",
+  borderLeft: "2px solid transparent",
+  transition: "background-color 80ms ease, border-color 80ms ease",
+  backgroundColor: "transparent",
+} as const;
 
-  const isCurrentMove = currentNodeId === nodeId;
+const currentSxLight = {
+  ...baseSx,
+  pl: "4px",
+  cursor: "default",
+  borderLeft: `2px solid ${CC.primary}`,
+  backgroundColor: "rgba(172,199,255,0.15)",
+} as const;
+
+const currentSxDark = {
+  ...baseSx,
+  pl: "4px",
+  cursor: "default",
+  borderLeft: `2px solid ${CC.primary}`,
+  backgroundColor: CC.primaryMuted,
+} as const;
+
+const hoverSxLight = {
+  ...baseSx,
+  "&:hover": { backgroundColor: CC.lBg3 },
+} as const;
+
+const hoverSxDark = {
+  ...baseSx,
+  "&:hover": { backgroundColor: CC.bg3 },
+} as const;
+
+function MoveItem({ san, moveClassification, nodeId, moveColor }: Props) {
+  const goToNode = useSetAtom(goToNodeAction);
+
+  const isCurrentMoveAtom = useMemo(
+    () => selectAtom(currentAnalysisNodeIdAtom, (id) => id === nodeId),
+    [nodeId]
+  );
+  const isCurrentMove = useAtomValue(isCurrentMoveAtom);
+  const color = getMoveColor(moveClassification);
 
   useEffect(() => {
     if (!isCurrentMove) return;
@@ -51,31 +90,10 @@ export default function MoveItem({
       justifyContent="start"
       alignItems="center"
       gap={0.5}
-      // Chess.com move cells fill the column width, flat rectangles
       sx={(theme) => {
         const isDark = theme.palette.mode === "dark";
-        return {
-          flexGrow: 1,
-          flexBasis: 0,
-          minWidth: 0,
-          pl: isCurrentMove ? "4px" : "6px",
-          pr: "6px",
-          py: "4px",
-          cursor: isCurrentMove ? "default" : "pointer",
-          borderRadius: "2px",
-          borderLeft: isCurrentMove
-            ? `2px solid ${CC.primary}`
-            : "2px solid transparent",
-          transition: "background-color 80ms ease, border-color 80ms ease",
-          backgroundColor: isCurrentMove
-            ? isDark
-              ? CC.primaryMuted
-              : "rgba(172,199,255,0.15)"
-            : "transparent",
-          "&:hover": !isCurrentMove
-            ? { backgroundColor: isDark ? CC.bg3 : CC.lBg3 }
-            : undefined,
-        };
+        if (isCurrentMove) return isDark ? currentSxDark : currentSxLight;
+        return isDark ? hoverSxDark : hoverSxLight;
       }}
       id={`move-${nodeId}`}
       onClick={handleClick}
@@ -103,6 +121,8 @@ export default function MoveItem({
     </Grid>
   );
 }
+
+export default memo(MoveItem);
 
 const getMoveColor = (moveClassification?: MoveClassification) => {
   if (

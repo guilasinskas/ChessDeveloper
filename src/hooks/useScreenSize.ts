@@ -1,38 +1,56 @@
 import { useEffect, useState } from "react";
 
+const getInitialWidth = (): number => {
+  if (typeof document === "undefined") return 500;
+  const main = document.querySelector("main") as HTMLElement | null;
+  if (main?.clientWidth) return main.clientWidth;
+  const fallback = document.querySelector(".MuiGrid2-root") as HTMLElement | null;
+  return fallback?.clientWidth ?? 500;
+};
+
+const getInitialHeight = (): number =>
+  typeof window !== "undefined" ? window.innerHeight - 60 : 500;
+
 export const useScreenSize = () => {
-  const [screenSize, setScreenSize] = useState({
-    width: document?.querySelector(".MuiGrid2-root")?.clientWidth ?? 500,
-    height: window ? window.innerHeight - 120 : 500,
-  });
+  const [screenSize, setScreenSize] = useState(() => ({
+    width: getInitialWidth(),
+    height: getInitialHeight(),
+  }));
 
   useEffect(() => {
-    const mainDiv = document?.querySelector(".MuiGrid2-root");
-    if (!mainDiv) return;
+    const target =
+      (document.querySelector("main") as HTMLElement | null) ??
+      (document.querySelector(".MuiGrid2-root") as HTMLElement | null);
+    if (!target) return;
 
-    const observer = new ResizeObserver(() =>
-      setScreenSize((prev) => ({ ...prev, width: mainDiv.clientWidth }))
-    );
-    observer.observe(mainDiv);
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const nextWidth = target.clientWidth;
+        setScreenSize((prev) =>
+          prev.width === nextWidth ? prev : { ...prev, width: nextWidth }
+        );
+      });
+    });
+    observer.observe(target);
 
     return () => {
       observer.disconnect();
+      if (frame) cancelAnimationFrame(frame);
     };
   }, []);
 
   useEffect(() => {
     const handleResize = () => {
-      setScreenSize((prev) => ({
-        ...prev,
-        height: window.innerHeight - 100,
-      }));
+      const nextHeight = window.innerHeight - 60;
+      setScreenSize((prev) =>
+        prev.height === nextHeight ? prev : { ...prev, height: nextHeight }
+      );
     };
 
     window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return screenSize;

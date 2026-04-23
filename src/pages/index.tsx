@@ -44,7 +44,7 @@ export default function GameAnalysis() {
       gap={2}
       justifyContent="space-evenly"
       alignItems="start"
-      sx={{ pt: { xs: 1, lg: 2 }, px: { xs: 1, sm: 2 } }}
+      sx={{ pt: { xs: 1, lg: 1 }, px: { xs: 1, sm: 1.5 } }}
     >
       <PageTitle title="Chesskit Game Analysis" />
 
@@ -67,7 +67,7 @@ export default function GameAnalysis() {
         }}
         padding={{ xs: "8px 6px 16px", sm: "12px 12px 16px" }}
         rowGap={1}
-        height={{ xs: tab === 1 ? "40rem" : "auto", lg: "calc(95vh - 72px)" }}
+        height={{ xs: tab === 1 ? "40rem" : "auto", lg: "calc(98vh - 16px)" }}
         display="flex"
         flexDirection="column"
         flexWrap="nowrap"

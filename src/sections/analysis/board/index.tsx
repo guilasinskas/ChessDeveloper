@@ -26,10 +26,10 @@ export default function BoardContainer() {
     const height = screenSize.height;
 
     if (window?.innerWidth < 1200) {
-      return Math.min(width, height - 150);
+      return Math.min(width, height - 80);
     }
 
-    return Math.min(width - 520, height * 0.95);
+    return Math.min(width - 480, height * 0.98);
   }, [screenSize]);
 
   return (

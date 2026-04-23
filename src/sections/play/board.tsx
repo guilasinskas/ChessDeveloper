@@ -60,10 +60,10 @@ export default function BoardContainer() {
     const height = screenSize.height;
 
     if (window?.innerWidth < 900) {
-      return Math.min(width, height - 150);
+      return Math.min(width, height - 80);
     }
 
-    return Math.min(width - 230, height * 0.90);
+    return Math.min(width - 230, height * 0.95);
   }, [screenSize]);
 
   useGameData(gameAtom, gameDataAtom);

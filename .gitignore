@@ -15,6 +15,12 @@ next-env.d.ts
 *.pem
 *.pgn
 
+# user-generated data (notes, openings, uploads)
+data/notes.json
+data/notes-images/
+data/notes-images.json
+data/openings.json
+
 # env files
 .env
 .env*.local

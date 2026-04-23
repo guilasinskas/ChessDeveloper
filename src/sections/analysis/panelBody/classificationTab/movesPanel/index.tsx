@@ -1,30 +1,11 @@
 import { Grid2 as Grid } from "@mui/material";
 import MovesBranch from "./movesLine";
-import { useCallback, useMemo } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
-import { analysisTreeAtom, gameAtom, gameEvalAtom } from "../../../states";
-import { setCommentAtMoveIdx } from "@/lib/chess";
+import { useAtomValue } from "jotai";
+import { analysisTreeAtom, gameEvalAtom } from "../../../states";
 
 export default function MovesPanel() {
-  const game = useAtomValue(gameAtom);
-  const setGame = useSetAtom(gameAtom);
   const gameEval = useAtomValue(gameEvalAtom);
   const analysisTree = useAtomValue(analysisTreeAtom);
-
-  const commentMap = useMemo(
-    () =>
-      new Map(
-        game.getComments().map((comment) => [comment.fen, comment.comment])
-      ),
-    [game]
-  );
-
-  const handleEditComment = useCallback(
-    (moveIdx: number, text: string) => {
-      setGame((prev) => setCommentAtMoveIdx(prev, moveIdx, text));
-    },
-    [setGame]
-  );
 
   const mainlineStartId = analysisTree.nodes[analysisTree.rootId]?.children[0];
   const rootVariationIds =
@@ -46,23 +27,17 @@ export default function MovesPanel() {
     >
       {mainlineStartId && (
         <MovesBranch
-          commentMap={commentMap}
           gameEvalPositions={gameEval?.positions}
-          onEditComment={handleEditComment}
           startNodeId={mainlineStartId}
-          tree={analysisTree}
         />
       )}
 
       {rootVariationIds.map((variationId) => (
         <MovesBranch
           key={variationId}
-          commentMap={commentMap}
           gameEvalPositions={gameEval?.positions}
           indent={1}
-          onEditComment={handleEditComment}
           startNodeId={variationId}
-          tree={analysisTree}
         />
       ))}
     </Grid>
