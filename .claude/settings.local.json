@@ -17,7 +17,9 @@
       "Bash(cmd /c \"taskkill /F /IM Chesskit.exe\")",
       "Bash(awk '{print $2}')",
       "Bash(xargs -I{} cmd /c \"taskkill /PID {} /F\")",
-      "Bash(powershell.exe -Command \"Stop-Process -Name 'Chesskit' -Force\")"
+      "Bash(powershell.exe -Command \"Stop-Process -Name 'Chesskit' -Force\")",
+      "Bash(grep \"^C:\\\\\\\\\")",
+      "Bash(npx prettier *)"
     ]
   }
 }

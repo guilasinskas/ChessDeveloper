@@ -1,11 +1,5 @@
 import { Icon } from "@iconify/react";
-import {
-  Box,
-  IconButton,
-  Tooltip,
-  Typography,
-  useTheme,
-} from "@mui/material";
+import { Box, IconButton, Tooltip, Typography, useTheme } from "@mui/material";
 import { useRouter } from "next/router";
 import { CC } from "@/constants";
 import NavLink from "@/components/NavLink";
@@ -18,6 +12,7 @@ const NAV_LINKS = [
   { text: "Analysis", icon: "streamline:magnifying-glass-solid", href: "/" },
   { text: "Database", icon: "streamline:database", href: "/database" },
   { text: "Openings", icon: "streamline:book-reading", href: "/openings" },
+  { text: "Stats", icon: "mdi:chart-bar", href: "/stats" },
   {
     text: "Notes",
     icon: "material-symbols:sticky-note-2-outline",
@@ -119,8 +114,7 @@ export default function SideBar({ darkMode, switchDarkMode }: Props) {
                         ? CC.primaryMuted
                         : "rgba(172,199,255,0.12)"
                       : "transparent",
-                    transition:
-                      "background-color 100ms ease, color 100ms ease",
+                    transition: "background-color 100ms ease, color 100ms ease",
                     "&:hover": {
                       backgroundColor: isDark ? CC.bg3 : CC.lBg3,
                       color: isDark ? CC.text : CC.lText,

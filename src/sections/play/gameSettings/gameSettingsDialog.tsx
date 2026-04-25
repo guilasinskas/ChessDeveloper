@@ -26,6 +26,10 @@ import {
   isGameInProgressAtom,
   gameAtom,
   enginePlayNameAtom,
+  timeControlAtom,
+  clockWhiteAtom,
+  clockBlackAtom,
+  TIME_CONTROLS,
 } from "../states";
 import { useChessActions } from "@/hooks/useChessActions";
 import { logAnalyticsEvent } from "@/lib/firebase";
@@ -54,6 +58,12 @@ export default function GameSettingsDialog({ open, onClose }: Props) {
   const { reset: resetGame } = useChessActions(gameAtom);
   const [startingPositionInput, setStartingPositionInput] = useState("");
   const [parsingError, setParsingError] = useState("");
+  const [timeControl, setTimeControl] = useAtomLocalStorage(
+    "play-time-control-idx",
+    timeControlAtom
+  );
+  const setClockWhite = useSetAtom(clockWhiteAtom);
+  const setClockBlack = useSetAtom(clockBlackAtom);
 
   const handleGameStart = () => {
     setParsingError("");
@@ -89,6 +99,14 @@ export default function GameSettingsDialog({ open, onClose }: Props) {
           : "Unknown error while parsing input !"
       );
       return;
+    }
+
+    if (timeControl) {
+      setClockWhite(timeControl.initial);
+      setClockBlack(timeControl.initial);
+    } else {
+      setClockWhite(null);
+      setClockBlack(null);
     }
 
     setIsGameInProgress(true);
@@ -193,6 +211,35 @@ export default function GameSettingsDialog({ open, onClose }: Props) {
               }
             />
           </FormGroup>
+
+          <Grid container justifyContent="center" size={12}>
+            <FormControl variant="outlined">
+              <InputLabel id="time-control-label">Time control</InputLabel>
+              <Select
+                labelId="time-control-label"
+                displayEmpty
+                input={<OutlinedInput label="Time control" />}
+                value={
+                  TIME_CONTROLS.findIndex(
+                    (tc) =>
+                      JSON.stringify(tc.value) === JSON.stringify(timeControl)
+                  ) ?? 0
+                }
+                onChange={(e) =>
+                  setTimeControl(
+                    TIME_CONTROLS[e.target.value as number]?.value ?? null
+                  )
+                }
+                sx={{ width: 200 }}
+              >
+                {TIME_CONTROLS.map((tc, i) => (
+                  <MenuItem key={i} value={i}>
+                    {tc.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
 
           <FormControl fullWidth>
             <TextField

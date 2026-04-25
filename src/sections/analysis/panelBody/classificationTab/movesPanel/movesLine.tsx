@@ -20,6 +20,7 @@ import {
   setCommentAction,
 } from "../../../actions";
 import { analysisTreeAtom } from "../../../states";
+import { getCommentClock, getCommentDisplay } from "@/lib/chess";
 
 interface Props {
   gameEvalPositions?: {
@@ -33,6 +34,7 @@ interface DisplayMove {
   node: AnalysisNode;
   moveClassification?: MoveClassification;
   comment?: string;
+  clock?: string;
 }
 
 interface RowEntry {
@@ -334,6 +336,23 @@ function MovesLine({
               ply={whiteMove.node.ply}
               san={whiteMove.node.san ?? ""}
             />
+            {whiteMove.clock && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "1px",
+                  flexShrink: 0,
+                  ml: "2px",
+                  color: CC.textMuted,
+                }}
+              >
+                <Icon icon="mdi:clock-outline" width={9} />
+                <Typography sx={{ fontSize: "0.6rem", lineHeight: 1 }}>
+                  {whiteMove.clock}
+                </Typography>
+              </Box>
+            )}
             <MoveActions
               nodeId={whiteMove.node.id}
               isMainline={whiteMove.node.isMainline}
@@ -363,6 +382,23 @@ function MovesLine({
               ply={blackMove.node.ply}
               san={blackMove.node.san ?? ""}
             />
+            {blackMove.clock && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "1px",
+                  flexShrink: 0,
+                  ml: "2px",
+                  color: CC.textMuted,
+                }}
+              >
+                <Icon icon="mdi:clock-outline" width={9} />
+                <Typography sx={{ fontSize: "0.6rem", lineHeight: 1 }}>
+                  {blackMove.clock}
+                </Typography>
+              </Box>
+            )}
             <MoveActions
               nodeId={blackMove.node.id}
               isMainline={blackMove.node.isMainline}
@@ -477,6 +513,6 @@ const buildDisplayMove = (
   moveClassification: node.isMainline
     ? gameEvalPositions?.[node.ply]?.moveClassification
     : undefined,
-  comment: node.comment,
+  comment: node.comment ? getCommentDisplay(node.comment) : undefined,
+  clock: node.comment ? getCommentClock(node.comment) : undefined,
 });
-

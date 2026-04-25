@@ -1,5 +1,7 @@
 import Board from "@/components/board";
 import { useScreenSize } from "@/hooks/useScreenSize";
+import { useRepertoireEngine } from "@/hooks/useRepertoireEngine";
+import { UciEngine } from "@/lib/engine/uciEngine";
 import { Color } from "@/types/enums";
 import { Repertoire } from "@/types/openings";
 import { Move } from "chess.js";
@@ -8,6 +10,8 @@ import { useCallback, useMemo, useRef } from "react";
 import {
   repertoireBoardAtom,
   repertoireBoardOrientationAtom,
+  repertoireCurrentPositionAtom,
+  repertoireEngineActiveAtom,
   trainingActiveAtom,
 } from "./states";
 import {
@@ -17,17 +21,21 @@ import {
 
 interface Props {
   repertoire: Repertoire;
+  engine: UciEngine | null;
 }
 
-export default function RepertoireBoard({ repertoire }: Props) {
+export default function RepertoireBoard({ repertoire, engine }: Props) {
   const screenSize = useScreenSize();
   const orientation = useAtomValue(repertoireBoardOrientationAtom);
   const trainingActive = useAtomValue(trainingActiveAtom);
+  const engineActive = useAtomValue(repertoireEngineActiveAtom);
   const playMove = useSetAtom(playRepertoireMoveAction);
   const playTraining = useSetAtom(playTrainingMoveAction);
 
   const trainingActiveRef = useRef(trainingActive);
   trainingActiveRef.current = trainingActive;
+
+  useRepertoireEngine(engineActive ? engine : null);
 
   const onPlayMove = useCallback(
     (params: { from: string; to: string; promotion?: string }): Move | null => {
@@ -72,6 +80,8 @@ export default function RepertoireBoard({ repertoire }: Props) {
       whitePlayer={playerLabel.white}
       blackPlayer={playerLabel.black}
       boardOrientation={orientation}
+      currentPositionAtom={repertoireCurrentPositionAtom}
+      showEvaluationBar={engineActive}
       onPlayMove={onPlayMove}
     />
   );

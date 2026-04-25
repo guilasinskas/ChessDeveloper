@@ -8,7 +8,7 @@ export class Stockfish17_1 {
       throw new Error("Stockfish 17_1 is not supported");
     }
 
-    const enginePath = `engines/stockfish-17.1/stockfish-17.1${
+    const enginePath = `/engines/stockfish-17.1/stockfish-17.1${
       lite ? "-lite" : ""
     }-single.js`;
 

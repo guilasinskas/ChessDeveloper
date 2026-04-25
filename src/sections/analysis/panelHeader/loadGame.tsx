@@ -15,7 +15,7 @@ import { useRouter } from "next/router";
 import { GameEval } from "@/types/eval";
 import { fetchLichessGame } from "@/lib/lichess";
 import { useAnalysisActions } from "@/hooks/useAnalysisActions";
-import { stripPgnVariations } from "@/lib/chess";
+import { normalizeCastling, stripPgnVariations } from "@/lib/chess";
 
 export default function LoadGame() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function LoadGame() {
 
   const resetAndSetGamePgn = useCallback(
     (pgn: string, orientation?: boolean, gameEval?: GameEval) => {
-      const mainlinePgn = stripPgnVariations(pgn);
+      const mainlinePgn = normalizeCastling(stripPgnVariations(pgn));
       const gameFromPgn = new Chess();
       try {
         gameFromPgn.loadPgn(mainlinePgn);

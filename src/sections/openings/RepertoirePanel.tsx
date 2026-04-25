@@ -18,6 +18,8 @@ import { REPERTOIRE_ROOT_ID } from "@/lib/repertoireTree";
 import {
   currentNodeIdAtom,
   repertoireBoardOrientationAtom,
+  repertoireEngineActiveAtom,
+  repertoireEngineReadyAtom,
   repertoireTreeAtom,
   studyColorAtom,
   trainingActiveAtom,
@@ -54,6 +56,8 @@ export default function RepertoirePanel({
   const tree = useAtomValue(repertoireTreeAtom);
   const currentNodeId = useAtomValue(currentNodeIdAtom);
   const [orientation, setOrientation] = useAtom(repertoireBoardOrientationAtom);
+  const [engineActive, setEngineActive] = useAtom(repertoireEngineActiveAtom);
+  const engineReady = useAtomValue(repertoireEngineReadyAtom);
   const studyColor = useAtomValue(studyColorAtom);
   const setStudyColor = useSetAtom(studyColorAtom);
 
@@ -84,6 +88,17 @@ export default function RepertoirePanel({
     },
     [cancelTrainingTimeouts]
   );
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (e.key === "ArrowLeft") goPrev();
+      else if (e.key === "ArrowRight") goNext();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [goPrev, goNext]);
 
   const handleSaveComment = () => {
     if (!currentNode || currentNodeId === REPERTOIRE_ROOT_ID) return;
@@ -153,6 +168,19 @@ export default function RepertoirePanel({
             </IconButton>
           </Tooltip>
           <Box sx={{ flex: 1 }} />
+          <Tooltip title={engineActive ? "Disable engine" : "Enable engine"}>
+            <IconButton
+              size="small"
+              onClick={() => setEngineActive(!engineActive)}
+              sx={{ color: engineActive ? CC.primary : undefined }}
+            >
+              {engineActive && !engineReady ? (
+                <Icon icon="eos-icons:loading" width={18} />
+              ) : (
+                <Icon icon="material-symbols:memory" width={18} />
+              )}
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Flip board">
             <IconButton
               size="small"

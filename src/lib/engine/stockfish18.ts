@@ -8,7 +8,7 @@ export class Stockfish18 {
       throw new Error("Stockfish 18 is not supported");
     }
 
-    const enginePath = `engines/stockfish-18/stockfish-18${
+    const enginePath = `/engines/stockfish-18/stockfish-18${
       lite ? "-lite" : ""
     }-single${lite ? "" : "-6563532"}.js`;
 

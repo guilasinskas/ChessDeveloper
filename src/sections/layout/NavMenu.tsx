@@ -18,7 +18,12 @@ const MenuOptions = [
   { text: "Analysis", icon: "streamline:magnifying-glass-solid", href: "/" },
   { text: "Database", icon: "streamline:database", href: "/database" },
   { text: "Openings", icon: "streamline:book-reading", href: "/openings" },
-  { text: "Notes", icon: "material-symbols:sticky-note-2-outline", href: "/notes" },
+  { text: "Stats", icon: "mdi:chart-bar", href: "/stats" },
+  {
+    text: "Notes",
+    icon: "material-symbols:sticky-note-2-outline",
+    href: "/notes",
+  },
 ];
 
 interface Props {
@@ -49,10 +54,14 @@ export default function NavMenu({ open, onClose }: Props) {
           </Typography>
         </Box>
 
-        <List sx={{ px: 1, gap: "2px", display: "flex", flexDirection: "column" }}>
+        <List
+          sx={{ px: 1, gap: "2px", display: "flex", flexDirection: "column" }}
+        >
           {MenuOptions.map(({ text, icon, href }) => {
             const isActive =
-              href === "/" ? router.pathname === "/" : router.pathname.startsWith(href);
+              href === "/"
+                ? router.pathname === "/"
+                : router.pathname.startsWith(href);
             return (
               <NavLink key={href} href={href}>
                 <ListItemButton
@@ -63,15 +72,21 @@ export default function NavMenu({ open, onClose }: Props) {
                     px: "10px",
                     borderRadius: "4px",
                     mb: "2px",
-                    borderLeft: isActive ? `2px solid ${CC.primary}` : "2px solid transparent",
+                    borderLeft: isActive
+                      ? `2px solid ${CC.primary}`
+                      : "2px solid transparent",
                     backgroundColor: isActive
-                      ? isDark ? CC.primaryMuted : "rgba(172,199,255,0.12)"
+                      ? isDark
+                        ? CC.primaryMuted
+                        : "rgba(172,199,255,0.12)"
                       : "transparent",
                     "&:hover": {
                       backgroundColor: isDark ? CC.bg3 : CC.lBg3,
                     },
                     "&.Mui-selected": {
-                      backgroundColor: isDark ? CC.primaryMuted : "rgba(172,199,255,0.12)",
+                      backgroundColor: isDark
+                        ? CC.primaryMuted
+                        : "rgba(172,199,255,0.12)",
                       "&:hover": {
                         backgroundColor: isDark ? CC.bg3 : CC.lBg3,
                       },
@@ -82,7 +97,13 @@ export default function NavMenu({ open, onClose }: Props) {
                     <Icon
                       icon={icon}
                       width={17}
-                      color={isActive ? CC.primary : isDark ? CC.textSub : CC.lTextSub}
+                      color={
+                        isActive
+                          ? CC.primary
+                          : isDark
+                            ? CC.textSub
+                            : CC.lTextSub
+                      }
                     />
                   </ListItemIcon>
                   <ListItemText
@@ -94,7 +115,9 @@ export default function NavMenu({ open, onClose }: Props) {
                       letterSpacing: "-0.01em",
                       color: isActive
                         ? CC.primary
-                        : isDark ? CC.textSub : CC.lTextSub,
+                        : isDark
+                          ? CC.textSub
+                          : CC.lTextSub,
                     }}
                   />
                 </ListItemButton>

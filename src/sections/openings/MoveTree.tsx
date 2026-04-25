@@ -1,9 +1,8 @@
 import { Box, IconButton, Tooltip, Typography, useTheme } from "@mui/material";
 import { Icon } from "@iconify/react";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useMemo } from "react";
+import { Fragment } from "react";
 import { CC } from "@/constants";
-import { REPERTOIRE_ROOT_ID } from "@/lib/repertoireTree";
 import { RepertoireNode, RepertoireTree } from "@/types/openings";
 import {
   currentNodeIdAtom,
@@ -16,31 +15,227 @@ import {
   promoteRepertoireNodeAction,
 } from "./actions";
 
-interface RenderItem {
-  node: RepertoireNode;
+interface LineProps {
+  startId: string;
+  tree: RepertoireTree;
+  currentNodeId: string;
+  isDark: boolean;
+  goToNode: (id: string) => void;
+  deleteSubtree: (id: string) => void;
+  promote: (id: string) => void;
   depth: number;
   isVariationStart: boolean;
 }
 
-const buildRenderList = (tree: RepertoireTree): RenderItem[] => {
-  const items: RenderItem[] = [];
+interface Segment {
+  nodes: RepertoireNode[];
+  variationIds: string[];
+}
 
-  const walk = (nodeId: string, depth: number, isVariationStart: boolean) => {
-    const node = tree.nodes[nodeId];
-    if (!node) return;
-    if (nodeId !== tree.rootId) {
-      items.push({ node, depth, isVariationStart });
-    }
-    const [first, ...rest] = node.children;
-    for (const id of rest) {
-      walk(id, depth + 1, true);
-    }
-    if (first) walk(first, depth, false);
-  };
+function buildSegments(startId: string, tree: RepertoireTree): Segment[] {
+  const segments: Segment[] = [];
+  const run: RepertoireNode[] = [];
+  let cur: string | undefined = startId;
 
-  walk(tree.rootId, 0, false);
-  return items;
-};
+  while (cur) {
+    const node: RepertoireNode | undefined = tree.nodes[cur];
+    if (!node) break;
+    run.push(node);
+    const main: string | undefined = node.children[0];
+    const vars: string[] = node.children.slice(1);
+    if (vars.length > 0) {
+      segments.push({ nodes: [...run], variationIds: vars });
+      run.length = 0;
+    }
+    cur = main;
+  }
+  if (run.length > 0) segments.push({ nodes: run, variationIds: [] });
+  return segments;
+}
+
+function MoveLine({
+  startId,
+  tree,
+  currentNodeId,
+  isDark,
+  goToNode,
+  deleteSubtree,
+  promote,
+  depth,
+  isVariationStart,
+}: LineProps) {
+  const segments = buildSegments(startId, tree);
+
+  return (
+    <Box sx={{ lineHeight: 1.9 }}>
+      {segments.map((seg, segIdx) => {
+        // Black moves show "N..." if this is the first segment of a variation,
+        // or any segment after index 0 (which means it follows variation blocks).
+        const blackNeedsNumber = segIdx === 0 ? isVariationStart : true;
+
+        return (
+          <Fragment key={segIdx}>
+            {seg.nodes.map((node, nodeIdx) => {
+              const isWhite = node.color === "w";
+              const moveNumber = Math.ceil(node.ply / 2);
+              const isSelected = node.id === currentNodeId;
+              const showNumber = isWhite || (nodeIdx === 0 && blackNeedsNumber);
+
+              return (
+                <Box
+                  key={node.id}
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    "&:hover .move-actions": { opacity: 1 },
+                  }}
+                >
+                  {showNumber && (
+                    <Typography
+                      component="span"
+                      sx={{
+                        fontSize: depth === 0 ? 12 : 11,
+                        color: isDark ? CC.textMuted : "#8a8480",
+                        fontWeight: 500,
+                        mx: 0.3,
+                        userSelect: "none",
+                      }}
+                    >
+                      {isWhite ? `${moveNumber}.` : `${moveNumber}...`}
+                    </Typography>
+                  )}
+
+                  <Box
+                    component="span"
+                    sx={{
+                      px: 0.75,
+                      py: 0.15,
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: depth === 0 ? 13 : 12,
+                      fontWeight: isSelected ? 700 : 500,
+                      color: isSelected
+                        ? CC.primary
+                        : depth > 0
+                          ? isDark ? "#b0a9a4" : "#5a5450"
+                          : isDark
+                            ? CC.text
+                            : CC.lText,
+                      backgroundColor: isSelected
+                        ? isDark
+                          ? CC.primaryMuted
+                          : "rgba(172,199,255,0.2)"
+                        : "transparent",
+                      "&:hover": {
+                        backgroundColor: isDark ? CC.bg3 : CC.lBg3,
+                      },
+                      fontFamily: `var(--font-space-grotesk), sans-serif`,
+                    }}
+                    onClick={() => goToNode(node.id)}
+                  >
+                    {node.san}
+                    {node.important && (
+                      <Box
+                        component="span"
+                        sx={{ color: CC.gold, fontSize: 10, ml: 0.25 }}
+                      >
+                        !
+                      </Box>
+                    )}
+                    {node.comment && (
+                      <Box
+                        component="span"
+                        sx={{ fontSize: 10, ml: 0.25 }}
+                      >
+                        📝
+                      </Box>
+                    )}
+                  </Box>
+
+                  {isSelected && (
+                    <Box
+                      className="move-actions"
+                      component="span"
+                      sx={{
+                        display: "inline-flex",
+                        opacity: 1,
+                        transition: "opacity 100ms",
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {!node.isMainline && (
+                        <Tooltip title="Promote to main line">
+                          <IconButton
+                            size="small"
+                            sx={{ p: 0.25 }}
+                            onClick={() => promote(node.id)}
+                          >
+                            <Icon
+                              icon="material-symbols:arrow-upward"
+                              width={12}
+                            />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      <Tooltip title="Delete branch">
+                        <IconButton
+                          size="small"
+                          sx={{ p: 0.25, color: "#c45c5c" }}
+                          onClick={() => deleteSubtree(node.id)}
+                        >
+                          <Icon icon="mdi:delete-outline" width={12} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  )}
+                </Box>
+              );
+            })}
+
+            {seg.variationIds.length > 0 && (
+              <Box
+                sx={{
+                  display: "block",
+                  ml: depth === 0 ? 1.5 : 1,
+                  mt: 0.25,
+                  mb: 0.5,
+                }}
+              >
+                {seg.variationIds.map((varId) => (
+                  <Box
+                    key={varId}
+                    sx={{
+                      borderLeft: `2px solid ${
+                        isDark
+                          ? "rgba(255,255,255,0.1)"
+                          : "rgba(0,0,0,0.12)"
+                      }`,
+                      pl: 1.5,
+                      mb: 0.25,
+                    }}
+                  >
+                    <MoveLine
+                      startId={varId}
+                      tree={tree}
+                      currentNodeId={currentNodeId}
+                      isDark={isDark}
+                      goToNode={goToNode}
+                      deleteSubtree={deleteSubtree}
+                      promote={promote}
+                      depth={depth + 1}
+                      isVariationStart={true}
+                    />
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Fragment>
+        );
+      })}
+    </Box>
+  );
+}
 
 export default function MoveTree() {
   const theme = useTheme();
@@ -52,7 +247,7 @@ export default function MoveTree() {
   const promoteAct = useSetAtom(promoteRepertoireNodeAction);
   const goStart = useSetAtom(goStartRepertoireAction);
 
-  const items = useMemo(() => buildRenderList(tree), [tree]);
+  const firstChildId = tree.nodes[tree.rootId]?.children[0];
 
   return (
     <Box
@@ -98,13 +293,10 @@ export default function MoveTree() {
         sx={{
           maxHeight: { xs: 220, md: 380 },
           overflowY: "auto",
-          p: 1,
-          display: "flex",
-          flexDirection: "column",
-          gap: "2px",
+          p: 1.5,
         }}
       >
-        {items.length === 0 && (
+        {!firstChildId ? (
           <Typography
             sx={{
               fontSize: 13,
@@ -115,125 +307,19 @@ export default function MoveTree() {
           >
             Play moves on the board to start your repertoire.
           </Typography>
+        ) : (
+          <MoveLine
+            startId={firstChildId}
+            tree={tree}
+            currentNodeId={currentNodeId}
+            isDark={isDark}
+            goToNode={goToNode}
+            deleteSubtree={deleteSubtreeAct}
+            promote={promoteAct}
+            depth={0}
+            isVariationStart={false}
+          />
         )}
-
-        {items.map(({ node, depth, isVariationStart }) => {
-          const isSelected = node.id === currentNodeId;
-          const moveNumber = Math.ceil(node.ply / 2);
-          const isWhiteMove = node.color === "w";
-          const moveLabel = isWhiteMove
-            ? `${moveNumber}.`
-            : isVariationStart
-              ? `${moveNumber}...`
-              : "";
-
-          return (
-            <Box
-              key={node.id}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 0.5,
-                pl: 1 + depth * 1.25,
-                pr: 1,
-                py: 0.5,
-                borderRadius: "6px",
-                cursor: "pointer",
-                backgroundColor: isSelected
-                  ? isDark
-                    ? CC.primaryMuted
-                    : "rgba(172,199,255,0.15)"
-                  : "transparent",
-                "&:hover": {
-                  backgroundColor: isDark ? CC.bg3 : CC.lBg3,
-                  "& .move-actions": { opacity: 1 },
-                },
-              }}
-              onClick={() => goToNode(node.id)}
-            >
-              {moveLabel && (
-                <Typography
-                  sx={{
-                    fontSize: 12,
-                    color: isDark ? CC.textMuted : "#8a8480",
-                    fontWeight: 500,
-                    minWidth: moveNumber > 99 ? 32 : 24,
-                  }}
-                >
-                  {moveLabel}
-                </Typography>
-              )}
-
-              <Typography
-                sx={{
-                  fontSize: 13,
-                  fontWeight: isSelected ? 700 : 500,
-                  color: isSelected
-                    ? CC.primary
-                    : isDark
-                      ? CC.text
-                      : CC.lText,
-                  flex: 1,
-                  fontFamily: `var(--font-space-grotesk), sans-serif`,
-                }}
-              >
-                {node.san}
-                {node.important && (
-                  <Box
-                    component="span"
-                    sx={{ ml: 0.5, color: CC.gold, fontSize: 11 }}
-                  >
-                    !
-                  </Box>
-                )}
-                {node.comment && (
-                  <Box
-                    component="span"
-                    sx={{
-                      ml: 0.5,
-                      color: isDark ? CC.textMuted : "#8a8480",
-                      fontSize: 11,
-                    }}
-                  >
-                    📝
-                  </Box>
-                )}
-              </Typography>
-
-              <Box
-                className="move-actions"
-                sx={{
-                  display: "flex",
-                  gap: 0.25,
-                  opacity: isSelected ? 1 : 0,
-                  transition: "opacity 100ms ease",
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {!node.isMainline && (
-                  <Tooltip title="Promote to main line">
-                    <IconButton
-                      size="small"
-                      sx={{ p: 0.25 }}
-                      onClick={() => promoteAct(node.id)}
-                    >
-                      <Icon icon="material-symbols:arrow-upward" width={13} />
-                    </IconButton>
-                  </Tooltip>
-                )}
-                <Tooltip title="Delete branch">
-                  <IconButton
-                    size="small"
-                    sx={{ p: 0.25, color: "#c45c5c" }}
-                    onClick={() => deleteSubtreeAct(node.id)}
-                  >
-                    <Icon icon="mdi:delete-outline" width={13} />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
-          );
-        })}
       </Box>
     </Box>
   );

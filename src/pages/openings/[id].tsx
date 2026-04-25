@@ -2,13 +2,14 @@ import { Box, Button, Typography, useTheme, CircularProgress } from "@mui/materi
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CC } from "@/constants";
+import { CC, DEFAULT_ENGINE } from "@/constants";
 import { PageTitle } from "@/components/pageTitle";
 import { useRepertoireDatabase } from "@/hooks/useRepertoireDatabase";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
   hasUnsavedChangesAtom,
   repertoireBoardOrientationAtom,
+  repertoireEngineReadyAtom,
   repertoireTreeAtom,
   studyColorAtom,
 } from "@/sections/openings/states";
@@ -20,6 +21,7 @@ import RepertoireBoard from "@/sections/openings/RepertoireBoard";
 import MoveTree from "@/sections/openings/MoveTree";
 import RepertoirePanel from "@/sections/openings/RepertoirePanel";
 import NotesPanel from "@/sections/notes/NotesPanel";
+import { useEngine } from "@/hooks/useEngine";
 
 export default function RepertoireEditorPage() {
   const router = useRouter();
@@ -41,6 +43,13 @@ export default function RepertoireEditorPage() {
   const markSaved = useSetAtom(markRepertoireSavedAction);
   const setStudyColor = useSetAtom(studyColorAtom);
   const setOrientation = useSetAtom(repertoireBoardOrientationAtom);
+
+  const engine = useEngine(DEFAULT_ENGINE);
+  const setEngineReady = useSetAtom(repertoireEngineReadyAtom);
+
+  useEffect(() => {
+    setEngineReady(engine !== null && engine.getIsReady());
+  }, [engine, setEngineReady]);
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -67,7 +76,7 @@ export default function RepertoireEditorPage() {
     }
   };
 
-  if (!isReady) {
+  if (!isReady || !router.isReady) {
     return (
       <Box
         sx={{
@@ -131,7 +140,7 @@ export default function RepertoireEditorPage() {
             justifyContent: "center",
           }}
         >
-          <RepertoireBoard repertoire={repertoire} />
+          <RepertoireBoard repertoire={repertoire} engine={engine} />
         </Box>
 
         <Box

@@ -46,12 +46,16 @@ export const stripPgnVariations = (pgn: string): string => {
   return result.replace(/[ \t]+/g, " ").replace(/\n /g, "\n");
 };
 
+export const normalizeCastling = (pgn: string): string =>
+  pgn.replace(/\b0-0-0\b/g, "O-O-O").replace(/\b0-0\b/g, "O-O");
+
 export const getGameFromPgn = (pgn: string): Chess => {
   const game = new Chess();
+  const normalized = normalizeCastling(pgn);
   try {
-    game.loadPgn(pgn);
+    game.loadPgn(normalized);
   } catch {
-    game.loadPgn(stripPgnVariations(pgn));
+    game.loadPgn(stripPgnVariations(normalized));
   }
   return game;
 };
@@ -417,6 +421,44 @@ export const getLineEvalLabel = (
 
 export const getCommentDisplay = (raw: string): string =>
   raw.replace(/\[%[^\]]+\]/g, "").trim();
+
+const CAL_COLORS: Record<string, string> = {
+  R: "#f73c3c",
+  G: "#22ac38",
+  B: "#3c8cff",
+  Y: "#f0c040",
+  O: "#f07830",
+};
+
+export const getCommentArrows = (
+  comment: string
+): [string, string, string][] => {
+  const results: [string, string, string][] = [];
+  const re = /\[%cal ([^\]]+)\]/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(comment)) !== null) {
+    for (const entry of m[1].split(",")) {
+      const colorCode = entry[0]?.toUpperCase();
+      const from = entry.slice(1, 3);
+      const to = entry.slice(3, 5);
+      const color = CAL_COLORS[colorCode];
+      if (color && /^[a-h][1-8]$/.test(from) && /^[a-h][1-8]$/.test(to)) {
+        results.push([from, to, color]);
+      }
+    }
+  }
+  return results;
+};
+
+export const getCommentClock = (comment: string): string | undefined => {
+  const m = comment.match(/\[%clk (\d+):(\d{2}):(\d{2})\]/);
+  if (!m) return undefined;
+  const h = parseInt(m[1], 10);
+  const mi = parseInt(m[2], 10);
+  if (h > 0) return `${h}:${m[2]}:${m[3]}`;
+  if (mi > 0) return `${mi}:${m[3]}`;
+  return `0:${m[3]}`;
+};
 
 export const setCommentAtMoveIdx = (
   game: Chess,

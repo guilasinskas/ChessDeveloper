@@ -32,19 +32,16 @@ export default function EvaluationBar({
   }, [position]);
 
   const isWhiteOnBottom = boardOrientation === Color.White;
-  const blackBarPct = isWhiteOnBottom ? 100 - evalBar.whiteBarPercentage : evalBar.whiteBarPercentage;
-  const whiteBarPct = isWhiteOnBottom ? evalBar.whiteBarPercentage : 100 - evalBar.whiteBarPercentage;
-  const showLabelOnBlack =
-    (evalBar.whiteBarPercentage < 50 && isWhiteOnBottom) ||
-    (evalBar.whiteBarPercentage >= 50 && !isWhiteOnBottom);
+  const whiteIsWinning = evalBar.whiteBarPercentage > 50;
+  const blackIsWinning = evalBar.whiteBarPercentage < 50;
+  const showLabel = evalBar.whiteBarPercentage !== 50;
 
   return (
-    // Chess.com eval bar: thin vertical strip beside the board
     <Grid
       container
       justifyContent="center"
       alignItems="center"
-      flexDirection="column"
+      flexDirection={isWhiteOnBottom ? "column" : "column-reverse"}
       width={{ xs: "1.2rem", sm: "1.5rem" }}
       height={height}
       sx={{
@@ -55,7 +52,7 @@ export default function EvaluationBar({
         backgroundColor: CC.bg0,
       }}
     >
-      {/* Black section — top */}
+      {/* Black section */}
       <Box
         sx={{
           backgroundColor: CC.bg0,
@@ -65,9 +62,9 @@ export default function EvaluationBar({
           alignItems: "flex-start",
           justifyContent: "center",
         }}
-        height={`${blackBarPct}%`}
+        height={`${100 - evalBar.whiteBarPercentage}%`}
       >
-        {showLabelOnBlack && evalBar.whiteBarPercentage !== 50 && (
+        {blackIsWinning && showLabel && (
           <Typography
             sx={{
               color: CC.text,
@@ -83,7 +80,7 @@ export default function EvaluationBar({
         )}
       </Box>
 
-      {/* White section — bottom */}
+      {/* White section */}
       <Box
         sx={{
           backgroundColor: CC.text,
@@ -93,9 +90,9 @@ export default function EvaluationBar({
           alignItems: "flex-end",
           justifyContent: "center",
         }}
-        height={`${whiteBarPct}%`}
+        height={`${evalBar.whiteBarPercentage}%`}
       >
-        {!showLabelOnBlack && evalBar.whiteBarPercentage !== 50 && (
+        {whiteIsWinning && showLabel && (
           <Typography
             sx={{
               color: CC.bg1,

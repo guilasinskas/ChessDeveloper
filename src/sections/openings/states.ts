@@ -7,6 +7,7 @@ import {
 } from "@/lib/repertoireTree";
 import { Chess } from "chess.js";
 import { atom } from "jotai";
+import { CurrentPosition } from "@/types/eval";
 
 export const currentRepertoireAtom = atom<Repertoire | null>(null);
 
@@ -30,6 +31,10 @@ export const trainingStatsAtom = atom<{
 export const repertoireBoardOrientationAtom = atom<Color>(Color.White);
 
 export const hasUnsavedChangesAtom = atom<boolean>(false);
+
+export const repertoireCurrentPositionAtom = atom<CurrentPosition>({});
+export const repertoireEngineActiveAtom = atom<boolean>(false);
+export const repertoireEngineReadyAtom = atom<boolean>(false);
 
 export const updateBoardForNode = (
   tree: RepertoireTree,

@@ -10,7 +10,7 @@ export class Stockfish16 {
       throw new Error("Stockfish 16 is not supported");
     }
 
-    const enginePath = "engines/stockfish-16/stockfish-nnue-16-single.js";
+    const enginePath = "/engines/stockfish-16/stockfish-nnue-16-single.js";
 
     const customEngineInit = async (worker: EngineWorker) => {
       await sendCommandsToWorker(

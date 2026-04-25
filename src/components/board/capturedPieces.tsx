@@ -30,6 +30,7 @@ export default function CapturedPieces({ fen, color }: Props) {
       spacing={0.7}
       size="auto"
       marginLeft={`-${0.3 * PIECE_SCALE}rem`}
+      minHeight={`${2 * PIECE_SCALE}rem`}
     >
       <Stack direction="row" spacing={0.1}>
         {piecesComponents}

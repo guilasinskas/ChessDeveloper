@@ -64,8 +64,23 @@ export default function OpeningsListPage() {
   };
 
   return (
-    <Box sx={{ px: { xs: 1, sm: 2, md: 3 }, pt: 3, pb: 4 }}>
+    <Box sx={{ px: { xs: 1, sm: 2, md: 3 }, pt: 2, pb: 4 }}>
       <PageTitle title="Chesskit Opening Studies" />
+
+      <Box sx={{ mb: 1.5 }}>
+        <Button
+          size="small"
+          variant="text"
+          onClick={() => router.push("/")}
+          startIcon={<Icon icon="material-symbols:arrow-back" width={16} />}
+          sx={{
+            color: isDark ? CC.textSub : CC.lTextSub,
+            "&:hover": { color: CC.primary },
+          }}
+        >
+          Back
+        </Button>
+      </Box>
 
       <Box sx={{ mb: 3, display: "flex", alignItems: "flex-end", gap: 2 }}>
         <Box sx={{ flex: 1 }}>

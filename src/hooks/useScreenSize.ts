@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 
 const getInitialWidth = (): number => {
-  if (typeof document === "undefined") return 500;
+  if (typeof window === "undefined") return 500;
   const main = document.querySelector("main") as HTMLElement | null;
   if (main?.clientWidth) return main.clientWidth;
   const fallback = document.querySelector(".MuiGrid2-root") as HTMLElement | null;
-  return fallback?.clientWidth ?? 500;
+  if (fallback?.clientWidth) return fallback.clientWidth;
+  // CSS may not be loaded yet — use window.innerWidth as a better fallback
+  // than a hardcoded 500 to avoid a large layout jump on first paint
+  return window.innerWidth;
 };
 
 const getInitialHeight = (): number =>

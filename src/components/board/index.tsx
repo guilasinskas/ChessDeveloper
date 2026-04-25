@@ -34,12 +34,15 @@ export interface Props {
   showBestMoveArrow?: boolean;
   showPlayerMoveIconAtom?: PrimitiveAtom<boolean>;
   showEvaluationBar?: boolean;
+  annotationArrows?: Arrow[];
   onPlayMove?: (params: {
     from: string;
     to: string;
     promotion?: string;
   }) => Move | null;
 }
+
+const defaultCurrentPositionAtom = atom<CurrentPosition>({});
 
 export default function Board({
   id: boardId,
@@ -49,10 +52,11 @@ export default function Board({
   whitePlayer,
   blackPlayer,
   boardOrientation = Color.White,
-  currentPositionAtom = atom({}),
+  currentPositionAtom = defaultCurrentPositionAtom,
   showBestMoveArrow = false,
   showPlayerMoveIconAtom,
   showEvaluationBar = false,
+  annotationArrows,
   onPlayMove,
 }: Props) {
   const boardRef = useRef<HTMLDivElement>(null);
@@ -214,7 +218,7 @@ export default function Board({
     [moveClickFrom, moveClickTo, playBoardMove, resetMoveClick]
   );
 
-  const customArrows: Arrow[] = useMemo(() => {
+  const engineArrow: Arrow[] = useMemo(() => {
     const bestMove = position?.lastEval?.bestMove;
     const moveClassification = position?.eval?.moveClassification;
 
@@ -226,19 +230,24 @@ export default function Board({
       moveClassification !== MoveClassification.Forced &&
       moveClassification !== MoveClassification.Perfect
     ) {
-      const bestMoveArrow = [
-        bestMove.slice(0, 2),
-        bestMove.slice(2, 4),
-        tinycolor(CLASSIFICATION_COLORS[MoveClassification.Best])
-          .spin(-boardHue)
-          .toHexString(),
-      ] as Arrow;
-
-      return [bestMoveArrow];
+      return [
+        [
+          bestMove.slice(0, 2),
+          bestMove.slice(2, 4),
+          tinycolor(CLASSIFICATION_COLORS[MoveClassification.Best])
+            .spin(-boardHue)
+            .toHexString(),
+        ] as Arrow,
+      ];
     }
 
     return [];
   }, [position, showBestMoveArrow, boardHue]);
+
+  const customArrows = useMemo(
+    () => [...(annotationArrows ?? []), ...engineArrow],
+    [annotationArrows, engineArrow]
+  );
 
   const SquareRenderer: CustomSquareRenderer = useMemo(() => {
     return getSquareRenderer({
@@ -301,7 +310,7 @@ export default function Board({
     >
       {showEvaluationBar && (
         <EvaluationBar
-          height={boardRef?.current?.offsetHeight || boardSize || 400}
+          height={boardSize || 400}
           boardOrientation={boardOrientation}
           currentPositionAtom={currentPositionAtom}
         />
@@ -312,7 +321,7 @@ export default function Board({
         rowGap={1.5}
         justifyContent="center"
         alignItems="center"
-        paddingLeft={{ xs: 0.5, sm: showEvaluationBar ? 2 : 0 }}
+        paddingLeft={{ xs: 0.5, sm: showEvaluationBar ? 1 : 0 }}
         size="grow"
       >
         <PlayerHeader

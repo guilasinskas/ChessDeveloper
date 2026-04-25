@@ -1,9 +1,10 @@
 import { PageTitle } from "@/components/pageTitle";
 import Board from "@/sections/play/board";
+import ChessClocks from "@/sections/play/ChessClocks";
 import GameInProgress from "@/sections/play/gameInProgress";
 import GameRecap from "@/sections/play/gameRecap";
 import GameSettingsButton from "@/sections/play/gameSettings/gameSettingsButton";
-import { isGameInProgressAtom } from "@/sections/play/states";
+import { isGameInProgressAtom, playerColorAtom } from "@/sections/play/states";
 import { Grid2 as Grid } from "@mui/material";
 import { useAtomValue } from "jotai";
 import { useTheme } from "@mui/material";
@@ -11,6 +12,7 @@ import { CC } from "@/constants";
 
 export default function Play() {
   const isGameInProgress = useAtomValue(isGameInProgressAtom);
+  const playerColor = useAtomValue(playerColorAtom);
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
@@ -45,6 +47,7 @@ export default function Play() {
         padding={2.5}
         rowGap={2}
       >
+        <ChessClocks playerColor={playerColor} />
         <GameInProgress />
         {!isGameInProgress && <GameSettingsButton />}
         <GameRecap />

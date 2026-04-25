@@ -50,6 +50,38 @@ export const getChessComUserRecentGames = async (
   return gamesToReturn;
 };
 
+export const getChessComUserGamesForStats = async (
+  username: string,
+  months: number = 3,
+  signal?: AbortSignal
+): Promise<LoadedGame[]> => {
+  const archivesRes = await fetch(
+    `https://api.chess.com/pub/player/${encodeURIComponent(username.trim().toLowerCase())}/games/archives`,
+    { signal }
+  );
+  if (!archivesRes.ok) throw new Error("User not found on Chess.com");
+
+  const archivesData = await archivesRes.json();
+  const archives: string[] = archivesData?.archives ?? [];
+  if (!archives.length) return [];
+
+  const recentArchives = archives.slice(-Math.max(1, months));
+
+  const monthGames = await Promise.all(
+    recentArchives.map(async (url) => {
+      const res = await fetch(url, { signal });
+      const data = await res.json();
+      return (data?.games ?? []) as ChessComGame[];
+    })
+  );
+
+  return monthGames
+    .flat()
+    .filter((g) => g.pgn && g.end_time)
+    .sort((a, b) => b.end_time - a.end_time)
+    .map(formatChessComGame);
+};
+
 export const getChessComUserAvatar = async (
   username: string
 ): Promise<string | null> => {
