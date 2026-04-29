@@ -1,4 +1,24 @@
-const { app, BrowserWindow, shell } = require("electron");
+// When launched from VSCode/Claude Code, ELECTRON_RUN_AS_NODE may be set,
+// which causes require("electron") to return the binary path string instead of
+// Electron APIs. Self-restart without that variable — only in dev mode.
+// In packaged apps __dirname always contains a "resources" segment; skip the
+// guard there because the packaged .exe handles its own environment correctly.
+const _path0 = require("path");
+const _isPackaged = __dirname.split(_path0.sep).includes("resources");
+
+if (process.env.ELECTRON_RUN_AS_NODE && !_isPackaged) {
+  const { spawn } = require("child_process");
+  const env = Object.assign({}, process.env);
+  delete env.ELECTRON_RUN_AS_NODE;
+  spawn(process.execPath, [_path0.join(__dirname, "..")], {
+    env,
+    stdio: "inherit",
+    cwd: _path0.join(__dirname, ".."),
+  }).on("close", (code) => process.exit(code ?? 0));
+  return;
+}
+
+const { app, BrowserWindow, shell, dialog } = require("electron");
 const { spawn } = require("child_process");
 const path = require("path");
 const http = require("http");
@@ -12,7 +32,9 @@ let devServer = null;
 function waitForServer(retries = 120) {
   return new Promise((resolve, reject) => {
     const check = () => {
-      const req = http.get(`http://localhost:${PORT}`, (res) => {
+      // Use 127.0.0.1 explicitly — on Windows 11 "localhost" may resolve to
+      // ::1 (IPv6) while the server binds only to 127.0.0.1 (IPv4).
+      const req = http.get(`http://127.0.0.1:${PORT}`, (res) => {
         res.resume();
         resolve();
       });
@@ -60,18 +82,25 @@ function ensureDataDir() {
 
 function startDevServer() {
   const dataDir = ensureDataDir();
-  const npmCmd = process.platform === "win32" ? "npm.cmd" : "npm";
-  devServer = spawn(npmCmd, ["run", "dev"], {
+  const isWindows = process.platform === "win32";
+  devServer = spawn("npm", ["run", "dev"], {
     cwd: path.join(__dirname, ".."),
     stdio: "inherit",
-    shell: false,
+    shell: isWindows,
     env: { ...process.env, DATA_DIR: dataDir },
   });
   devServer.on("error", (err) => console.error("Dev server error:", err));
 }
 
 function startProdServer() {
-  const standaloneDir = path.join(process.resourcesPath, "electron-standalone");
+  const standaloneDir = path.join(process.resourcesPath, ".electron-standalone");
+
+  if (!fs.existsSync(standaloneDir)) {
+    throw new Error(
+      `Standalone server not found at:\n${standaloneDir}\n\nRe-run "npm run electron-pack" to rebuild.`
+    );
+  }
+
   const dataDir = ensureDataDir();
 
   process.env.PORT = String(PORT);
@@ -105,7 +134,7 @@ function createWindow() {
   });
 
   win.setMenuBarVisibility(false);
-  win.loadURL(`http://localhost:${PORT}`);
+  win.loadURL(`http://127.0.0.1:${PORT}`);
 
   // Show window once page is ready (avoids white flash)
   win.once("ready-to-show", () => win.show());
@@ -118,14 +147,19 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
-  if (isDev) {
-    startDevServer();
-  } else {
-    startProdServer();
-  }
+  try {
+    if (isDev) {
+      startDevServer();
+    } else {
+      startProdServer();
+    }
 
-  await waitForServer();
-  createWindow();
+    await waitForServer();
+    createWindow();
+  } catch (err) {
+    dialog.showErrorBox("Chesskit failed to start", String(err?.message ?? err));
+    app.quit();
+  }
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

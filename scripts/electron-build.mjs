@@ -41,4 +41,19 @@ cpSync(join(root, "public"), join(outDir, "public"), {
   dereference: true,
 });
 
+// Remove directories that don't belong in the standalone bundle.
+// Next.js file tracing can sweep in project-root dirs (e.g. data/, dist-electron/)
+// when API routes reference DATA_DIR or other paths at build time.
+const dirsToClean = [
+  "data", "dist-electron", ".electron-standalone",
+  ".git", "cdk", "cdk.out", "scripts", "assets", "docker",
+];
+for (const dir of dirsToClean) {
+  const p = join(outDir, dir);
+  if (existsSync(p)) {
+    rmSync(p, { recursive: true, force: true });
+    console.log(`▶ Removed stray dir from standalone: ${dir}`);
+  }
+}
+
 console.log("✓ Build ready at .electron-standalone/  →  run: npm run electron-pack");

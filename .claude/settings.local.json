@@ -19,7 +19,23 @@
       "Bash(xargs -I{} cmd /c \"taskkill /PID {} /F\")",
       "Bash(powershell.exe -Command \"Stop-Process -Name 'Chesskit' -Force\")",
       "Bash(grep \"^C:\\\\\\\\\")",
-      "Bash(npx prettier *)"
+      "Bash(npx prettier *)",
+      "Bash(sed -i 's/const node = tree\\\\.nodes\\\\[/const node: RepertoireNode | undefined = tree.nodes[/g' src/lib/repertoireTree.ts)",
+      "Bash(sed -i 's/const n = tree\\\\.nodes\\\\[/const n: RepertoireNode | undefined = tree.nodes[/g' src/lib/repertoireTree.ts)",
+      "Bash(sed -i 's/const node = tree\\\\.nodes\\\\[/const node: AnalysisNode | undefined = tree.nodes[/g' src/lib/analysisTree.ts)",
+      "Bash(sed -i 's/const n = tree\\\\.nodes\\\\[/const n: AnalysisNode | undefined = tree.nodes[/g' src/lib/analysisTree.ts)",
+      "Bash(node -e \"const e = require\\('./node_modules/electron'\\); console.log\\(typeof e, e\\)\")",
+      "Bash(node -e \"const e = require\\('./node_modules/electron/dist/electron.exe'\\); console.log\\(e\\)\")",
+      "Bash(/c/Users/Usuario/Documents/Programming/Chesskit/node_modules/electron/dist/electron.exe --version)",
+      "Bash(/c/Users/Usuario/Documents/Programming/Chesskit/node_modules/electron/dist/electron.exe -e \"try { const {app}=require\\('electron'\\); console.log\\('app:', typeof app\\); } catch\\(e\\) { console.log\\('err:', e.message\\); }\" --no-sandbox)",
+      "Bash(/c/Users/Usuario/Documents/Programming/Chesskit/node_modules/electron/dist/electron.exe -e \"const {app}=require\\('electron'\\); console.log\\('app type:', typeof app\\);\")",
+      "Bash(/c/Users/Usuario/Documents/Programming/Chesskit/node_modules/electron/dist/electron.exe -e \"const e=require\\('electron'\\); console.log\\(Object.keys\\(e\\).slice\\(0,10\\).join\\(', '\\)\\);\")",
+      "Bash(/c/Users/Usuario/Documents/Programming/Chesskit/node_modules/electron/dist/electron.exe . --inspect)",
+      "Bash(kill %1)",
+      "Bash(wait)",
+      "Bash(/c/Users/Usuario/Documents/Programming/Chesskit/node_modules/electron/dist/electron.exe --eval ' *)",
+      "Bash(/c/Users/Usuario/Documents/Programming/Chesskit/node_modules/electron/dist/electron.exe /tmp/test-electron.js)",
+      "Bash(env -u ELECTRON_RUN_AS_NODE npm run electron)"
     ]
   }
 }

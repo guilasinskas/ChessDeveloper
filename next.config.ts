@@ -9,6 +9,20 @@ const nextConfig = (phase: string): NextConfig => ({
         ? "standalone"
         : "export"
       : undefined,
+  outputFileTracingExcludes: {
+    "*": [
+      "data/**",
+      "dist-electron/**",
+      ".electron-standalone/**",
+      ".git/**",
+      "cdk/**",
+      "cdk.out/**",
+      "scripts/**",
+      "assets/**",
+      "docker/**",
+      "public/**",
+    ],
+  },
   trailingSlash: false,
   reactStrictMode: true,
   reactCompiler: true,

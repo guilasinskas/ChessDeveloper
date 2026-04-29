@@ -88,7 +88,7 @@ export const getRepertoireChess = (
   const path: RepertoireNode[] = [];
   let currentId: string | null = nodeId;
   while (currentId && currentId !== tree.rootId) {
-    const node = tree.nodes[currentId];
+    const node: RepertoireNode | undefined = tree.nodes[currentId];
     if (!node) break;
     path.unshift(node);
     currentId = node.parentId;
@@ -169,7 +169,7 @@ export const deleteSubtree = (
 ): { tree: RepertoireTree; newCurrentId: string } => {
   if (nodeId === REPERTOIRE_ROOT_ID) return { tree, newCurrentId: nodeId };
 
-  const node = tree.nodes[nodeId];
+  const node: RepertoireNode | undefined = tree.nodes[nodeId];
   if (!node || !node.parentId) return { tree, newCurrentId: nodeId };
 
   const toDelete = new Set<string>();
@@ -178,7 +178,7 @@ export const deleteSubtree = (
     const id = stack.pop()!;
     if (toDelete.has(id)) continue;
     toDelete.add(id);
-    const n = tree.nodes[id];
+    const n: RepertoireNode | undefined = tree.nodes[id];
     if (n) stack.push(...n.children);
   }
 
@@ -211,7 +211,7 @@ export const setNodeComment = (
   nodeId: string,
   comment: string
 ): RepertoireTree => {
-  const node = tree.nodes[nodeId];
+  const node: RepertoireNode | undefined = tree.nodes[nodeId];
   if (!node) return tree;
 
   const trimmed = comment.trim();
@@ -228,7 +228,7 @@ export const toggleNodeImportant = (
   tree: RepertoireTree,
   nodeId: string
 ): RepertoireTree => {
-  const node = tree.nodes[nodeId];
+  const node: RepertoireNode | undefined = tree.nodes[nodeId];
   if (!node) return tree;
 
   return {
@@ -244,7 +244,7 @@ export const promoteNodeToMainline = (
   tree: RepertoireTree,
   nodeId: string
 ): RepertoireTree => {
-  const node = tree.nodes[nodeId];
+  const node: RepertoireNode | undefined = tree.nodes[nodeId];
   if (!node || !node.parentId) return tree;
 
   const parent = tree.nodes[node.parentId];
@@ -318,7 +318,7 @@ export const repertoireToPgnVariations = (
 
   const tree = repertoire.tree;
   const writeNode = (nodeId: string, isFirstOfTurn: boolean): string => {
-    const node = tree.nodes[nodeId];
+    const node: RepertoireNode | undefined = tree.nodes[nodeId];
     if (!node || !node.san || !node.color) return "";
 
     const moveNumber = Math.floor((node.ply - 1) / 2) + 1;

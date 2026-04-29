@@ -74,7 +74,7 @@ export const getAnalysisChess = (
   const path: AnalysisNode[] = [];
   let currentId: string | null = nodeId;
   while (currentId && currentId !== tree.rootId) {
-    const node = tree.nodes[currentId];
+    const node: AnalysisNode | undefined = tree.nodes[currentId];
     if (!node) break;
     path.unshift(node);
     currentId = node.parentId;
@@ -189,7 +189,7 @@ export const setNodeComment = (
     const trimmed = comment.trim();
     return { ...tree, rootComment: trimmed || undefined };
   }
-  const node = tree.nodes[nodeId];
+  const node: AnalysisNode | undefined = tree.nodes[nodeId];
   if (!node) return tree;
   const trimmed = comment.trim();
   return {
@@ -206,7 +206,7 @@ export const deleteNode = (
   nodeId: string
 ): { tree: AnalysisTree; newCurrentId: string } => {
   if (nodeId === tree.rootId) return { tree, newCurrentId: nodeId };
-  const node = tree.nodes[nodeId];
+  const node: AnalysisNode | undefined = tree.nodes[nodeId];
   if (!node || node.parentId === null) return { tree, newCurrentId: nodeId };
 
   const toDelete = new Set<string>();
@@ -215,7 +215,7 @@ export const deleteNode = (
     const id = stack.pop()!;
     if (toDelete.has(id)) continue;
     toDelete.add(id);
-    const n = tree.nodes[id];
+    const n: AnalysisNode | undefined = tree.nodes[id];
     if (n) stack.push(...n.children);
   }
 
@@ -286,7 +286,7 @@ export const exportTreeToPgn = (
     nodeId: string,
     needsMoveNumber: boolean
   ): { text: string; needsMoveNumber: boolean } => {
-    const node = tree.nodes[nodeId];
+    const node: AnalysisNode | undefined = tree.nodes[nodeId];
     if (!node || !node.san) return { text: "", needsMoveNumber };
 
     const isWhite = node.color === "w";
@@ -351,7 +351,7 @@ export const promoteToMainline = (
   tree: AnalysisTree,
   nodeId: string
 ): AnalysisTree => {
-  const node = tree.nodes[nodeId];
+  const node: AnalysisNode | undefined = tree.nodes[nodeId];
   if (!node || !node.parentId) return tree;
   const parent = tree.nodes[node.parentId];
   if (!parent) return tree;
@@ -371,14 +371,14 @@ export const promoteToMainline = (
   const newMainlineIds: string[] = [];
   let cursor: string | undefined = tree.rootId;
   while (cursor) {
-    const n = newNodes[cursor];
+    const n: AnalysisNode | undefined = newNodes[cursor];
     if (!n) break;
     if (cursor !== tree.rootId) newMainlineIds.push(cursor);
     cursor = n.children[0];
   }
 
   for (const id of Object.keys(newNodes)) {
-    const n = newNodes[id];
+    const n: AnalysisNode = newNodes[id];
     const inMainline = newMainlineIds.includes(id);
     if (n.isMainline !== inMainline) {
       newNodes[id] = { ...n, isMainline: inMainline };
