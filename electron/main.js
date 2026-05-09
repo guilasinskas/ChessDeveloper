@@ -48,32 +48,55 @@ function waitForServer(retries = 120) {
   });
 }
 
-// Returns the userData data dir, migrating games from legacy locations if needed.
+// Returns the userData data dir, migrating data from legacy locations if needed.
 function ensureDataDir() {
   const dataDir = path.join(app.getPath("userData"), "data");
-  const gamesJson = path.join(dataDir, "games.json");
-
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-  if (!fs.existsSync(gamesJson) || fs.readFileSync(gamesJson, "utf-8").trim() === "[]") {
-    // Migration candidates: project root data dir (dev) or standalone data dir (prod)
-    const candidates = [
-      path.join(__dirname, "..", "data", "games.json"),
-      path.join(process.resourcesPath || "", "electron-standalone", "data", "games.json"),
-    ];
+  // Source dirs to migrate from (project root in dev, packaged standalone fallback)
+  const sourceDirs = [
+    path.join(__dirname, "..", "data"),
+    path.join(process.resourcesPath || "", ".electron-standalone", "data"),
+    path.join(process.resourcesPath || "", "electron-standalone", "data"),
+  ];
+
+  // JSON files: migrate if dest is missing OR is an empty "[]"
+  const jsonFiles = ["games.json", "openings.json", "notes.json", "notes-images.json"];
+  for (const file of jsonFiles) {
+    const dest = path.join(dataDir, file);
+    const destEmpty =
+      !fs.existsSync(dest) ||
+      fs.readFileSync(dest, "utf-8").trim() === "[]";
+    if (!destEmpty) continue;
+
     let migrated = false;
-    for (const src of candidates) {
+    for (const srcDir of sourceDirs) {
+      const src = path.join(srcDir, file);
       try {
         const content = fs.readFileSync(src, "utf-8").trim();
         if (content && content !== "[]") {
-          fs.writeFileSync(gamesJson, content, "utf-8");
+          fs.writeFileSync(dest, content, "utf-8");
           migrated = true;
           break;
         }
       } catch (_) { /* not found, skip */ }
     }
-    if (!migrated && !fs.existsSync(gamesJson)) {
-      fs.writeFileSync(gamesJson, "[]", "utf-8");
+    if (!migrated && !fs.existsSync(dest)) {
+      fs.writeFileSync(dest, "[]", "utf-8");
+    }
+  }
+
+  // Notes images directory: copy if dest doesn't exist yet
+  const destImagesDir = path.join(dataDir, "notes-images");
+  if (!fs.existsSync(destImagesDir)) {
+    for (const srcDir of sourceDirs) {
+      const src = path.join(srcDir, "notes-images");
+      if (fs.existsSync(src)) {
+        try {
+          fs.cpSync(src, destImagesDir, { recursive: true });
+          break;
+        } catch (_) { /* skip on error */ }
+      }
     }
   }
 

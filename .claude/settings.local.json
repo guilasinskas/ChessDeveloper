@@ -35,7 +35,11 @@
       "Bash(wait)",
       "Bash(/c/Users/Usuario/Documents/Programming/Chesskit/node_modules/electron/dist/electron.exe --eval ' *)",
       "Bash(/c/Users/Usuario/Documents/Programming/Chesskit/node_modules/electron/dist/electron.exe /tmp/test-electron.js)",
-      "Bash(env -u ELECTRON_RUN_AS_NODE npm run electron)"
+      "Bash(env -u ELECTRON_RUN_AS_NODE npm run electron)",
+      "PowerShell($dest = \"$env:APPDATA\\\\Chesskit\\\\data\"; Write-Output \"Dest: $dest\"; Get-ChildItem $dest 2>$null | Select-Object Name, Length; Write-Output \"---images:\"; \\(Get-ChildItem \"$dest\\\\notes-images\" 2>$null | Measure-Object\\).Count)",
+      "PowerShell($dest = \"$env:APPDATA\\\\Chesskit\\\\data\"; if \\(Test-Path $dest\\) { Write-Output \"EXISTS\"; Get-ChildItem $dest -Force | Format-Table Name, Length -AutoSize } else { Write-Output \"MISSING: $dest\" })",
+      "PowerShell($imgDir = \"$env:APPDATA\\\\Chesskit\\\\data\\\\notes-images\"; \\(Get-ChildItem $imgDir | Measure-Object\\).Count; Write-Output \"---\"; Get-ChildItem $imgDir | Select-Object -First 5 Name; Write-Output \"---index:\"; Get-Content \"$env:APPDATA\\\\Chesskit\\\\data\\\\notes-images.json\" | Select-Object -First 20)",
+      "PowerShell($imgDir = \"$env:APPDATA\\\\Chesskit\\\\data\\\\notes-images\"; Get-ChildItem $imgDir -Force | Format-Table Name, Length, Mode -AutoSize; Write-Output \"---SOURCE:\"; Get-ChildItem \"data\\\\notes-images\" -Force | Format-Table Name, Length -AutoSize)"
     ]
   }
 }
