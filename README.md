@@ -1,6 +1,6 @@
 <div align="center">
 
-# Chesskit
+# Chess Developer
 
 **A personal chess workbench — play, analyze, study openings, and keep notes, all running locally on your machine.**
 
@@ -11,6 +11,8 @@ Powered by **Stockfish**, built on **Next.js + Electron**, with everything store
 </div>
 
 ---
+
+![Alt Text](marketing.gif)
 
 ## What's inside
 
