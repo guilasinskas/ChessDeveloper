@@ -150,48 +150,6 @@ export default function SideBar({ darkMode, switchDarkMode }: Props) {
           mt: 1,
         }}
       >
-        <Tooltip title="Discord" placement="right">
-          <IconButton
-            size="small"
-            component="a"
-            href="https://discord.gg/GnJ73BQQXH"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Discord"
-            sx={{
-              borderRadius: 1,
-              color: isDark ? CC.textSub : CC.lTextSub,
-              "&:hover": {
-                backgroundColor: isDark ? CC.bg3 : CC.lBg3,
-                color: isDark ? CC.text : CC.lText,
-              },
-            }}
-          >
-            <Icon icon="ic:baseline-discord" width={18} />
-          </IconButton>
-        </Tooltip>
-
-        <Tooltip title="GitHub" placement="right">
-          <IconButton
-            size="small"
-            component="a"
-            href="https://github.com/brianwc/chesskit"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="GitHub"
-            sx={{
-              borderRadius: 1,
-              color: isDark ? CC.textSub : CC.lTextSub,
-              "&:hover": {
-                backgroundColor: isDark ? CC.bg3 : CC.lBg3,
-                color: isDark ? CC.text : CC.lText,
-              },
-            }}
-          >
-            <Icon icon="mdi:github" width={18} />
-          </IconButton>
-        </Tooltip>
-
         <Tooltip
           title={darkMode ? "Light mode" : "Dark mode"}
           placement="right"

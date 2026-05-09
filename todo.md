@@ -1,1 +1,0 @@
-[ ] Adicionar página de análise de (1) aberturas mais jogadas e resultados; (2) pontos para melhorar; (3) melhor abertura; (4) mais jogada... e outras estatísticas

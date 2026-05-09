@@ -24,35 +24,7 @@ export default function Document() {
         />
         <meta
           name="description"
-          content="Analyze your chess games for free on any device with Stockfish!"
-        />
-
-        {/* OG (Social networks) */}
-        <meta property="og:title" content="chesskit.org" />
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="chesskit.org" />
-        <meta property="og:url" content="https://chesskit.org/" />
-        <meta
-          property="og:image"
-          content="https://chesskit.org/social-networks-1200x630.png"
-        />
-        <meta
-          property="og:description"
-          content="Analyze your chess games for free on any device with Stockfish!"
-        />
-
-        {/* Twitter */}
-        <meta name="twitter:title" content="chesskit.org" />
-        <meta name="twitter:domain" content="chesskit.org" />
-        <meta name="twitter:url" content="https://chesskit.org/" />
-        <meta
-          name="twitter:description"
-          content="Analyze your chess games for free on any device with Stockfish!"
-        />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta
-          name="twitter:image"
-          content="https://chesskit.org/social-networks-1200x630.png"
+          content="Personal chess workbench: play, analyze, study openings and keep notes — powered by Stockfish."
         />
       </Head>
       <body>

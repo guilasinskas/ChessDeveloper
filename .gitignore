@@ -1,7 +1,7 @@
 # dependencies
 node_modules/
 
-# build
+# build output
 dist-electron/
 .electron-standalone/
 
@@ -10,25 +10,29 @@ dist-electron/
 out/
 next-env.d.ts
 
+# typescript
+tsconfig.tsbuildinfo
+
 # misc
 .DS_Store
 *.pem
 *.pgn
 
-# user-generated data (notes, openings, uploads)
-data/notes.json
-data/notes-images/
-data/notes-images.json
-data/openings.json
-
 # env files
 .env
 .env*.local
 
-# typescript
-tsconfig.tsbuildinfo
+# personal data (games, repertoires, notes, image uploads)
+data/
 
-# AWS CDK
-.cdk.staging/
-cdk.out/
-cdk.context.json
+# personal AI assistant config (Claude Code, Cursor, etc.)
+CLAUDE.md
+DESIGN.md
+.claude/
+.cursor/
+.cursorrules
+.aider*
+.marketing*
+.roomodes
+skills/
+todo.md

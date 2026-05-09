@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Chesskit — Launch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  :root {
+    --brand: #5d9948;
+    --brand-dark: #4f823d;
+    --bg: #131613;
+    --browser-bg: #1c1f1c;
+    --chrome-bg: #232723;
+    --border: #2d322d;
+    --light-sq: #ebead2;
+    --dark-sq: #6b9a4a;
+    --text: #f0efe8;
+    --text-secondary: #8b918b;
+    --easing-overshoot: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --easing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    color: var(--text);
+    overflow: hidden;
+    /* subtle radial vignette */
+    background-image: radial-gradient(
+      ellipse at center,
+      #1a1f1a 0%,
+      #0f110f 100%
+    );
+  }
+
+  .stage {
+    width: 100vmin;
+    height: 100vmin;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .stage-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+    transform-origin: 50% 50%;
+  }
+
+  .browser {
+    width: 78%;
+    background: var(--browser-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow:
+      0 40px 80px rgba(0, 0, 0, 0.55),
+      0 16px 32px rgba(0, 0, 0, 0.35),
+      0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+    animation: browser-in 1s var(--easing-overshoot) forwards;
+  }
+
+  .chrome {
+    background: var(--chrome-bg);
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .dot.r { background: #ff5f56; }
+  .dot.y { background: #ffbd2e; }
+  .dot.g { background: #27c93f; }
+
+  .url-bar {
+    flex: 1;
+    margin-left: 14px;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  .url-bar .lock {
+    display: inline-block;
+    margin-right: 6px;
+    opacity: 0.6;
+  }
+
+  .content {
+    padding: 6.5% 6.5% 7.5%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5%;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(36px, 6.2vmin, 76px);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    opacity: 0;
+    transform: translateY(18px);
+    animation: header-in 0.8s var(--easing-overshoot) 0.32s forwards;
+  }
+
+  .name {
+    color: var(--brand);
+    display: inline-block;
+    min-width: 0.5ch;
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 0.06em;
+    height: 0.92em;
+    background: var(--brand);
+    margin-left: 0.05em;
+    vertical-align: -0.08em;
+    animation: blink 1s step-end infinite;
+    border-radius: 1px;
+  }
+
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    50.01%, 100% { opacity: 0; }
+  }
+
+  /* Tagline below the headline */
+  .tagline {
+    font-size: clamp(13px, 1.7vmin, 18px);
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: header-in 0.8s var(--easing-overshoot) 0.5s forwards;
+  }
+
+  .tagline .accent {
+    color: var(--brand);
+  }
+
+  /* Chess board skeleton */
+  .board-wrap {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 1%;
+  }
+
+  .board {
+    width: 56%;
+    aspect-ratio: 1 / 1;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+    animation: header-in 0.9s var(--easing-overshoot) 0.65s forwards;
+  }
+
+  .sq { background: var(--light-sq); }
+  .sq.d { background: var(--dark-sq); }
+  /* highlight a couple of squares (suggesting a played move) */
+  .sq.hl { background: #c4b558; opacity: 0.85; }
+
+  @keyframes browser-in {
+    0%   { opacity: 0; transform: translateY(40px) scale(0.96); }
+    55%  { opacity: 1; }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes header-in {
+    0%   { opacity: 0; transform: translateY(18px) scale(0.97); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .hint {
+    position: fixed;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: var(--text-secondary);
+    opacity: 0.45;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .hint kbd {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    padding: 1px 6px;
+    margin: 0 4px;
+    font-family: inherit;
+    font-size: 10px;
+  }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="stage-inner" id="stage-inner">
+      <div class="browser" id="browser">
+        <div class="chrome">
+          <div class="dot r"></div>
+          <div class="dot y"></div>
+          <div class="dot g"></div>
+          <div class="url-bar"><span class="lock">⌁</span>localhost:3000 · Chesskit</div>
+        </div>
+        <div class="content">
+          <h1 id="headline">
+            <span>Hello&nbsp;</span><span class="name" id="name"></span><span class="cursor"></span>
+          </h1>
+          <div class="tagline" id="tagline">
+            A personal chess workbench · <span class="accent">100% local</span>
+          </div>
+          <div class="board-wrap">
+            <div class="board" id="board"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint" id="hint">
+    <kbd>Space</kbd> restart &nbsp;·&nbsp; <kbd>F</kbd> fullscreen &nbsp;·&nbsp; <kbd>H</kbd> hide
+  </div>
+
+  <script>
+    /* -- chess board skeleton -- */
+    const board = document.getElementById("board");
+    /* highlighted squares mimic a king-pawn move (e2-e4) for some life */
+    const HIGHLIGHTS = new Set(["6,4", "4,4"]); // (row, col) — e2 and e4 in 0-indexed
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const sq = document.createElement("div");
+        const isDark = (r + c) % 2 === 1;
+        sq.className = "sq" + (isDark ? " d" : "") + (HIGHLIGHTS.has(`${r},${c}`) ? " hl" : "");
+        board.appendChild(sq);
+      }
+    }
+
+    /* -- typewriter loop -- */
+    const ITEMS = [
+      "analysis.",
+      "openings.",
+      "training.",
+      "stats.",
+      "Chesskit."
+    ];
+
+    const TIMING = {
+      typeDelay: 65,        // ms per character typed
+      eraseDelay: 32,       // ms per character erased
+      holdAfterType: 520,   // pause after a non-final word is typed
+      holdFinal: 2200,      // pause on the final word before looping
+      entranceTotal: 1450   // browser-in + header-in + tagline + board entrance
+    };
+
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const nameEl = document.getElementById("name");
+
+    async function type(str) {
+      for (let i = 0; i <= str.length; i++) {
+        nameEl.textContent = str.slice(0, i);
+        await wait(TIMING.typeDelay);
+      }
+    }
+
+    async function erase() {
+      const cur = nameEl.textContent;
+      for (let i = cur.length; i >= 0; i--) {
+        nameEl.textContent = cur.slice(0, i);
+        await wait(TIMING.eraseDelay);
+      }
+    }
+
+    function resetAnim(el) {
+      el.style.animation = "none";
+      // force reflow so the animation retriggers
+      void el.offsetWidth;
+      el.style.animation = "";
+    }
+
+    async function playSequence() {
+      await wait(TIMING.entranceTotal);
+      for (let i = 0; i < ITEMS.length; i++) {
+        await type(ITEMS[i]);
+        const isLast = i === ITEMS.length - 1;
+        if (isLast) {
+          await wait(TIMING.holdFinal);
+        } else {
+          await wait(TIMING.holdAfterType);
+          await erase();
+        }
+      }
+    }
+
+    async function loop() {
+      // give Inter a moment to load before the first cycle
+      if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (_) {}
+      }
+      while (true) {
+        // reset entrance animations so they replay on every loop
+        resetAnim(document.getElementById("browser"));
+        resetAnim(document.getElementById("headline"));
+        resetAnim(document.getElementById("tagline"));
+        resetAnim(document.getElementById("board"));
+        nameEl.textContent = "";
+        await playSequence();
+      }
+    }
+
+    /* -- recording controls -- */
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        location.reload();
+      } else if (e.key && e.key.toLowerCase() === "f") {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen();
+        }
+      } else if (e.key && e.key.toLowerCase() === "h") {
+        const h = document.getElementById("hint");
+        h.style.display = h.style.display === "none" ? "" : "none";
+      }
+    });
+
+    loop();
+  </script>
+</body>
+</html>
