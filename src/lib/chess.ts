@@ -85,6 +85,13 @@ export const getGamesFromPgn = (pgn: string): Chess[] => {
 
 export const formatGameToDatabase = (game: Chess): Omit<Game, "id"> => {
   const headers: Record<string, string | undefined> = game.getHeaders();
+  const history = game.history();
+  const opening =
+    headers.Opening !== undefined && headers.Opening !== null
+      ? headers.Variation
+        ? `${headers.Opening}: ${headers.Variation}`
+        : headers.Opening
+      : undefined;
 
   return {
     pgn: game.pgn(),
@@ -103,6 +110,120 @@ export const formatGameToDatabase = (game: Chess): Omit<Game, "id"> => {
     result: headers.Result,
     termination: headers.Termination,
     timeControl: headers.TimeControl,
+    openingName: opening,
+    firstPlies: history.slice(0, 20),
+    movesCount: history.length,
+  };
+};
+
+const HEADER_REGEX = /^\[(\w+)\s+"((?:[^"\\]|\\.)*)"\]/gm;
+
+export const extractPgnHeaders = (pgn: string): Record<string, string> => {
+  const out: Record<string, string> = {};
+  HEADER_REGEX.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = HEADER_REGEX.exec(pgn)) !== null) {
+    out[m[1]] = m[2].replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+  }
+  return out;
+};
+
+const RESULT_TOKEN = /^(1-0|0-1|1\/2-1\/2|\*)$/;
+
+// Strips comments {...} and variations (...) in one O(n) pass over the
+// movetext. Faster and lighter than running stripPgnVariations again.
+const stripCommentsAndVariations = (text: string): string => {
+  let out = "";
+  let depth = 0;
+  let inComment = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inComment) {
+      if (c === "}") inComment = false;
+      continue;
+    }
+    if (c === "{") {
+      inComment = true;
+      continue;
+    }
+    if (c === "(") {
+      depth++;
+      continue;
+    }
+    if (c === ")") {
+      if (depth > 0) depth--;
+      continue;
+    }
+    if (depth === 0) out += c;
+  }
+  return out;
+};
+
+// Pull the first N SAN tokens + total ply count out of a raw PGN string
+// without invoking chess.js. Plenty good enough for opening identification
+// and the stats move-tree breakdown.
+export const extractPgnMoveData = (
+  pgn: string,
+  maxPlies = 20
+): { firstPlies: string[]; movesCount: number } => {
+  // Drop everything up to (and including) the blank line after the headers.
+  // A regex search is faster than splitting the whole string for big PGNs.
+  const movetextStart = pgn.search(/\n\s*\n/);
+  const movetextRaw =
+    movetextStart >= 0
+      ? pgn.slice(movetextStart)
+      : pgn.replace(/^\[.*\]$/gm, "");
+
+  const stripped = stripCommentsAndVariations(movetextRaw);
+  const cleaned = stripped
+    .replace(/\$\d+/g, " ")
+    .replace(/\d+\.(?:\.\.)?/g, " ")
+    .replace(/[?!]+/g, "");
+
+  const tokens: string[] = [];
+  let movesCount = 0;
+  for (const tok of cleaned.split(/\s+/)) {
+    if (!tok || RESULT_TOKEN.test(tok)) continue;
+    movesCount++;
+    if (tokens.length < maxPlies) tokens.push(tok);
+  }
+  return { firstPlies: tokens, movesCount };
+};
+
+const openingNameFromHeaders = (
+  headers: Record<string, string>
+): string | undefined => {
+  if (!headers.Opening) return undefined;
+  return headers.Variation
+    ? `${headers.Opening}: ${headers.Variation}`
+    : headers.Opening;
+};
+
+// Header-only formatter used by the streaming import — avoids the cost of a
+// full chess.js move-list parse when ingesting tens of thousands of games.
+export const formatPgnToDatabase = (pgn: string): Omit<Game, "id"> => {
+  const headers = extractPgnHeaders(pgn);
+  const moveData = extractPgnMoveData(pgn);
+  return {
+    pgn,
+    event: headers.Event,
+    site: headers.Site,
+    date: headers.Date,
+    round: headers.Round ?? "?",
+    white: {
+      name: headers.White || "White",
+      rating: headers.WhiteElo ? Number(headers.WhiteElo) : undefined,
+    },
+    black: {
+      name: headers.Black || "Black",
+      rating: headers.BlackElo ? Number(headers.BlackElo) : undefined,
+    },
+    result: headers.Result,
+    termination: headers.Termination,
+    timeControl: headers.TimeControl,
+    openingName: openingNameFromHeaders(headers),
+    firstPlies: moveData.firstPlies,
+    movesCount: moveData.movesCount,
   };
 };
 

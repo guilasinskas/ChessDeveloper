@@ -14,7 +14,16 @@ export interface Game {
   termination?: string;
   timeControl?: string;
   folder?: string;
+  // Precomputed at write time so the stats page can aggregate without
+  // parsing tens of thousands of PGNs in the browser.
+  openingName?: string;
+  firstPlies?: string[];
+  movesCount?: number;
 }
+
+// What the games list API returns by default — the heavy `pgn` field is
+// fetched on demand via /api/games/:id so listings stay cheap at scale.
+export type GameSummary = Omit<Game, "pgn">;
 
 export interface Player {
   name: string;

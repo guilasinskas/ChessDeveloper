@@ -1,11 +1,13 @@
 import {
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
+  InputAdornment,
   List,
   ListItemButton,
   ListItemIcon,
@@ -21,13 +23,14 @@ import {
   Tooltip,
 } from "@mui/material";
 import { Icon } from "@iconify/react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import LoadGameButton from "@/sections/loadGame/loadGameButton";
 import { useGameDatabase } from "@/hooks/useGameDatabase";
 import { useRouter } from "next/router";
 import { PageTitle } from "@/components/pageTitle";
 import { CC } from "@/constants";
-import { Game } from "@/types/game";
+import { Game, GameSummary } from "@/types/game";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
 const ALL_FOLDER = "__all__";
 const NO_FOLDER = "__none__";
@@ -68,7 +71,7 @@ function PlayerAvatar({ name, isDark }: { name: string; isDark: boolean }) {
 }
 
 interface GameRowProps {
-  game: Game;
+  game: GameSummary;
   isDark: boolean;
   onAnalyze: () => void;
   onFolder: (e: React.MouseEvent<HTMLElement>) => void;
@@ -261,34 +264,127 @@ function GameRow({
   );
 }
 
+const PAGE_SIZE = 200;
+
+interface GamesPage {
+  items: GameSummary[];
+  total: number;
+  totalAll: number;
+  totalUnfoldered: number;
+  folders: { name: string; count: number }[];
+}
+
 export default function GameDatabase() {
-  const { games, deleteGame, moveGameToFolder } = useGameDatabase(true);
+  const { getGame } = useGameDatabase();
   const router = useRouter();
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
+  const queryClient = useQueryClient();
 
   const [selectedFolder, setSelectedFolder] = useState<string>(ALL_FOLDER);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuGameId, setMenuGameId] = useState<number | null>(null);
   const [bulkMenuAnchor, setBulkMenuAnchor] = useState<null | HTMLElement>(null);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
-  const [pendingFolderGameId, setPendingFolderGameId] = useState<number | null>(null);
+  const [pendingFolderGameId, setPendingFolderGameId] = useState<number | null>(
+    null
+  );
 
-  const folders = useMemo(() => {
-    const names = new Set<string>();
-    for (const g of games) if (g.folder) names.add(g.folder);
-    return Array.from(names).sort();
-  }, [games]);
+  // Debounce the search input so we don't flood the API on each keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchInput.trim()), 250);
+    return () => clearTimeout(t);
+  }, [searchInput]);
 
-  const filteredGames = useMemo(() => {
-    if (selectedFolder === ALL_FOLDER) return games;
-    if (selectedFolder === NO_FOLDER) return games.filter((g) => !g.folder);
-    return games.filter((g) => g.folder === selectedFolder);
-  }, [games, selectedFolder]);
+  const folderParam =
+    selectedFolder === ALL_FOLDER
+      ? undefined
+      : selectedFolder === NO_FOLDER
+        ? "__none__"
+        : selectedFolder;
 
-  const hasUnfolderedGames = useMemo(() => games.some((g) => !g.folder), [games]);
+  const queryKey = useMemo(
+    () => ["games", "list", { folder: folderParam, q: search }] as const,
+    [folderParam, search]
+  );
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    isPending,
+  } = useInfiniteQuery({
+    queryKey,
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams({
+        light: "1",
+        limit: String(PAGE_SIZE),
+        offset: String(pageParam),
+      });
+      if (folderParam) params.set("folder", folderParam);
+      if (search) params.set("q", search);
+      const res = await fetch(`/api/games?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to load games");
+      return (await res.json()) as GamesPage;
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((s, p) => s + p.items.length, 0);
+      return loaded < lastPage.total ? loaded : undefined;
+    },
+    staleTime: 30_000,
+  });
+
+  const games: GameSummary[] = useMemo(
+    () => data?.pages.flatMap((p) => p.items) ?? [],
+    [data]
+  );
+  const total = data?.pages[0]?.total ?? 0;
+  const totalAll = data?.pages[0]?.totalAll ?? 0;
+  const totalUnfoldered = data?.pages[0]?.totalUnfoldered ?? 0;
+  const folders = useMemo(
+    () => data?.pages[0]?.folders ?? [],
+    [data]
+  );
+  const folderNames = useMemo(() => folders.map((f) => f.name), [folders]);
+
+  const invalidateGames = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["games"] });
+  }, [queryClient]);
+
+  const deleteGameMutation = useCallback(
+    async (id: number) => {
+      const res = await fetch(`/api/games?id=${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete game");
+      setSelected((p) => {
+        if (!p.has(id)) return p;
+        const n = new Set(p);
+        n.delete(id);
+        return n;
+      });
+      invalidateGames();
+    },
+    [invalidateGames]
+  );
+
+  const moveGameToFolderMutation = useCallback(
+    async (id: number, folder: string | undefined) => {
+      const res = await fetch(`/api/games?id=${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folder }),
+      });
+      if (!res.ok) throw new Error("Failed to update game folder");
+      invalidateGames();
+    },
+    [invalidateGames]
+  );
 
   const toggleSelect = useCallback((id: number) => {
     setSelected((prev) => {
@@ -299,40 +395,75 @@ export default function GameDatabase() {
     });
   }, []);
 
-  const closeFolderMenu = () => { setMenuAnchor(null); setMenuGameId(null); };
+  const closeFolderMenu = () => {
+    setMenuAnchor(null);
+    setMenuGameId(null);
+  };
   const closeBulkMenu = () => setBulkMenuAnchor(null);
 
   const handleMoveToFolder = async (folder: string | undefined) => {
     if (menuGameId === null) return;
-    await moveGameToFolder(menuGameId, folder);
+    await moveGameToFolderMutation(menuGameId, folder);
     closeFolderMenu();
   };
 
   const handleBulkMoveToFolder = async (folder: string | undefined) => {
-    await Promise.all([...selected].map((id) => moveGameToFolder(id, folder)));
+    await Promise.all(
+      [...selected].map((id) => moveGameToFolderMutation(id, folder))
+    );
     closeBulkMenu();
   };
 
   const handleOpenNewFolder = (isBulk = false) => {
-    if (isBulk) { setPendingFolderGameId(null); closeBulkMenu(); }
-    else { setPendingFolderGameId(menuGameId); closeFolderMenu(); }
+    if (isBulk) {
+      setPendingFolderGameId(null);
+      closeBulkMenu();
+    } else {
+      setPendingFolderGameId(menuGameId);
+      closeFolderMenu();
+    }
     setNewFolderName("");
     setNewFolderOpen(true);
   };
 
   const handleCreateFolder = async () => {
     const name = newFolderName.trim();
-    if (!name) { setNewFolderOpen(false); return; }
+    if (!name) {
+      setNewFolderOpen(false);
+      return;
+    }
     if (pendingFolderGameId !== null) {
-      await moveGameToFolder(pendingFolderGameId, name);
+      await moveGameToFolderMutation(pendingFolderGameId, name);
     } else {
-      await Promise.all([...selected].map((id) => moveGameToFolder(id, name)));
+      await Promise.all(
+        [...selected].map((id) => moveGameToFolderMutation(id, name))
+      );
     }
     setSelectedFolder(name);
     setNewFolderOpen(false);
   };
 
-  const menuGame = menuGameId !== null ? games.find((g) => g.id === menuGameId) : null;
+  // The currently right-clicked row's folder — needed to mark the matching
+  // sidebar item as "selected" in the move-to-folder menu.
+  const [menuGame, setMenuGame] = useState<Game | undefined>(undefined);
+  useEffect(() => {
+    if (menuGameId === null) {
+      setMenuGame(undefined);
+      return;
+    }
+    const fromList = games.find((g) => g.id === menuGameId);
+    if (fromList) {
+      setMenuGame({ ...fromList, pgn: "" });
+      return;
+    }
+    let cancelled = false;
+    getGame(menuGameId).then((g) => {
+      if (!cancelled) setMenuGame(g);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [menuGameId, games, getGame]);
 
   return (
     <Box sx={{ px: { xs: 1, sm: 2, md: 3 }, pt: 3, pb: 4 }}>
@@ -344,7 +475,7 @@ export default function GameDatabase() {
           My Games
         </Typography>
         <Typography sx={{ color: isDark ? CC.textSub : CC.lTextSub, fontSize: 14 }}>
-          {games.length} game{games.length !== 1 && "s"} in your database
+          {totalAll.toLocaleString()} game{totalAll !== 1 && "s"} in your database
         </Typography>
       </Box>
 
@@ -372,8 +503,22 @@ export default function GameDatabase() {
 
           <List dense disablePadding sx={{ px: 1, pb: 1 }}>
             {[
-              { key: ALL_FOLDER, label: "All games", icon: "material-symbols:database-outline", count: games.length },
-              ...(hasUnfolderedGames ? [{ key: NO_FOLDER, label: "No folder", icon: "material-symbols:folder-off-outline", count: games.filter((g) => !g.folder).length }] : []),
+              {
+                key: ALL_FOLDER,
+                label: "All games",
+                icon: "material-symbols:database-outline",
+                count: totalAll,
+              },
+              ...(totalUnfoldered > 0
+                ? [
+                    {
+                      key: NO_FOLDER,
+                      label: "No folder",
+                      icon: "material-symbols:folder-off-outline",
+                      count: totalUnfoldered,
+                    },
+                  ]
+                : []),
             ].map(({ key, label, icon, count }) => (
               <ListItemButton
                 key={key}
@@ -389,14 +534,14 @@ export default function GameDatabase() {
                   primaryTypographyProps={{ fontSize: 13, fontWeight: selectedFolder === key ? 700 : 500 }}
                 />
                 <Typography sx={{ fontSize: 11, color: isDark ? CC.textMuted : "#a0a09e", fontWeight: 600 }}>
-                  {count}
+                  {count.toLocaleString()}
                 </Typography>
               </ListItemButton>
             ))}
 
             {folders.length > 0 && <Divider sx={{ my: 0.75 }} />}
 
-            {folders.map((name) => (
+            {folders.map(({ name, count }) => (
               <ListItemButton
                 key={name}
                 selected={selectedFolder === name}
@@ -415,7 +560,7 @@ export default function GameDatabase() {
                   primaryTypographyProps={{ fontSize: 13, fontWeight: selectedFolder === name ? 700 : 500, noWrap: true }}
                 />
                 <Typography sx={{ fontSize: 11, color: isDark ? CC.textMuted : "#a0a09e", fontWeight: 600 }}>
-                  {games.filter((g) => g.folder === name).length}
+                  {count.toLocaleString()}
                 </Typography>
               </ListItemButton>
             ))}
@@ -427,6 +572,34 @@ export default function GameDatabase() {
           {/* Toolbar */}
           <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1.5, flexWrap: "wrap" }}>
             <LoadGameButton />
+
+            <TextField
+              size="small"
+              placeholder="Search by player or event"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              sx={{ minWidth: 240, flex: 1, maxWidth: 360 }}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Icon icon="material-symbols:search" width={16} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchInput ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => setSearchInput("")}
+                        edge="end"
+                      >
+                        <Icon icon="material-symbols:close" width={14} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : undefined,
+                },
+              }}
+            />
 
             <Box sx={{ flex: 1 }} />
 
@@ -457,7 +630,7 @@ export default function GameDatabase() {
                   color="error"
                   startIcon={<Icon icon="mdi:delete-outline" width={14} />}
                   onClick={async () => {
-                    await Promise.all([...selected].map(deleteGame));
+                    await Promise.all([...selected].map(deleteGameMutation));
                     setSelected(new Set());
                   }}
                   sx={{ fontSize: 13 }}
@@ -477,17 +650,33 @@ export default function GameDatabase() {
           </Box>
 
           {/* Section label */}
-          {selectedFolder !== ALL_FOLDER && (
+          {(selectedFolder !== ALL_FOLDER || search) && (
             <Typography
               sx={{ fontSize: 13, color: isDark ? CC.textSub : CC.lTextSub, mb: 1.5, fontWeight: 500 }}
             >
-              {filteredGames.length} game{filteredGames.length !== 1 && "s"}
-              {selectedFolder !== NO_FOLDER ? ` in "${selectedFolder}"` : " without a folder"}
+              {total.toLocaleString()} game{total !== 1 && "s"}
+              {search ? ` matching "${search}"` : ""}
+              {selectedFolder === NO_FOLDER
+                ? " without a folder"
+                : selectedFolder !== ALL_FOLDER
+                  ? ` in "${selectedFolder}"`
+                  : ""}
             </Typography>
           )}
 
           {/* Game cards */}
-          {filteredGames.length === 0 ? (
+          {isPending ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                py: 8,
+              }}
+            >
+              <CircularProgress size={32} />
+            </Box>
+          ) : games.length === 0 ? (
             <Box
               sx={{
                 display: "flex",
@@ -505,12 +694,14 @@ export default function GameDatabase() {
                 No games found
               </Typography>
               <Typography sx={{ mt: 0.5, fontSize: 13, color: isDark ? CC.textMuted : "#a0a09e" }}>
-                Add games using the button above
+                {search || selectedFolder !== ALL_FOLDER
+                  ? "Try clearing filters."
+                  : "Add games using the button above"}
               </Typography>
             </Box>
           ) : (
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              {filteredGames.map((game) => (
+              {games.map((game) => (
                 <GameRow
                   key={game.id}
                   game={game}
@@ -518,11 +709,47 @@ export default function GameDatabase() {
                   selected={selected.has(game.id)}
                   onToggleSelect={() => toggleSelect(game.id)}
                   onAnalyze={() => router.push({ pathname: "/", query: { gameId: game.id } })}
-                  onFolder={(e) => { setMenuAnchor(e.currentTarget); setMenuGameId(game.id); }}
-                  onDelete={async () => { await deleteGame(game.id); setSelected((p) => { const n = new Set(p); n.delete(game.id); return n; }); }}
-                  onCopy={() => navigator.clipboard?.writeText?.(game.pgn)}
+                  onFolder={(e) => {
+                    setMenuAnchor(e.currentTarget);
+                    setMenuGameId(game.id);
+                  }}
+                  onDelete={() => deleteGameMutation(game.id)}
+                  onCopy={async () => {
+                    const full = await getGame(game.id);
+                    if (full?.pgn) {
+                      await navigator.clipboard?.writeText?.(full.pgn);
+                    }
+                  }}
                 />
               ))}
+
+              {hasNextPage && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    pt: 2,
+                    pb: 1,
+                  }}
+                >
+                  <Button
+                    variant="outlined"
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage || isFetching}
+                    startIcon={
+                      isFetchingNextPage ? (
+                        <CircularProgress size={14} />
+                      ) : (
+                        <Icon icon="material-symbols:expand-more" width={16} />
+                      )
+                    }
+                  >
+                    {isFetchingNextPage
+                      ? "Loading…"
+                      : `Load more (${(total - games.length).toLocaleString()} remaining)`}
+                  </Button>
+                </Box>
+              )}
             </Box>
           )}
         </Box>
@@ -530,13 +757,13 @@ export default function GameDatabase() {
 
       {/* Bulk folder menu */}
       <Menu anchorEl={bulkMenuAnchor} open={!!bulkMenuAnchor} onClose={closeBulkMenu}>
-        {folders.map((name) => (
+        {folderNames.map((name) => (
           <MenuItem key={name} onClick={() => handleBulkMoveToFolder(name)}>
             <Icon icon="material-symbols:folder-outline" width={16} style={{ marginRight: 8 }} />
             {name}
           </MenuItem>
         ))}
-        {folders.length > 0 && <Divider />}
+        {folderNames.length > 0 && <Divider />}
         <MenuItem onClick={() => handleOpenNewFolder(true)}>
           <Icon icon="material-symbols:create-new-folder-outline" width={16} style={{ marginRight: 8 }} />
           New folder…
@@ -549,13 +776,13 @@ export default function GameDatabase() {
 
       {/* Single-game folder menu */}
       <Menu anchorEl={menuAnchor} open={!!menuAnchor} onClose={closeFolderMenu}>
-        {folders.map((name) => (
+        {folderNames.map((name) => (
           <MenuItem key={name} onClick={() => handleMoveToFolder(name)} selected={menuGame?.folder === name}>
             <Icon icon="material-symbols:folder-outline" width={16} style={{ marginRight: 8 }} />
             {name}
           </MenuItem>
         ))}
-        {folders.length > 0 && <Divider />}
+        {folderNames.length > 0 && <Divider />}
         <MenuItem onClick={() => handleOpenNewFolder(false)}>
           <Icon icon="material-symbols:create-new-folder-outline" width={16} style={{ marginRight: 8 }} />
           New folder…

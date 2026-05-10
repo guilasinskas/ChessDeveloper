@@ -39,7 +39,11 @@
       "PowerShell($dest = \"$env:APPDATA\\\\Chesskit\\\\data\"; Write-Output \"Dest: $dest\"; Get-ChildItem $dest 2>$null | Select-Object Name, Length; Write-Output \"---images:\"; \\(Get-ChildItem \"$dest\\\\notes-images\" 2>$null | Measure-Object\\).Count)",
       "PowerShell($dest = \"$env:APPDATA\\\\Chesskit\\\\data\"; if \\(Test-Path $dest\\) { Write-Output \"EXISTS\"; Get-ChildItem $dest -Force | Format-Table Name, Length -AutoSize } else { Write-Output \"MISSING: $dest\" })",
       "PowerShell($imgDir = \"$env:APPDATA\\\\Chesskit\\\\data\\\\notes-images\"; \\(Get-ChildItem $imgDir | Measure-Object\\).Count; Write-Output \"---\"; Get-ChildItem $imgDir | Select-Object -First 5 Name; Write-Output \"---index:\"; Get-Content \"$env:APPDATA\\\\Chesskit\\\\data\\\\notes-images.json\" | Select-Object -First 20)",
-      "PowerShell($imgDir = \"$env:APPDATA\\\\Chesskit\\\\data\\\\notes-images\"; Get-ChildItem $imgDir -Force | Format-Table Name, Length, Mode -AutoSize; Write-Output \"---SOURCE:\"; Get-ChildItem \"data\\\\notes-images\" -Force | Format-Table Name, Length -AutoSize)"
+      "PowerShell($imgDir = \"$env:APPDATA\\\\Chesskit\\\\data\\\\notes-images\"; Get-ChildItem $imgDir -Force | Format-Table Name, Length, Mode -AutoSize; Write-Output \"---SOURCE:\"; Get-ChildItem \"data\\\\notes-images\" -Force | Format-Table Name, Length -AutoSize)",
+      "Bash(npx eslint *)",
+      "Bash(grep -E \"\\(\\\\\\\\\\\\\\\\src\\\\\\\\\\\\\\\\\\(lib\\\\\\\\\\\\\\\\server|pages\\\\\\\\\\\\\\\\api\\\\\\\\\\\\\\\\games|hooks\\\\\\\\\\\\\\\\useGameDatabase|sections\\\\\\\\\\\\\\\\loadGame|types\\\\\\\\\\\\\\\\game|pages\\\\\\\\\\\\\\\\database|pages\\\\\\\\\\\\\\\\stats|lib\\\\\\\\\\\\\\\\chess\\)\\)\" C:/Users/Usuario/.claude/projects/c--Users-Usuario-Documents-Programming-Chesskit/55ffd6e9-94b5-4ed7-a6b2-4a8e68deec83/tool-results/bh3sk2e7t.txt)",
+      "Bash(grep -nE \"^.*\\\\.tsx?$|^[A-Za-z]:\" C:/Users/Usuario/.claude/projects/c--Users-Usuario-Documents-Programming-Chesskit/55ffd6e9-94b5-4ed7-a6b2-4a8e68deec83/tool-results/bh3sk2e7t.txt)",
+      "Bash(grep -nE \"^[A-Za-z]:\\\\\\\\\\\\\\\\Users\" C:/Users/Usuario/.claude/projects/c--Users-Usuario-Documents-Programming-Chesskit/55ffd6e9-94b5-4ed7-a6b2-4a8e68deec83/tool-results/bonfrxfs5.txt)"
     ]
   }
 }

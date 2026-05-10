@@ -47,7 +47,7 @@
           ]
         }
       ],
-      "sign": null
+      "signAndEditExecutable": false
     },
     "nsis": {
       "oneClick": false,

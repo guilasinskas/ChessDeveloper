@@ -1,8 +1,9 @@
-import { useGameDatabase } from "@/hooks/useGameDatabase";
-import { getGameFromPgn } from "@/lib/chess";
+import { extractPgnMoveData } from "@/lib/chess";
 import { getChessComUserGamesForStats } from "@/lib/chessCom";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { Game, LoadedGame } from "@/types/game";
+import { useGameDatabase } from "@/hooks/useGameDatabase";
+import { GameSummary, LoadedGame } from "@/types/game";
+import { Chess } from "chess.js";
 import { CC } from "@/constants";
 import { Chessboard } from "react-chessboard";
 import {
@@ -30,10 +31,14 @@ import { useQuery } from "@tanstack/react-query";
 // ─── types ────────────────────────────────────────────────────────────────────
 
 interface SimpleGame {
-  pgn: string;
   white: { name: string };
   black: { name: string };
   result?: string;
+  // Precomputed at write time (from `formatPgnToDatabase`) so the stats page
+  // never has to parse a full PGN on the client side.
+  firstPlies: string[];
+  movesCount: number;
+  openingName?: string;
 }
 
 interface OpeningStat {
@@ -64,31 +69,25 @@ const PERIOD_OPTIONS = [
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
-function getOpeningName(pgn: string): string {
-  const opening = pgn.match(/\[Opening "([^"]+)"\]/)?.[1];
-  const variation = pgn.match(/\[Variation "([^"]+)"\]/)?.[1];
-
-  if (opening) return variation ? `${opening}: ${variation}` : opening;
-
-  try {
-    const game = getGameFromPgn(pgn);
-    const history = game.history();
-    if (!history.length) return "Unknown";
-    return history.slice(0, 6).join(" ");
-  } catch {
-    return "Unknown";
-  }
+function getOpeningName(game: SimpleGame): string {
+  if (game.openingName) return game.openingName;
+  if (!game.firstPlies.length) return "Unknown";
+  return game.firstPlies.slice(0, 6).join(" ");
 }
 
-function getOpeningFen(pgn: string): string | undefined {
-  try {
-    const g = getGameFromPgn(pgn);
-    const history = g.history({ verbose: true });
-    if (!history.length) return undefined;
-    return history[Math.min(5, history.length - 1)].after;
-  } catch {
-    return undefined;
+// Replays the first ~6 plies from the SAN list. Cheap — only invoked for the
+// small set of opening cards we actually render, never for every game.
+function getOpeningFenFromPlies(plies: string[]): string | undefined {
+  if (!plies.length) return undefined;
+  const chess = new Chess();
+  for (let i = 0; i < Math.min(6, plies.length); i++) {
+    try {
+      chess.move(plies[i]);
+    } catch {
+      break;
+    }
   }
+  return chess.fen();
 }
 
 function detectPlayer(games: SimpleGame[]): string | null {
@@ -155,23 +154,15 @@ function computeStats(
     else if (result === "draw") totalDraws++;
     else totalLosses++;
 
-    // Parse game once for moves + opening FEN + per-move stats
-    let parsedHistory: { san: string }[] | null = null;
-    try {
-      const parsed = getGameFromPgn(game.pgn);
-      parsedHistory = parsed.history({ verbose: true });
-      totalMoves += parsedHistory.length;
-    } catch {
-      /* skip */
-    }
+    totalMoves += game.movesCount;
 
-    const opening = getOpeningName(game.pgn);
+    const opening = getOpeningName(game);
     if (!openings.has(opening)) {
       openings.set(opening, {
         wins: 0,
         draws: 0,
         losses: 0,
-        fen: getOpeningFen(game.pgn),
+        fen: getOpeningFenFromPlies(game.firstPlies),
       });
     }
     const s = openings.get(opening)!;
@@ -196,13 +187,31 @@ function computeStats(
   return { total, totalWins, totalDraws, totalLosses, avgMoves, openingStats };
 }
 
-function toSimpleGames(games: (Game | LoadedGame)[]): SimpleGame[] {
-  return games.map((g) => ({
-    pgn: g.pgn,
+function summaryToSimple(g: GameSummary): SimpleGame {
+  return {
     white: { name: g.white.name },
     black: { name: g.black.name },
     result: g.result,
-  }));
+    firstPlies: g.firstPlies ?? [],
+    movesCount: g.movesCount ?? g.firstPlies?.length ?? 0,
+    openingName: g.openingName,
+  };
+}
+
+// Chess.com results come with the full PGN — we extract the same precomputed
+// fields on the fly. The N is small (~hundreds), so client-side parsing is OK.
+function loadedGameToSimple(g: LoadedGame): SimpleGame {
+  const move = g.pgn
+    ? extractPgnMoveData(g.pgn)
+    : { firstPlies: [], movesCount: 0 };
+  return {
+    white: { name: g.white.name },
+    black: { name: g.black.name },
+    result: g.result,
+    firstPlies: move.firstPlies,
+    movesCount: move.movesCount,
+    openingName: undefined,
+  };
 }
 
 // ─── subcomponents ────────────────────────────────────────────────────────────
@@ -466,10 +475,11 @@ function MoveBreakdown({
   // Reset path when filters change
   useEffect(() => setSelectedMoves([]), [colorFilter, player]);
 
-  // Pre-parse all qualifying games once — moves are all plies, sequential
+  // Build qualifying-games list directly from precomputed firstPlies — no
+  // chess.js parse here. Cheap even at 50k+ games.
   const parsedGames = useMemo(() => {
     const result: {
-      history: { san: string; after: string }[];
+      plies: string[];
       result: "win" | "draw" | "loss";
     }[] = [];
 
@@ -492,37 +502,33 @@ function MoveBreakdown({
       else if (game.result === "1/2-1/2") r = "draw";
       if (!r) continue;
 
-      try {
-        const parsed = getGameFromPgn(game.pgn);
-        result.push({
-          history: parsed.history({ verbose: true }) as {
-            san: string;
-            after: string;
-          }[],
-          result: r,
-        });
-      } catch {
-        /* skip */
-      }
+      result.push({ plies: game.firstPlies, result: r });
     }
     return result;
   }, [games, player, colorFilter]);
 
   const { nextMoves, currentFen, totalMatching } = useMemo(() => {
     // Filter to games matching the selected move path (all plies, both colours)
-    const matching = parsedGames.filter(({ history }) => {
+    const matching = parsedGames.filter(({ plies }) => {
       for (let i = 0; i < selectedMoves.length; i++) {
-        if (i >= history.length || history[i].san !== selectedMoves[i])
-          return false;
+        if (i >= plies.length || plies[i] !== selectedMoves[i]) return false;
       }
       return true;
     });
 
-    // FEN after last selected move
+    // Replay just the selected path on chess.js — N is the breadcrumb depth,
+    // not the number of games, so this stays cheap regardless of DB size.
     let currentFen = START_FEN;
-    if (selectedMoves.length > 0 && matching.length > 0) {
-      currentFen =
-        matching[0].history[selectedMoves.length - 1]?.after ?? START_FEN;
+    if (selectedMoves.length > 0) {
+      const chess = new Chess();
+      for (const san of selectedMoves) {
+        try {
+          chess.move(san);
+        } catch {
+          break;
+        }
+      }
+      currentFen = chess.fen();
     }
 
     // Next move stats (any colour, sequential ply)
@@ -531,9 +537,9 @@ function MoveBreakdown({
       string,
       { wins: number; draws: number; losses: number }
     >();
-    for (const { history, result } of matching) {
-      if (nextPly >= history.length) continue;
-      const san = history[nextPly].san;
+    for (const { plies, result } of matching) {
+      if (nextPly >= plies.length) continue;
+      const san = plies[nextPly];
       if (!nextMap.has(san)) nextMap.set(san, { wins: 0, draws: 0, losses: 0 });
       const ms = nextMap.get(san)!;
       if (result === "win") ms.wins++;
@@ -560,7 +566,7 @@ function MoveBreakdown({
   const breadcrumb = selectedMoves.map((san, ply) => {
     const moveNum = Math.floor(ply / 2) + 1;
     const isWhite = ply % 2 === 0;
-    const prefix = isWhite ? `${moveNum}.` : ply === 1 ? `1…` : "";
+    const prefix = isWhite ? `${moveNum}.` : ply === 1 ? "1…" : "";
     return { san, prefix, ply };
   });
 
@@ -989,13 +995,51 @@ function ChessComPanel({
 // ─── main page ────────────────────────────────────────────────────────────────
 
 export default function StatsPage() {
-  const { games: dbGames, isReady } = useGameDatabase(true);
+  const { games: dbGames, isReady, refreshGames } = useGameDatabase(true);
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
   const [source, setSource] = useState<Source>("database");
   const [chessComGames, setChessComGames] = useState<LoadedGame[] | null>(null);
   const [chessComPlayer, setChessComPlayer] = useState<string>("");
+
+  // Games imported before the precompute pass don't carry firstPlies — they
+  // show up as "Unknown" until the user triggers a refresh.
+  const staleCount = useMemo(
+    () => dbGames.filter((g) => !g.firstPlies).length,
+    [dbGames]
+  );
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshMsg, setRefreshMsg] = useState<string>("");
+
+  const handleRefreshStats = async () => {
+    setRefreshing(true);
+    setRefreshMsg("");
+    try {
+      const res = await fetch("/api/games/reenrich", { method: "POST" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const result = (await res.json()) as {
+        enriched: number;
+        alreadyEnriched: number;
+        failed: number;
+        total: number;
+      };
+      await refreshGames();
+      setRefreshMsg(
+        `Refreshed ${result.enriched.toLocaleString()} game${result.enriched !== 1 ? "s" : ""}` +
+          (result.failed > 0 ? ` (${result.failed} failed)` : "")
+      );
+    } catch (err) {
+      console.error(err);
+      setRefreshMsg(
+        err instanceof Error
+          ? `Refresh failed: ${err.message}`
+          : "Refresh failed"
+      );
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleChessComLoaded = (games: LoadedGame[], username: string) => {
     setChessComGames(games);
@@ -1005,9 +1049,9 @@ export default function StatsPage() {
   // Active game list based on source
   const activeGames: SimpleGame[] = useMemo(() => {
     if (source === "chessCom") {
-      return toSimpleGames(chessComGames ?? []);
+      return (chessComGames ?? []).map(loadedGameToSimple);
     }
-    return toSimpleGames(dbGames);
+    return dbGames.map(summaryToSimple);
   }, [source, dbGames, chessComGames]);
 
   // Player names for the selector
@@ -1138,6 +1182,36 @@ export default function StatsPage() {
         {/* Chess.com panel */}
         {source === "chessCom" && (
           <ChessComPanel onGamesLoaded={handleChessComLoaded} />
+        )}
+
+        {/* Stale-data banner */}
+        {source === "database" && (staleCount > 0 || refreshMsg) && (
+          <Alert
+            severity={refreshMsg && !refreshing ? "success" : "info"}
+            icon={refreshing ? <CircularProgress size={18} /> : undefined}
+            action={
+              staleCount > 0 ? (
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={handleRefreshStats}
+                  disabled={refreshing}
+                  startIcon={
+                    !refreshing && (
+                      <Icon icon="material-symbols:refresh" width={16} />
+                    )
+                  }
+                >
+                  {refreshing ? "Refreshing…" : "Refresh stats data"}
+                </Button>
+              ) : undefined
+            }
+            sx={{ alignItems: "center" }}
+          >
+            {refreshMsg
+              ? refreshMsg
+              : `${staleCount.toLocaleString()} game${staleCount !== 1 ? "s" : ""} imported before the precomputed-stats logic — refresh to include them.`}
+          </Alert>
         )}
 
         {/* Filters row */}
