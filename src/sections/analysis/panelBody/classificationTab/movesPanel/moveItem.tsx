@@ -36,8 +36,8 @@ const currentSxLight = {
   ...baseSx,
   pl: "4px",
   cursor: "default",
-  borderLeft: `2px solid ${CC.primary}`,
-  backgroundColor: "rgba(172,199,255,0.15)",
+  borderLeft: `2px solid ${CC.primaryDark}`,
+  backgroundColor: CC.primaryMuted,
 } as const;
 
 const currentSxDark = {

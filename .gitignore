@@ -27,7 +27,6 @@ data/
 
 # personal AI assistant config (Claude Code, Cursor, etc.)
 CLAUDE.md
-DESIGN.md
 .claude/
 .cursor/
 .cursorrules

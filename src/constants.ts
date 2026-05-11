@@ -1,54 +1,138 @@
 import { EngineName, MoveClassification } from "./types/enums";
 
-export const MAIN_THEME_COLOR = "#acc7ff"; // Technical Blue — GV primary
-export const LINEAR_PROGRESS_BAR_COLOR = "#acc7ff";
+/*
+ * Zenith Wellness design tokens.
+ *
+ * Every value is a reference to a CSS variable defined in src/styles/design.css.
+ * Components import `CC` and receive a `var(--cc-*)` string — themed at runtime
+ * by toggling the `data-theme` attribute on the html element. To change colors,
+ * spacing, radius, motion or typography, edit design.css; nothing else needs to
+ * be touched (except RAW_TOKENS below if you change a palette color used by
+ * MUI's createTheme).
+ */
 
-// Grandmaster Vision design tokens
+export const MAIN_THEME_COLOR = "#55624d";
+export const LINEAR_PROGRESS_BAR_COLOR = "var(--cc-primary)";
+
+/*
+ * RAW_TOKENS — literal hex mirror of the values in src/styles/design.css.
+ *
+ * Used ONLY by MUI's createTheme palette, which rejects var(--*) strings
+ * because it runs contrast calculations on them at theme creation time.
+ * Everything user-facing keeps reading the CSS variables via the CC.* tokens
+ * below, so a single edit in design.css still re-themes the whole UI.
+ *
+ * Keep this object in sync with the :root values in design.css.
+ */
+export const RAW_TOKENS = {
+  // Zenith wellness palette — light mode is default
+  light: {
+    bg0: "#ffffff",
+    bg1: "#f8faf3",
+    bg2: "#f2f4ed",
+    bg3: "#ecefe8",
+    bg4: "#e7e9e2",
+    bg5: "#e1e3dc",
+    text: "#191c18",
+    textSub: "#444841",
+    textMuted: "#757870",
+    primary: "#55624d", // sage
+    primaryContrast: "#ffffff",
+    border: "#c5c8be",
+    error: "#ba1a1a",
+    gold: "#fed7d2", // peach (legacy "gold" slot — affective marker)
+    green: "#55624d", // sage IS the green
+  },
+  dark: {
+    bg0: "#0b0e09",
+    bg1: "#11140f",
+    bg2: "#191c17",
+    bg3: "#1d201b",
+    bg4: "#272b25",
+    bg5: "#323630",
+    text: "#e1e3dc",
+    textSub: "#c5c8be",
+    textMuted: "#8f9389",
+    primary: "#bdcbb2", // sage claro (inverse primary)
+    primaryContrast: "#273420",
+    border: "#444841",
+    error: "#ffb4ab",
+    gold: "#5b403d",
+    green: "#bdcbb2",
+  },
+} as const;
+
 export const CC = {
-  // Dark surfaces — cool blue-gray hierarchy
-  bg0: "#0c0e12",    // surface-container-lowest: deepest layer
-  bg1: "#111317",    // background: page / body
-  bg2: "#1e2024",    // surface-container: panels, cards
-  bg3: "#282a2e",    // surface-container-high: hover surfaces
-  bg4: "#333539",    // surface-container-highest: active / selected
-  bg5: "#414754",    // outline-variant: strong borders
+  // Surfaces
+  bg0: "var(--cc-bg0)",
+  bg1: "var(--cc-bg1)",
+  bg2: "var(--cc-bg2)",
+  bg3: "var(--cc-bg3)",
+  bg4: "var(--cc-bg4)",
+  bg5: "var(--cc-bg5)",
 
-  // Technical Blue — interactive primary accent
-  primary: "#acc7ff",
-  primaryDark: "#468fff",
-  primaryMuted: "rgba(172,199,255,0.12)",
-  primarySubtle: "rgba(172,199,255,0.06)",
+  // Accent — value not hue. Resolves to bone on dark, near-black on light.
+  primary: "var(--cc-primary)",
+  primaryDark: "var(--cc-primary-dark)",
+  primaryContrast: "var(--cc-primary-contrast)",
+  primaryMuted: "var(--cc-primary-muted)",
+  primarySubtle: "var(--cc-primary-subtle)",
 
-  // Grandmaster Green — success / positive move states only
-  green: "#4ae183",
-  greenHover: "#3cc575",
-  greenMuted: "rgba(74,225,131,0.15)",
-  greenSubtle: "rgba(74,225,131,0.08)",
+  // Semantic
+  green: "var(--cc-green)",
+  greenHover: "var(--cc-green-hover)",
+  greenMuted: "var(--cc-green-muted)",
+  greenSubtle: "var(--cc-green-subtle)",
+  gold: "var(--cc-gold)",
+  error: "var(--cc-error)",
 
   // Text
-  text: "#e2e2e8",       // on-surface
-  textSub: "#c1c6d6",    // on-surface-variant
-  textMuted: "#8b91a0",  // outline
-
-  // Antique Gold — secondary / warning
-  gold: "#f0bf5f",
+  text: "var(--cc-text)",
+  textSub: "var(--cc-text-sub)",
+  textMuted: "var(--cc-text-muted)",
 
   // Borders
-  border: "#414754",     // outline-variant
-  borderHover: "#5a6070",
+  border: "var(--cc-border)",
+  borderHover: "var(--cc-border-hover)",
 
-  // TopAppBar specific
-  navBg: "#0f1115",
-  navBorder: "#2d3139",
+  // TopAppBar / SideBar specific
+  navBg: "var(--cc-nav-bg)",
+  navBorder: "var(--cc-nav-border)",
 
-  // Light mode (cool light palette)
-  lBg0: "#f0f2f8",
-  lBg1: "#ffffff",
-  lBg2: "#f4f6fd",
-  lBg3: "#e8eaf8",
-  lText: "#1a1c20",
-  lTextSub: "#40444e",
-  lBorder: "#c4c8d8",
+  // Legacy light-mode aliases (resolve via data-theme on html)
+  lBg0: "var(--cc-bg0)",
+  lBg1: "var(--cc-bg2)",
+  lBg2: "var(--cc-bg3)",
+  lBg3: "var(--cc-bg4)",
+  lText: "var(--cc-text)",
+  lTextSub: "var(--cc-text-sub)",
+  lBorder: "var(--cc-border)",
+
+  // Board squares
+  boardLight: "var(--cc-board-light)",
+  boardDark: "var(--cc-board-dark)",
+
+  // Typography stacks
+  fontSans: "var(--cc-font-sans)",
+  fontSerif: "var(--cc-font-serif)",
+  fontMono: "var(--cc-font-mono)",
+
+  // Shape
+  radiusXs: "var(--cc-radius-xs)",
+  radiusSm: "var(--cc-radius-sm)",
+  radiusMd: "var(--cc-radius-md)",
+  radiusLg: "var(--cc-radius-lg)",
+
+  // Motion
+  motionEasing: "var(--cc-motion-easing)",
+  motionDurationFast: "var(--cc-motion-duration-fast)",
+  motionDuration: "var(--cc-motion-duration)",
+  motionDurationSlow: "var(--cc-motion-duration-slow)",
+
+  // Elevation
+  shadowCard: "var(--cc-shadow-card)",
+  shadowMenu: "var(--cc-shadow-menu)",
+  shadowDialog: "var(--cc-shadow-dialog)",
 } as const;
 
 export const CLASSIFICATION_COLORS: Record<MoveClassification, string> = {

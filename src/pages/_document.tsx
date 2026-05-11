@@ -24,7 +24,7 @@ export default function Document() {
         />
         <meta
           name="description"
-          content="Personal chess workbench: play, analyze, study openings and keep notes — powered by Stockfish."
+          content="Personal chess workbench: analyze games, study openings and keep notes — powered by Stockfish."
         />
       </Head>
       <body>

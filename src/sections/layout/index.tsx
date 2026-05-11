@@ -1,161 +1,268 @@
-import {
-  Box,
-  CssBaseline,
-  GlobalStyles,
-  ThemeProvider,
-  createTheme,
-} from "@mui/material";
+import { Box, CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import type {} from "@mui/lab/themeAugmentation";
 import type {} from "@mui/x-data-grid/themeAugmentation";
-import { PropsWithChildren, useMemo } from "react";
+import { PropsWithChildren, useEffect, useMemo } from "react";
 import NavBar from "./NavBar";
 import SideBar, { SIDEBAR_WIDTH } from "./SideBar";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { CC } from "@/constants";
+import { CC, RAW_TOKENS } from "@/constants";
 
-interface LayoutProps extends PropsWithChildren {
-  fontVariable?: string;
-}
+export default function Layout({ children }: PropsWithChildren) {
+  // Zenith is light-mode-first — wellness aesthetic lives in the light.
+  const [isDark, setDark] = useLocalStorage("useDarkMode", false);
 
-export default function Layout({ children, fontVariable }: LayoutProps) {
-  const [isDark, setDark] = useLocalStorage("useDarkMode", true);
+  // Drive the entire color palette through a single attribute on <html>.
+  // CSS variables in src/styles/design.css resolve from there, so a theme
+  // change is a single DOM write — no React tree re-style needed.
+  useEffect(() => {
+    if (typeof document === "undefined" || isDark === null) return;
+    document.documentElement.setAttribute(
+      "data-theme",
+      isDark ? "dark" : "light"
+    );
+  }, [isDark]);
 
   const theme = useMemo(() => {
     const d = !!isDark;
-
-    const sgFont = `var(--font-space-grotesk), "Space Grotesk", -apple-system, "Helvetica Neue", Arial, sans-serif`;
-    const maFont = `var(--font-montserrat-alt), "Montserrat Alternates", -apple-system, "Helvetica Neue", Arial, sans-serif`;
+    // MUI palette needs literal hex values (it runs color-math on them).
+    // Everything else in the theme keeps reading CSS variables via CC.*.
+    const raw = d ? RAW_TOKENS.dark : RAW_TOKENS.light;
 
     return createTheme({
       palette: {
         mode: d ? "dark" : "light",
         primary: {
-          main: CC.primary,
-          light: "#c8dbff",
-          dark: CC.primaryDark,
-          contrastText: "#002f67",
+          main: raw.primary,
+          contrastText: raw.primaryContrast,
         },
         secondary: {
-          main: CC.gold,
-          contrastText: d ? CC.bg1 : "#261900",
+          main: raw.gold,
+          contrastText: raw.bg0,
         },
         background: {
-          default: d ? CC.bg1 : CC.lBg0,
-          paper: d ? CC.bg2 : CC.lBg1,
+          default: raw.bg1,
+          paper: raw.bg2,
         },
         text: {
-          primary: d ? CC.text : CC.lText,
-          secondary: d ? CC.textSub : CC.lTextSub,
-          disabled: d ? CC.textMuted : "#8b91a0",
+          primary: raw.text,
+          secondary: raw.textSub,
+          disabled: raw.textMuted,
         },
-        divider: d ? CC.border : CC.lBorder,
-        error: { main: d ? "#ffb4ab" : "#c62828" },
-        warning: { main: CC.gold },
-        success: { main: CC.green },
+        divider: raw.border,
+        error: { main: raw.error },
+        warning: { main: raw.gold },
+        success: { main: raw.green },
       },
-      shape: { borderRadius: 2 },
+      shape: { borderRadius: 12 },
       typography: {
-        fontFamily: sgFont,
-        h1: { fontFamily: sgFont, fontSize: 48, fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1.1 },
-        h2: { fontFamily: sgFont, fontSize: 32, fontWeight: 600, letterSpacing: "-0.04em", lineHeight: 1.2 },
-        h3: { fontFamily: sgFont, fontSize: 24, fontWeight: 600, letterSpacing: "-0.04em", lineHeight: 1.2 },
-        h4: { fontFamily: sgFont, fontSize: 18, fontWeight: 600, lineHeight: 1.4 },
-        h5: { fontFamily: sgFont, fontSize: 16, fontWeight: 600, lineHeight: 1.3 },
-        h6: { fontFamily: sgFont, fontSize: 14, fontWeight: 600, lineHeight: 1.4 },
-        body1: { fontFamily: maFont, fontSize: 16, fontWeight: 400, letterSpacing: "-0.05em", lineHeight: 1.5 },
-        body2: { fontFamily: maFont, fontSize: 14, fontWeight: 400, letterSpacing: "-0.05em", lineHeight: 1.5 },
-        caption: { fontFamily: sgFont, fontSize: 12, fontWeight: 500, letterSpacing: "0.02em", lineHeight: 1 },
-        button: { fontFamily: sgFont, fontWeight: 600, textTransform: "none", fontSize: 14, letterSpacing: "-0.01em" },
-        subtitle1: { fontFamily: sgFont, fontSize: 14, fontWeight: 500 },
-        subtitle2: { fontFamily: sgFont, fontSize: 12, fontWeight: 500, letterSpacing: "0.02em" },
-        overline: { fontFamily: sgFont, fontSize: 14, fontWeight: 700, letterSpacing: "0.05em", lineHeight: 1 },
+        fontFamily: CC.fontSans,
+        h1: {
+          fontFamily: CC.fontSerif,
+          fontSize: 56,
+          fontWeight: 800,
+          letterSpacing: "-0.025em",
+          lineHeight: 1.05,
+        },
+        h2: {
+          fontFamily: CC.fontSerif,
+          fontSize: 36,
+          fontWeight: 700,
+          letterSpacing: "-0.025em",
+          lineHeight: 1.1,
+        },
+        h3: {
+          fontFamily: CC.fontSans,
+          fontSize: 22,
+          fontWeight: 600,
+          letterSpacing: "-0.02em",
+          lineHeight: 1.25,
+        },
+        h4: {
+          fontFamily: CC.fontSans,
+          fontSize: 18,
+          fontWeight: 600,
+          letterSpacing: "-0.015em",
+          lineHeight: 1.3,
+        },
+        h5: {
+          fontFamily: CC.fontSans,
+          fontSize: 15,
+          fontWeight: 600,
+          letterSpacing: "-0.01em",
+          lineHeight: 1.35,
+        },
+        h6: {
+          fontFamily: CC.fontSans,
+          fontSize: 13,
+          fontWeight: 600,
+          letterSpacing: "0",
+          lineHeight: 1.4,
+        },
+        body1: {
+          fontFamily: CC.fontSans,
+          fontSize: 15,
+          fontWeight: 400,
+          letterSpacing: "-0.01em",
+          lineHeight: 1.55,
+        },
+        body2: {
+          fontFamily: CC.fontSans,
+          fontSize: 13,
+          fontWeight: 400,
+          letterSpacing: "-0.005em",
+          lineHeight: 1.5,
+        },
+        caption: {
+          fontFamily: CC.fontSans,
+          fontSize: 11,
+          fontWeight: 500,
+          letterSpacing: "0.04em",
+          lineHeight: 1.2,
+        },
+        button: {
+          fontFamily: CC.fontSans,
+          fontWeight: 500,
+          textTransform: "none",
+          fontSize: 14,
+          letterSpacing: "-0.005em",
+        },
+        subtitle1: { fontFamily: CC.fontSans, fontSize: 14, fontWeight: 500 },
+        subtitle2: {
+          fontFamily: CC.fontSans,
+          fontSize: 12,
+          fontWeight: 500,
+          letterSpacing: "0.02em",
+        },
+        overline: {
+          fontFamily: CC.fontSans,
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: "0.08em",
+          lineHeight: 1,
+        },
       },
       transitions: {
         easing: { easeOut: "ease" },
-        duration: { shortest: 80, shorter: 100, short: 120, standard: 150, complex: 200 },
+        duration: {
+          shortest: 80,
+          shorter: 100,
+          short: 120,
+          standard: 150,
+          complex: 200,
+        },
       },
       components: {
         MuiCssBaseline: {
           styleOverrides: {
             "*, *::before, *::after": { boxSizing: "border-box" },
-            body: {
-              backgroundColor: d ? CC.bg1 : CC.lBg0,
-              scrollbarWidth: "thin",
-              scrollbarColor: d ? `${CC.bg4} ${CC.bg2}` : "#c4c8d8 #f0f2f8",
-            },
             "::-webkit-scrollbar": { width: 6, height: 6 },
-            "::-webkit-scrollbar-track": { background: d ? CC.bg2 : "#f0f2f8" },
+            "::-webkit-scrollbar-track": { background: "transparent" },
             "::-webkit-scrollbar-thumb": {
-              background: d ? CC.bg4 : "#c4c8d8",
+              background: CC.bg4,
               borderRadius: 3,
             },
+            "::-webkit-scrollbar-thumb:hover": { background: CC.bg5 },
           },
         },
 
         MuiButton: {
           styleOverrides: {
             root: {
-              borderRadius: 4,
-              fontFamily: sgFont,
+              borderRadius: "var(--cc-radius-pill)",
+              fontFamily: CC.fontSans,
               fontWeight: 600,
               fontSize: 14,
               textTransform: "none",
-              letterSpacing: "-0.01em",
-              transition: "background-color 120ms ease, box-shadow 120ms ease",
+              letterSpacing: "-0.005em",
+              padding: "10px 22px",
+              transition: `background-color var(--cc-motion-duration-fast) ${CC.motionEasing}, border-color var(--cc-motion-duration-fast) ${CC.motionEasing}, color var(--cc-motion-duration-fast) ${CC.motionEasing}, transform var(--cc-motion-duration-fast) ${CC.motionEasing}`,
               "&:hover": { transform: "none" },
-              "&:active": { transform: "none" },
+              "&:active": { transform: "scale(0.97)" },
             },
             containedPrimary: {
-              backgroundColor: CC.primaryDark,
-              color: "#ffffff",
+              backgroundColor: CC.primary,
+              color: CC.primaryContrast,
               boxShadow: "none",
-              "&:hover": { backgroundColor: CC.primary, color: "#002f67", boxShadow: "none" },
-              "&:active": { backgroundColor: CC.primaryDark, boxShadow: "none" },
+              "&:hover": {
+                backgroundColor: CC.primary,
+                color: CC.primaryContrast,
+                opacity: 0.92,
+                boxShadow: "none",
+              },
+              "&:active": { backgroundColor: CC.primary, boxShadow: "none" },
               "&.Mui-disabled": {
-                backgroundColor: d ? CC.bg4 : "#d8dce8",
-                color: d ? CC.textMuted : "#8b91a0",
+                backgroundColor: CC.bg3,
+                color: CC.textMuted,
                 boxShadow: "none",
               },
             },
             containedSecondary: {
-              backgroundColor: d ? CC.bg3 : CC.lBg3,
-              color: d ? CC.text : CC.lText,
+              backgroundColor: "var(--cc-secondary-container)",
+              color: "var(--cc-on-secondary-container)",
               boxShadow: "none",
-              "&:hover": { backgroundColor: d ? CC.bg4 : "#dce0f0", boxShadow: "none" },
-            },
-            outlined: { borderWidth: 1, borderRadius: 4 },
-            outlinedPrimary: {
-              borderColor: CC.primary,
-              color: CC.primary,
               "&:hover": {
-                borderColor: CC.primaryDark,
-                backgroundColor: d ? CC.primaryMuted : "rgba(172,199,255,0.08)",
+                backgroundColor: "var(--cc-secondary-container)",
+                opacity: 0.92,
+                boxShadow: "none",
               },
             },
-            sizeSmall: { padding: "4px 12px", borderRadius: 4, fontSize: 12 },
-            sizeLarge: { padding: "10px 24px", borderRadius: 4, fontSize: 15 },
+            outlined: {
+              borderWidth: 1,
+              borderRadius: "var(--cc-radius-pill)",
+            },
+            outlinedPrimary: {
+              borderColor: CC.border,
+              color: CC.text,
+              "&:hover": {
+                borderColor: CC.borderHover,
+                backgroundColor: "var(--cc-primary-fixed)",
+              },
+            },
+            text: {
+              color: CC.primary,
+              "&:hover": { backgroundColor: "var(--cc-primary-fixed)" },
+            },
+            sizeSmall: {
+              padding: "6px 16px",
+              borderRadius: "var(--cc-radius-pill)",
+              fontSize: 12,
+            },
+            sizeLarge: {
+              padding: "12px 28px",
+              borderRadius: "var(--cc-radius-pill)",
+              fontSize: 15,
+            },
           },
         },
         MuiLoadingButton: {
           styleOverrides: {
             root: {
-              borderRadius: 4,
-              fontFamily: sgFont,
+              borderRadius: "var(--cc-radius-pill)",
+              fontFamily: CC.fontSans,
               fontWeight: 600,
               textTransform: "none",
-              backgroundColor: CC.primaryDark,
-              color: "#ffffff",
-              "&:hover": { backgroundColor: CC.primary, color: "#002f67" },
+              padding: "10px 22px",
+              backgroundColor: CC.primary,
+              color: CC.primaryContrast,
+              "&:hover": {
+                backgroundColor: CC.primary,
+                color: CC.primaryContrast,
+                opacity: 0.92,
+              },
             },
           },
         },
         MuiIconButton: {
           styleOverrides: {
             root: {
-              borderRadius: 4,
-              transition: "background-color 100ms ease",
-              "&:hover": { backgroundColor: d ? CC.bg3 : CC.lBg3 },
-              "&:active": { backgroundColor: d ? CC.bg4 : CC.lBg3 },
+              borderRadius: "var(--cc-radius-pill)",
+              transition: `background-color var(--cc-motion-duration-fast) ${CC.motionEasing}, color var(--cc-motion-duration-fast) ${CC.motionEasing}`,
+              color: CC.textSub,
+              "&:hover": {
+                backgroundColor: "var(--cc-primary-fixed)",
+                color: CC.primary,
+              },
+              "&:active": { backgroundColor: "var(--cc-primary-fixed-dim)" },
             },
           },
         },
@@ -164,29 +271,27 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
           styleOverrides: {
             root: {
               backgroundImage: "none",
-              backgroundColor: d ? CC.bg2 : CC.lBg1,
-              transition: "box-shadow 150ms ease",
+              backgroundColor: "var(--cc-surface-container-lowest)",
+              borderRadius: "var(--cc-radius-xl)",
+              transition: `box-shadow var(--cc-motion-duration) ${CC.motionEasing}`,
             },
             elevation0: { boxShadow: "none" },
-            elevation1: {
-              boxShadow: d ? "0 1px 4px rgba(0,0,0,0.6)" : "0 1px 4px rgba(0,0,0,0.1)",
-            },
-            elevation2: {
-              boxShadow: d ? "0 2px 10px rgba(0,0,0,0.6)" : "0 2px 8px rgba(0,0,0,0.1)",
-            },
-            elevation3: {
-              boxShadow: d ? "0 4px 20px rgba(0,0,0,0.7)" : "0 4px 16px rgba(0,0,0,0.12)",
-            },
+            elevation1: { boxShadow: "var(--cc-shadow-soft)" },
+            elevation2: { boxShadow: "var(--cc-shadow-ambient)" },
+            elevation3: { boxShadow: CC.shadowDialog },
           },
         },
 
         MuiAppBar: {
           styleOverrides: {
             root: {
-              backgroundColor: d ? CC.navBg : CC.lBg1,
-              color: d ? CC.text : CC.lText,
+              backgroundColor:
+                "color-mix(in srgb, var(--cc-surface) 80%, transparent)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              color: CC.text,
               boxShadow: "none",
-              borderBottom: `1px solid ${d ? CC.navBorder : CC.lBorder}`,
+              borderBottom: "none",
             },
           },
         },
@@ -194,8 +299,8 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
         MuiDrawer: {
           styleOverrides: {
             paper: {
-              backgroundColor: d ? CC.bg0 : CC.lBg1,
-              borderRight: `1px solid ${d ? CC.border : CC.lBorder}`,
+              backgroundColor: CC.bg0,
+              borderRight: `1px solid ${CC.navBorder}`,
             },
           },
         },
@@ -203,36 +308,34 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
         MuiListItemButton: {
           styleOverrides: {
             root: {
-              borderRadius: 2,
-              transition: "background-color 100ms ease",
-              "&:hover": { backgroundColor: d ? CC.bg3 : CC.lBg3 },
+              borderRadius: "var(--cc-radius-pill)",
+              transition: `background-color var(--cc-motion-duration-fast) ${CC.motionEasing}`,
+              "&:hover": { backgroundColor: "var(--cc-primary-fixed)" },
               "&.Mui-selected": {
-                backgroundColor: d ? CC.primaryMuted : "rgba(172,199,255,0.12)",
-                borderLeft: `2px solid ${CC.primary}`,
-                "&:hover": { backgroundColor: d ? CC.primarySubtle : "rgba(172,199,255,0.08)" },
+                backgroundColor: "var(--cc-primary-fixed)",
+                color: "var(--cc-on-primary-fixed)",
+                "&:hover": { backgroundColor: "var(--cc-primary-fixed-dim)" },
               },
             },
           },
         },
         MuiListItemIcon: {
-          styleOverrides: {
-            root: { minWidth: 32, color: d ? CC.textSub : CC.lTextSub },
-          },
+          styleOverrides: { root: { minWidth: 32, color: CC.textSub } },
         },
 
         MuiTextField: {
           styleOverrides: {
             root: {
               "& .MuiOutlinedInput-root": {
-                borderRadius: 4,
-                backgroundColor: d ? CC.bg3 : "#f0f2f8",
+                borderRadius: "var(--cc-radius-md)",
+                backgroundColor: "var(--cc-surface-container-low)",
                 fontSize: 14,
-                fontFamily: maFont,
+                fontFamily: CC.fontSans,
                 "& fieldset": {
-                  borderColor: d ? CC.border : CC.lBorder,
-                  transition: "border-color 120ms ease",
+                  borderColor: CC.border,
+                  transition: `border-color var(--cc-motion-duration-fast) ${CC.motionEasing}`,
                 },
-                "&:hover fieldset": { borderColor: d ? CC.bg5 : "#8b91a0" },
+                "&:hover fieldset": { borderColor: CC.borderHover },
                 "&.Mui-focused fieldset": {
                   borderColor: CC.primary,
                   borderWidth: 2,
@@ -244,15 +347,15 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
         MuiOutlinedInput: {
           styleOverrides: {
             root: {
-              borderRadius: 4,
-              backgroundColor: d ? CC.bg3 : "#f0f2f8",
+              borderRadius: "var(--cc-radius-md)",
+              backgroundColor: "var(--cc-surface-container-low)",
               fontSize: 14,
-              fontFamily: maFont,
+              fontFamily: CC.fontSans,
               "& fieldset": {
-                borderColor: d ? CC.border : CC.lBorder,
-                transition: "border-color 120ms ease",
+                borderColor: CC.border,
+                transition: `border-color var(--cc-motion-duration-fast) ${CC.motionEasing}`,
               },
-              "&:hover fieldset": { borderColor: d ? CC.bg5 : "#8b91a0" },
+              "&:hover fieldset": { borderColor: CC.borderHover },
               "&.Mui-focused fieldset": {
                 borderColor: CC.primary,
                 borderWidth: 2,
@@ -261,17 +364,20 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
           },
         },
         MuiSelect: {
-          styleOverrides: { outlined: { borderRadius: 4 } },
+          styleOverrides: {
+            outlined: { borderRadius: "var(--cc-radius-md)" },
+          },
         },
         MuiAutocomplete: {
           styleOverrides: {
-            paper: { borderRadius: 4 },
+            paper: { borderRadius: "var(--cc-radius-md)" },
             listbox: { padding: "4px 0" },
             option: {
-              borderRadius: 0,
+              borderRadius: "var(--cc-radius-sm)",
               fontSize: 14,
-              fontFamily: maFont,
+              fontFamily: CC.fontSans,
               padding: "6px 12px",
+              margin: "0 4px",
             },
           },
         },
@@ -280,15 +386,16 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
           styleOverrides: {
             root: {
               textTransform: "none",
-              fontFamily: sgFont,
+              fontFamily: CC.fontSans,
               fontWeight: 500,
               fontSize: 14,
-              letterSpacing: "-0.01em",
-              transition: "color 100ms ease",
+              letterSpacing: "-0.005em",
+              transition: `color var(--cc-motion-duration) ${CC.motionEasing}`,
               minHeight: 40,
               padding: "6px 16px",
-              "&:hover": { color: d ? CC.text : CC.lText },
-              "&.Mui-selected": { color: CC.primary, fontWeight: 600 },
+              color: CC.textSub,
+              "&:hover": { color: CC.text },
+              "&.Mui-selected": { color: CC.text, fontWeight: 600 },
             },
           },
         },
@@ -296,7 +403,9 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
           styleOverrides: {
             indicator: {
               backgroundColor: CC.primary,
-              height: 2,
+              height: 3,
+              borderRadius: "var(--cc-radius-pill)",
+              transition: `left var(--cc-motion-duration) ${CC.motionEasing}, width var(--cc-motion-duration) ${CC.motionEasing}`,
             },
           },
         },
@@ -304,12 +413,14 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
         MuiChip: {
           styleOverrides: {
             root: {
-              borderRadius: 4,
-              fontFamily: sgFont,
-              fontWeight: 500,
+              borderRadius: "var(--cc-radius-pill)",
+              fontFamily: CC.fontSans,
+              fontWeight: 600,
               fontSize: 12,
-              letterSpacing: "0.02em",
-              height: 22,
+              letterSpacing: "0.01em",
+              height: 26,
+              backgroundColor: "var(--cc-primary-fixed)",
+              color: "var(--cc-on-primary-fixed)",
             },
           },
         },
@@ -317,47 +428,46 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
         MuiDialog: {
           styleOverrides: {
             paper: {
-              borderRadius: 8,
-              boxShadow: "0 8px 40px rgba(0,0,0,0.8)",
-              backgroundColor: d ? CC.bg2 : CC.lBg1,
+              borderRadius: "var(--cc-radius-xl)",
+              boxShadow: CC.shadowDialog,
+              backgroundColor: "var(--cc-surface-container-lowest)",
               backgroundImage: "none",
-              border: `1px solid ${d ? CC.border : CC.lBorder}`,
+              border: "none",
             },
           },
         },
         MuiDialogTitle: {
           styleOverrides: {
-            root: { fontFamily: sgFont, fontWeight: 600, fontSize: 18, padding: "16px 20px 12px" },
+            root: {
+              fontFamily: CC.fontSans,
+              fontWeight: 600,
+              fontSize: 18,
+              padding: "16px 20px 12px",
+              letterSpacing: "-0.015em",
+            },
           },
         },
         MuiDialogContent: {
-          styleOverrides: {
-            root: { padding: "8px 20px 16px" },
-          },
+          styleOverrides: { root: { padding: "8px 20px 16px" } },
         },
         MuiDialogActions: {
-          styleOverrides: {
-            root: { padding: "8px 20px 16px", gap: 8 },
-          },
+          styleOverrides: { root: { padding: "8px 20px 16px", gap: 8 } },
         },
 
         MuiDivider: {
-          styleOverrides: {
-            root: { borderColor: d ? CC.border : CC.lBorder },
-          },
+          styleOverrides: { root: { borderColor: CC.border } },
         },
 
         MuiTooltip: {
           styleOverrides: {
             tooltip: {
-              backgroundColor: CC.bg0,
-              border: `1px solid ${CC.border}`,
-              borderRadius: 4,
-              fontFamily: sgFont,
+              backgroundColor: "var(--cc-inverse-surface)",
+              borderRadius: "var(--cc-radius-md)",
+              fontFamily: CC.fontSans,
               fontSize: 12,
               fontWeight: 500,
-              padding: "4px 8px",
-              color: CC.text,
+              padding: "6px 10px",
+              color: "var(--cc-inverse-on-surface)",
             },
           },
         },
@@ -365,32 +475,38 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
         MuiLinearProgress: {
           styleOverrides: {
             root: {
-              borderRadius: 2,
-              backgroundColor: d ? CC.bg4 : "#d8dce8",
-              height: 4,
+              borderRadius: 0,
+              backgroundColor: CC.bg3,
+              height: 2,
             },
-            bar: { backgroundColor: CC.primary, borderRadius: 2 },
+            bar: { backgroundColor: CC.primary, borderRadius: 0 },
           },
         },
 
         MuiAlert: {
           styleOverrides: {
-            root: { borderRadius: 4, fontFamily: maFont, fontSize: 14 },
+            root: {
+              borderRadius: "var(--cc-radius-md)",
+              fontFamily: CC.fontSans,
+              fontSize: 14,
+            },
           },
         },
         MuiSnackbar: {
           styleOverrides: {
-            root: { "& .MuiPaper-root": { borderRadius: 4 } },
+            root: {
+              "& .MuiPaper-root": { borderRadius: "var(--cc-radius-pill)" },
+            },
           },
         },
 
         MuiMenu: {
           styleOverrides: {
             paper: {
-              borderRadius: 6,
-              boxShadow: d ? "0 4px 20px rgba(0,0,0,0.7)" : "0 4px 16px rgba(0,0,0,0.14)",
-              backgroundColor: d ? CC.bg2 : CC.lBg1,
-              border: `1px solid ${d ? CC.border : CC.lBorder}`,
+              borderRadius: "var(--cc-radius-lg)",
+              boxShadow: CC.shadowMenu,
+              backgroundColor: "var(--cc-surface-container-lowest)",
+              border: "none",
               backgroundImage: "none",
             },
           },
@@ -398,17 +514,19 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
         MuiMenuItem: {
           styleOverrides: {
             root: {
-              borderRadius: 0,
-              fontFamily: maFont,
+              borderRadius: "var(--cc-radius-sm)",
+              margin: "0 4px",
+              fontFamily: CC.fontSans,
               fontSize: 14,
-              fontWeight: 400,
-              padding: "6px 12px",
+              fontWeight: 500,
+              padding: "8px 12px",
               minHeight: 36,
-              transition: "background-color 80ms ease",
-              "&:hover": { backgroundColor: d ? CC.bg3 : CC.lBg3 },
+              transition: `background-color var(--cc-motion-duration-fast) ${CC.motionEasing}`,
+              "&:hover": { backgroundColor: "var(--cc-primary-fixed)" },
               "&.Mui-selected": {
-                backgroundColor: d ? CC.primaryMuted : "rgba(172,199,255,0.12)",
-                "&:hover": { backgroundColor: d ? CC.bg3 : CC.lBg3 },
+                backgroundColor: "var(--cc-primary-fixed)",
+                color: "var(--cc-on-primary-fixed)",
+                "&:hover": { backgroundColor: "var(--cc-primary-fixed-dim)" },
               },
             },
           },
@@ -417,34 +535,35 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
         MuiDataGrid: {
           styleOverrides: {
             root: {
-              border: `1px solid ${d ? CC.border : CC.lBorder}`,
-              borderRadius: 6,
-              backgroundColor: d ? CC.bg2 : CC.lBg1,
+              border: "none",
+              borderRadius: "var(--cc-radius-xl)",
+              backgroundColor: "var(--cc-surface-container-lowest)",
               fontSize: 14,
-              fontFamily: maFont,
+              fontFamily: CC.fontSans,
+              boxShadow: "var(--cc-shadow-soft)",
               "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: d ? CC.bg0 : CC.lBg2,
-                borderBottom: `1px solid ${d ? CC.border : CC.lBorder}`,
+                backgroundColor: "var(--cc-surface-container-low)",
+                borderBottom: `1px solid ${CC.border}`,
                 borderRadius: 0,
               },
               "& .MuiDataGrid-columnHeaderTitle": {
-                fontFamily: sgFont,
+                fontFamily: CC.fontSans,
                 fontWeight: 600,
-                fontSize: 12,
+                fontSize: 11,
                 textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                color: d ? CC.textSub : CC.lTextSub,
+                letterSpacing: "0.08em",
+                color: CC.textSub,
               },
               "& .MuiDataGrid-row": {
-                borderBottom: `1px solid ${d ? CC.border : CC.lBorder}`,
-                transition: "background-color 80ms ease",
-                "&:hover": { backgroundColor: d ? CC.bg3 : CC.lBg3 },
+                borderBottom: `1px solid ${CC.border}`,
+                transition: `background-color var(--cc-motion-duration-fast) ${CC.motionEasing}`,
+                "&:hover": { backgroundColor: CC.bg3 },
                 "&:last-child": { borderBottom: "none" },
               },
               "& .MuiDataGrid-cell": { borderBottom: "none", fontSize: 14 },
               "& .MuiDataGrid-footerContainer": { display: "none" },
               "& .MuiDataGrid-virtualScroller": { minHeight: 80 },
-              "& .MuiCheckbox-root": { color: d ? CC.textSub : CC.lTextSub },
+              "& .MuiCheckbox-root": { color: CC.textSub },
             },
           },
         },
@@ -453,7 +572,9 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
           styleOverrides: {
             switchBase: {
               "&.Mui-checked": { color: CC.primary },
-              "&.Mui-checked + .MuiSwitch-track": { backgroundColor: CC.primary },
+              "&.Mui-checked + .MuiSwitch-track": {
+                backgroundColor: CC.primary,
+              },
             },
           },
         },
@@ -461,9 +582,11 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
         MuiSlider: {
           styleOverrides: {
             root: { color: CC.primary },
-            thumb: { "&:hover": { boxShadow: `0 0 0 8px ${CC.primaryMuted}` } },
+            thumb: {
+              "&:hover": { boxShadow: `0 0 0 8px ${CC.primaryMuted}` },
+            },
             track: { backgroundColor: CC.primary },
-            rail: { backgroundColor: d ? CC.bg4 : "#d8dce8" },
+            rail: { backgroundColor: CC.bg4 },
           },
         },
 
@@ -479,37 +602,17 @@ export default function Layout({ children, fontVariable }: LayoutProps) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <GlobalStyles
-        styles={{
-          "a": { textDecoration: "none" },
-          "#moves-panel": {
-            scrollbarWidth: "thin",
-            scrollbarColor: `${CC.bg4} transparent`,
-          },
+      <SideBar darkMode={!!isDark} switchDarkMode={() => setDark((v) => !v)} />
+      <NavBar darkMode={!!isDark} switchDarkMode={() => setDark((v) => !v)} />
+      <Box
+        component="main"
+        sx={{
+          ml: { xs: 0, md: `${SIDEBAR_WIDTH}px` },
+          mb: "2vh",
         }}
-      />
-      <div
-        className={fontVariable}
-        style={{ display: "contents" }}
       >
-        <SideBar
-          darkMode={!!isDark}
-          switchDarkMode={() => setDark((v) => !v)}
-        />
-        <NavBar
-          darkMode={!!isDark}
-          switchDarkMode={() => setDark((v) => !v)}
-        />
-        <Box
-          component="main"
-          sx={{
-            ml: { xs: 0, md: `${SIDEBAR_WIDTH}px` },
-            mb: "2vh",
-          }}
-        >
-          {children}
-        </Box>
-      </div>
+        {children}
+      </Box>
     </ThemeProvider>
   );
 }

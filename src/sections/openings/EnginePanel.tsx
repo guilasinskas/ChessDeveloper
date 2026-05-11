@@ -155,7 +155,8 @@ export default function EnginePanel() {
                   sx={{
                     fontSize: 12,
                     color: isDark ? CC.textSub : CC.lTextSub,
-                    fontFamily: `var(--font-space-grotesk), sans-serif`,
+                    fontFamily:
+                      "var(--cc-font-mono)",
                     lineHeight: 1.5,
                     flex: 1,
                     wordBreak: "break-word",

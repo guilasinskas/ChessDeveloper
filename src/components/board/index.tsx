@@ -286,8 +286,8 @@ export default function Board({
 
   const customBoardStyle = useMemo(() => {
     const commonBoardStyle = {
-      borderRadius: "3px",
-      boxShadow: "0 2px 12px rgba(0, 0, 0, 0.6)",
+      borderRadius: "8px",
+      boxShadow: "0 4px 24px rgba(0, 0, 0, 0.35)",
     };
 
     if (boardHue) {
@@ -345,8 +345,8 @@ export default function Board({
               boardOrientation === Color.White ? "white" : "black"
             }
             customBoardStyle={customBoardStyle}
-            customLightSquareStyle={{ backgroundColor: "#b8bfc6" }}
-            customDarkSquareStyle={{ backgroundColor: "#2c231e" }}
+            customLightSquareStyle={{ backgroundColor: "#e8e4d7" }}
+            customDarkSquareStyle={{ backgroundColor: "#2c2823" }}
             customArrows={customArrows}
             isDraggablePiece={isPiecePlayable}
             customSquare={SquareRenderer}

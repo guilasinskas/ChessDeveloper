@@ -34,13 +34,12 @@ Docker equivalents live in `docker/docker-compose-dev.yml` and `docker/docker-co
 - `electron/` — Electron desktop wrapper
 - `scripts/` — utility scripts
 - `docker/` — Docker compose files
-- `DESIGN.md` — design notes
+- `src/styles/design.css` — design system (tokens + rationale + animations, single source of truth)
 - `CONTRIBUTING.md` — contribution guidelines
 
 ### Pages / routes
 
 - `/` — Analysis (review games, evaluations, classifications)
-- `/play` — Play vs Stockfish
 - `/database` — Local game database
 - `/openings` — Opening repertoire studies (move tree + training)
 - `/openings/[id]` — Repertoire editor (board, variations, comments, training mode)

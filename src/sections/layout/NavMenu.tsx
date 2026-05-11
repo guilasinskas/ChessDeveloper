@@ -14,7 +14,6 @@ import { useRouter } from "next/router";
 import { CC } from "@/constants";
 
 const MenuOptions = [
-  { text: "Play", icon: "streamline:chess-pawn", href: "/play" },
   { text: "Analysis", icon: "streamline:magnifying-glass-solid", href: "/" },
   { text: "Database", icon: "streamline:database", href: "/database" },
   { text: "Openings", icon: "streamline:book-reading", href: "/openings" },
@@ -42,12 +41,13 @@ export default function NavMenu({ open, onClose }: Props) {
         <Box sx={{ px: 2, py: 1, mb: "4px" }}>
           <Typography
             sx={{
-              fontFamily: `var(--font-space-grotesk), "Space Grotesk", sans-serif`,
+              fontFamily:
+                "var(--cc-font-body)",
               fontSize: 11,
               fontWeight: 600,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: isDark ? CC.textMuted : "#8b91a0",
+              color: isDark ? CC.textMuted : "#8a8a8a",
             }}
           >
             Navigation
@@ -73,22 +73,16 @@ export default function NavMenu({ open, onClose }: Props) {
                     borderRadius: "4px",
                     mb: "2px",
                     borderLeft: isActive
-                      ? `2px solid ${CC.primary}`
+                      ? `2px solid ${isDark ? CC.text : CC.lText}`
                       : "2px solid transparent",
-                    backgroundColor: isActive
-                      ? isDark
-                        ? CC.primaryMuted
-                        : "rgba(172,199,255,0.12)"
-                      : "transparent",
+                    backgroundColor: isActive ? CC.primaryMuted : "transparent",
                     "&:hover": {
                       backgroundColor: isDark ? CC.bg3 : CC.lBg3,
                     },
                     "&.Mui-selected": {
-                      backgroundColor: isDark
-                        ? CC.primaryMuted
-                        : "rgba(172,199,255,0.12)",
+                      backgroundColor: CC.primaryMuted,
                       "&:hover": {
-                        backgroundColor: isDark ? CC.bg3 : CC.lBg3,
+                        backgroundColor: CC.primarySubtle,
                       },
                     },
                   }}
@@ -99,7 +93,9 @@ export default function NavMenu({ open, onClose }: Props) {
                       width={17}
                       color={
                         isActive
-                          ? CC.primary
+                          ? isDark
+                            ? CC.text
+                            : CC.lText
                           : isDark
                             ? CC.textSub
                             : CC.lTextSub
@@ -109,12 +105,15 @@ export default function NavMenu({ open, onClose }: Props) {
                   <ListItemText
                     primary={text}
                     primaryTypographyProps={{
-                      fontFamily: `var(--font-space-grotesk), "Space Grotesk", sans-serif`,
+                      fontFamily:
+                        "var(--cc-font-body)",
                       fontSize: 14,
                       fontWeight: isActive ? 600 : 400,
-                      letterSpacing: "-0.01em",
+                      letterSpacing: "-0.005em",
                       color: isActive
-                        ? CC.primary
+                        ? isDark
+                          ? CC.text
+                          : CC.lText
                         : isDark
                           ? CC.textSub
                           : CC.lTextSub,

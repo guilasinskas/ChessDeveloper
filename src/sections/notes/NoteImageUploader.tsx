@@ -31,9 +31,7 @@ export default function NoteImageUploader({
 
   const uploadFiles = useCallback(
     async (files: FileList | File[]) => {
-      const list = Array.from(files).filter((f) =>
-        f.type.startsWith("image/")
-      );
+      const list = Array.from(files).filter((f) => f.type.startsWith("image/"));
       if (list.length === 0) return;
       setError(null);
       setIsUploading(true);
@@ -104,9 +102,7 @@ export default function NoteImageUploader({
         borderRadius: "8px",
         p: 1.5,
         backgroundColor: isDragging
-          ? isDark
-            ? CC.primarySubtle
-            : "rgba(172,199,255,0.05)"
+          ? CC.primarySubtle
           : isDark
             ? CC.bg0
             : CC.lBg2,

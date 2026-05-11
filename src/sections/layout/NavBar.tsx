@@ -22,7 +22,9 @@ export default function NavBar({ darkMode: d, switchDarkMode }: Props) {
   const router = useRouter();
   const theme = useTheme();
 
-  useEffect(() => { setDrawerOpen(false); }, [router.pathname]);
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [router.pathname]);
 
   const isDark = theme.palette.mode === "dark";
 
@@ -79,11 +81,11 @@ export default function NavBar({ darkMode: d, switchDarkMode }: Props) {
               <Typography
                 sx={{
                   display: { xs: "none", sm: "block" },
-                  fontFamily: `var(--font-space-grotesk), "Space Grotesk", sans-serif`,
-                  fontWeight: 700,
-                  fontSize: 18,
-                  letterSpacing: "-0.04em",
-                  color: isDark ? CC.text : CC.lText,
+                  fontFamily: "var(--cc-font-headline)",
+                  fontWeight: 800,
+                  fontSize: 22,
+                  letterSpacing: "-0.03em",
+                  color: CC.primary,
                 }}
               >
                 chesskit
@@ -103,10 +105,16 @@ export default function NavBar({ darkMode: d, switchDarkMode }: Props) {
               sx={{
                 borderRadius: 1,
                 color: isDark ? CC.textSub : CC.lTextSub,
-                "&:hover": { backgroundColor: isDark ? CC.bg3 : CC.lBg3, color: isDark ? CC.text : CC.lText },
+                "&:hover": {
+                  backgroundColor: isDark ? CC.bg3 : CC.lBg3,
+                  color: isDark ? CC.text : CC.lText,
+                },
               }}
             >
-              <Icon icon={d ? "mdi:weather-sunny" : "mdi:weather-night"} width={20} />
+              <Icon
+                icon={d ? "mdi:weather-sunny" : "mdi:weather-night"}
+                width={20}
+              />
             </IconButton>
           </Box>
 

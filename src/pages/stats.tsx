@@ -418,19 +418,15 @@ function MoveChip({
           borderRadius: "4px",
           border: `1.5px solid ${selected ? CC.primary : isDark ? CC.border : CC.lBorder}`,
           backgroundColor: selected
-            ? isDark
-              ? CC.primaryMuted
-              : "rgba(172,199,255,0.15)"
+            ? CC.primaryMuted
             : isDark
               ? CC.bg3
               : CC.lBg3,
           cursor: "pointer",
           transition: "border-color 120ms, background-color 120ms",
           "&:hover": {
-            borderColor: CC.primary,
-            backgroundColor: isDark
-              ? CC.primaryMuted
-              : "rgba(172,199,255,0.12)",
+            borderColor: isDark ? CC.borderHover : "#a8a8a0",
+            backgroundColor: CC.primarySubtle,
           },
         }}
       >

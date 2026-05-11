@@ -8,7 +8,6 @@ import Image from "next/image";
 export const SIDEBAR_WIDTH = 64;
 
 const NAV_LINKS = [
-  { text: "Play", icon: "streamline:chess-pawn", href: "/play" },
   { text: "Analysis", icon: "streamline:magnifying-glass-solid", href: "/" },
   { text: "Database", icon: "streamline:database", href: "/database" },
   { text: "Openings", icon: "streamline:book-reading", href: "/openings" },
@@ -105,29 +104,45 @@ export default function SideBar({ darkMode, switchDarkMode }: Props) {
                     gap: "2px",
                     py: "6px",
                     color: isActive
-                      ? CC.primary
+                      ? isDark
+                        ? CC.text
+                        : CC.lText
                       : isDark
                         ? CC.textSub
                         : CC.lTextSub,
-                    backgroundColor: isActive
-                      ? isDark
-                        ? CC.primaryMuted
-                        : "rgba(172,199,255,0.12)"
-                      : "transparent",
+                    backgroundColor: isActive ? CC.primaryMuted : "transparent",
+                    position: "relative",
                     transition: "background-color 100ms ease, color 100ms ease",
                     "&:hover": {
-                      backgroundColor: isDark ? CC.bg3 : CC.lBg3,
+                      backgroundColor: isActive
+                        ? CC.primaryMuted
+                        : isDark
+                          ? CC.bg3
+                          : CC.lBg3,
                       color: isDark ? CC.text : CC.lText,
                     },
+                    "&::before": isActive
+                      ? {
+                          content: '""',
+                          position: "absolute",
+                          left: 0,
+                          top: "20%",
+                          bottom: "20%",
+                          width: 2,
+                          backgroundColor: isDark ? CC.text : CC.lText,
+                          borderRadius: "0 2px 2px 0",
+                        }
+                      : undefined,
                   }}
                 >
                   <Icon icon={icon} width={18} />
                   <Typography
                     sx={{
-                      fontFamily: `var(--font-space-grotesk), "Space Grotesk", sans-serif`,
+                      fontFamily:
+                        "var(--cc-font-body)",
                       fontSize: 10,
                       fontWeight: isActive ? 600 : 500,
-                      letterSpacing: "-0.01em",
+                      letterSpacing: "0",
                       lineHeight: 1,
                       color: "inherit",
                     }}

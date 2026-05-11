@@ -4,10 +4,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { Fragment } from "react";
 import { CC } from "@/constants";
 import { RepertoireNode, RepertoireTree } from "@/types/openings";
-import {
-  currentNodeIdAtom,
-  repertoireTreeAtom,
-} from "./states";
+import { currentNodeIdAtom, repertoireTreeAtom } from "./states";
 import {
   deleteRepertoireSubtreeAction,
   goStartRepertoireAction,
@@ -116,21 +113,24 @@ function MoveLine({
                       fontSize: depth === 0 ? 13 : 12,
                       fontWeight: isSelected ? 700 : 500,
                       color: isSelected
-                        ? CC.primary
+                        ? isDark
+                          ? CC.text
+                          : CC.lText
                         : depth > 0
-                          ? isDark ? "#b0a9a4" : "#5a5450"
+                          ? isDark
+                            ? "#9a9590"
+                            : "#6a6660"
                           : isDark
                             ? CC.text
                             : CC.lText,
                       backgroundColor: isSelected
-                        ? isDark
-                          ? CC.primaryMuted
-                          : "rgba(172,199,255,0.2)"
+                        ? CC.primaryMuted
                         : "transparent",
                       "&:hover": {
                         backgroundColor: isDark ? CC.bg3 : CC.lBg3,
                       },
-                      fontFamily: `var(--font-space-grotesk), sans-serif`,
+                      fontFamily:
+                        "var(--cc-font-mono)",
                     }}
                     onClick={() => goToNode(node.id)}
                   >
@@ -144,10 +144,7 @@ function MoveLine({
                       </Box>
                     )}
                     {node.comment && (
-                      <Box
-                        component="span"
-                        sx={{ fontSize: 10, ml: 0.25 }}
-                      >
+                      <Box component="span" sx={{ fontSize: 10, ml: 0.25 }}>
                         📝
                       </Box>
                     )}
@@ -207,9 +204,7 @@ function MoveLine({
                     key={varId}
                     sx={{
                       borderLeft: `2px solid ${
-                        isDark
-                          ? "rgba(255,255,255,0.1)"
-                          : "rgba(0,0,0,0.12)"
+                        isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"
                       }`,
                       pl: 1.5,
                       mb: 0.25,

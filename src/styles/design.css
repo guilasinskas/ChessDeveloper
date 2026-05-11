@@ -1,0 +1,645 @@
+/* ════════════════════════════════════════════════════════════════════════════
+ *
+ *   CHESSKIT — ZENITH WELLNESS DESIGN SYSTEM
+ *
+ *   Single source of truth for the entire visual language.
+ *   Both the values AND the rationale live in this file.
+ *
+ * ════════════════════════════════════════════════════════════════════════════
+ *
+ *   NORTH STAR
+ *
+ *   "Calm Surface, Deep Game."
+ *
+ *   A interface respira. O xadrez é jogo de tensão; a UI ao redor dele tem
+ *   que ser o oposto — superfícies macias, paleta sálvia/pêssego, *pills*
+ *   suaves, sombras quase imperceptíveis. A inspiração vem de apps de
+ *   bem-estar (Calm, Headspace, Mindstrong) e do Material Design 3: cores
+ *   organizadas em *roles* (primary, secondary, container, on-*), camadas
+ *   com nomes semânticos (surface, surface-container-low/high/highest), e
+ *   tipografia em duas famílias humanistas — Manrope para títulos, Plus
+ *   Jakarta Sans para todo o resto.
+ *
+ *   O acento principal é um verde *sage* (`#55624d`) — a cor da madeira
+ *   verde fresca, da pedra coberta de musgo. Quente, terroso, nunca
+ *   estridente. O secundário é um pêssego pálido (`#fed7d2`) reservado para
+ *   marcadores afetivos: streaks, conquistas, celebrações. Tudo o que é
+ *   dado bruto de xadrez (notação, eval, relógio) continua em mono — o
+ *   sistema só fica "wellness" *em volta* do tabuleiro.
+ *
+ * ────────────────────────────────────────────────────────────────────────────
+ *
+ *   ARCHITECTURE
+ *
+ *   Variables are scoped on :root (light mode by default — wellness apps
+ *   live no claro), overridden on :root[data-theme="dark"]. Components
+ *   reference them via the CC.* helper in src/constants.ts or directly as
+ *   var(--cc-*) strings.
+ *
+ *   The only mirror of these values lives in RAW_TOKENS in constants.ts,
+ *   used solely to seed MUI's createTheme palette (which rejects var()).
+ *   Edit values here; mirror to RAW_TOKENS only if a palette color changes.
+ *
+ *   MD3 role names are aliased so both vocabularies work side-by-side:
+ *
+ *     --cc-bg2          (legacy)    ←→  --cc-surface-container       (MD3)
+ *     --cc-primary      (legacy)    ←→  --cc-primary                 (MD3)
+ *     --cc-text         (legacy)    ←→  --cc-on-surface              (MD3)
+ *     --cc-bg3          (legacy)    ←→  --cc-surface-container-high  (MD3)
+ *
+ *   New code should prefer the MD3 names. Legacy CC.* tokens keep working.
+ *
+ * ────────────────────────────────────────────────────────────────────────────
+ *
+ *   PALETTE — Sage & Peach
+ *
+ *   Light mode (default) — Off-white *paper* com base verde sutil:
+ *
+ *     --cc-primary                #55624d   sage — botões, indicadores
+ *     --cc-on-primary             #ffffff   texto sobre sage
+ *     --cc-primary-container      #98a68e   sage claro — chips, badges
+ *     --cc-primary-fixed          #d9e7cd   sage muito claro — pílulas afetivas
+ *     --cc-primary-fixed-dim      #bdcbb2   sage médio — barras de gráfico
+ *
+ *     --cc-secondary              #755754   warm taupe — texto secundário
+ *     --cc-on-secondary           #ffffff
+ *     --cc-secondary-container    #fed7d2   peach — milestones, celebrações
+ *     --cc-secondary-fixed        #ffdad6   peach claro
+ *
+ *     --cc-tertiary               #605f56   stone gray — terciários
+ *     --cc-tertiary-container     #a4a298
+ *
+ *     --cc-surface                #f8faf3   page background (warm paper green)
+ *     --cc-surface-container-lowest  #ffffff
+ *     --cc-surface-container-low     #f2f4ed
+ *     --cc-surface-container         #ecefe8
+ *     --cc-surface-container-high    #e7e9e2
+ *     --cc-surface-container-highest #e1e3dc
+ *     --cc-surface-bright            #f8faf3
+ *     --cc-surface-dim               #d8dbd4
+ *     --cc-surface-variant           #e1e3dc
+ *
+ *     --cc-on-surface             #191c18   primary text
+ *     --cc-on-surface-variant     #444841   secondary text
+ *
+ *     --cc-outline                #757870   borders, dividers
+ *     --cc-outline-variant        #c5c8be   subtle dividers
+ *
+ *     --cc-error                  #ba1a1a
+ *     --cc-error-container        #ffdad6
+ *
+ *   Dark mode — Espelho com tons inversos quentes:
+ *
+ *     --cc-primary                #bdcbb2   sage claro (inverse primary)
+ *     --cc-surface                #11140f   warm near-black
+ *     --cc-on-surface             #e1e3dc
+ *
+ *   (See :root[data-theme="dark"] block below for full overrides.)
+ *
+ *   Chess board — bone & graphite, fits o paper-stock quente:
+ *
+ *     --cc-board-light            #e8e4d7   casas claras
+ *     --cc-board-dark             #55624d   casas escuras (sage primary!)
+ *
+ *   O board ganha o verde sage nas casas escuras — torneio de novo, mas
+ *   *correto*, alinhado à marca.
+ *
+ * ────────────────────────────────────────────────────────────────────────────
+ *
+ *   LEGACY ALIASES (back-compat com CC.bg0..5, CC.text*, CC.border)
+ *
+ *     --cc-bg0    →  surface-container-lowest    (nav, sidebar)
+ *     --cc-bg1    →  surface                     (body)
+ *     --cc-bg2    →  surface-container-low       (cards principais)
+ *     --cc-bg3    →  surface-container           (hover)
+ *     --cc-bg4    →  surface-container-high      (active)
+ *     --cc-bg5    →  surface-container-highest   (selected)
+ *     --cc-text             →  on-surface
+ *     --cc-text-sub         →  on-surface-variant
+ *     --cc-text-muted       →  outline
+ *     --cc-border           →  outline-variant
+ *     --cc-border-hover     →  outline
+ *     --cc-nav-bg           →  surface-container-lowest
+ *     --cc-nav-border       →  outline-variant
+ *     --cc-primary-contrast →  on-primary
+ *     --cc-primary-muted    →  primary-fixed @ 14% (tint for selected)
+ *     --cc-primary-subtle   →  primary-fixed @ 7%
+ *     --cc-green            →  primary  (sage is now THE green)
+ *     --cc-gold             →  secondary-container (peach for warnings)
+ *
+ * ────────────────────────────────────────────────────────────────────────────
+ *
+ *   TYPOGRAPHY
+ *
+ *   Duas famílias humanistas, terceira só para dados de xadrez.
+ *
+ *   Manrope — Headlines
+ *     CSS var: --cc-font-serif (alias) / --cc-font-headline
+ *     Títulos de página, hero, *card headers*. Manrope substitui Fraunces
+ *     com algo mais "soft" e geometric, no espírito wellness.
+ *     Weights: 400, 500, 600, 700, 800 — letter-spacing varia por tamanho
+ *
+ *   Plus Jakarta Sans — UI & Body
+ *     CSS var: --cc-font-sans / --cc-font-body
+ *     Nav, botões, labels, parágrafos, modais, *navlinks*. Geometric humanist,
+ *     altura de x maior que a Inter — ótima legibilidade no light mode.
+ *     Weights: 300, 400, 500, 600, 700
+ *
+ *   JetBrains Mono — Chess Data
+ *     CSS var: --cc-font-mono
+ *     Notação (Nf3, O-O), relógios (05:23), avaliação (+1.45). Não mudou.
+ *
+ *   Material Symbols Outlined também é carregado via CSS (Google Fonts) —
+ *   usado opcionalmente onde Iconify não cobre.
+ *
+ *   Scale (sizes/weights set in src/sections/layout/index.tsx MUI theme):
+ *
+ *     h1        Manrope         48-56  700/800   Display hero
+ *     h2        Manrope         32-36  700       Section
+ *     h3        Manrope         22-24  600       Subseções, card headers
+ *     h4        Plus Jakarta    18     600       Painel headers
+ *     h5        Plus Jakarta    15     600       Toolbar
+ *     h6        Plus Jakarta    13     600       Captions destacadas
+ *     body1     Plus Jakarta    15     400       Texto base
+ *     body2    Plus Jakarta    13     400       Secundário
+ *     button    Plus Jakarta    14     600       Bold mais firme em pills
+ *     caption   Plus Jakarta    11     600       Uppercase, tracking 0.2em
+ *     notation  Mono            13     500       Movimentos
+ *     clock     Mono            22     500       Relógio
+ *     eval      Mono            11     500       Eval label
+ *
+ *   Fontes carregadas via next/font/google em src/pages/_app.tsx.
+ *
+ * ────────────────────────────────────────────────────────────────────────────
+ *
+ *   SHAPE / BORDER RADIUS — Pills back, com propósito.
+ *
+ *   O Zenith é redondo. Cards têm cantos generosos; *chips* e botões
+ *   primários são pílulas perfeitas; o FAB tem radius 2xl (1rem) — quase
+ *   square com cantos macios.
+ *
+ *     --cc-radius-xs    0.25rem   inputs, células de lista, badges
+ *     --cc-radius-sm    0.5rem    secundários
+ *     --cc-radius-md    0.75rem   contêineres de baixa hierarquia
+ *     --cc-radius-lg    1rem      FAB, cards densos
+ *     --cc-radius-xl    1.5rem    cards principais, modais, hero panels
+ *     --cc-radius-pill  9999px    chips, badges de status, botões primários,
+ *                                 nav flutuante
+ *
+ *   Tabuleiro continua com radius 0 nas casas. Container externo ganha
+ *   `--cc-radius-xl` (1.5rem) para casar com os cards adjacentes.
+ *
+ * ────────────────────────────────────────────────────────────────────────────
+ *
+ *   ELEVATION & SEPARATION
+ *
+ *   Sombras agora estão presentes — *ambient*, longas, baixa opacidade —
+ *   para criar a sensação de "flutuando sobre o paper". Bordas finas
+ *   continuam para dividir conteúdo dentro de um mesmo card.
+ *
+ *     --cc-shadow-ambient   0 20px 40px -10px rgba(85, 98, 77, 0.06)
+ *                           card padrão, "elevated paper"
+ *     --cc-shadow-soft      0 10px 30px rgba(85, 98, 77, 0.03)
+ *                           cards menores (metrics, summary tiles)
+ *     --cc-shadow-fab       0 8px 24px rgba(85, 98, 77, 0.20)
+ *                           botões flutuantes, FAB
+ *     --cc-shadow-menu      0 12px 36px rgba(0, 0, 0, 0.10)
+ *     --cc-shadow-dialog    0 24px 60px rgba(0, 0, 0, 0.18)
+ *
+ *   Glassmorphism — utilitário `.glass-pill` para navegação flutuante e
+ *   AppBars sticky. Combina blur(20px) + background semi-transparente.
+ *
+ *   Focus rings: 0 0 0 3px var(--cc-primary-fixed) — anel sage fino, suave,
+ *   acessível.
+ *
+ * ────────────────────────────────────────────────────────────────────────────
+ *
+ *   MOTION
+ *
+ *   Pouca velocidade, easing suave (mantido do design anterior — funciona).
+ *
+ *     --cc-motion-easing            cubic-bezier(0.22, 1, 0.36, 1)
+ *     --cc-motion-duration-fast     160ms   hover, focus
+ *     --cc-motion-duration          320ms   tab panels, indicators
+ *     --cc-motion-duration-slow     480ms   page transitions
+ *     --cc-motion-distance          8px     y-translate de entrada
+ *
+ *   Respeita prefers-reduced-motion (desabilita keyframes).
+ *
+ * ────────────────────────────────────────────────────────────────────────────
+ *
+ *   COMPONENTS
+ *
+ *   Buttons
+ *     Primary     fundo --cc-primary (sage), texto --cc-on-primary (branco)
+ *                 radius pill, font weight 600, padding 12/24
+ *     Secondary   fundo --cc-secondary-container (peach), texto on-secondary
+ *     Tonal       fundo --cc-primary-fixed (sage claro), texto on-primary-fixed
+ *     Outlined    1px solid --cc-outline-variant, texto --cc-on-surface
+ *     Text        sem fundo, texto --cc-primary, hover --cc-primary-fixed
+ *     FAB         w/h 56px, radius lg (1rem), shadow-fab, sage solid
+ *
+ *   TopAppBar / SideBar
+ *     Sticky com glass effect: backdrop-filter blur(20px) +
+ *     bg-surface @ 80% alpha. Sem borda inferior pesada — apenas o blur.
+ *     Logo: imagem 28px + wordmark em Manrope 800 (extra-bold),
+ *     letter-spacing -0.02em, cor --cc-primary.
+ *     Item ativo: ícone *FILL 1* + texto bold + dot 4px abaixo do label.
+ *
+ *   Bottom Navigation (mobile flutuante)
+ *     Posicionada bottom-6 left-1/2 -translate-x-1/2, max-w-md.
+ *     Glass pill: bg-surface @ 70% + blur(20px) + radius-pill.
+ *     Inactive: opacity 40%, sem cor; Active: --cc-primary + ícone fill 1.
+ *
+ *   Cards / Panels
+ *     Fundo --cc-surface-container-lowest (#fff) ou -low (#f2f4ed).
+ *     Radius xl (1.5rem), shadow-ambient, sem borda explícita.
+ *     Divisão interna via 1px solid --cc-outline-variant.
+ *
+ *   Progress Rings
+ *     SVG circle stroke-dasharray, gradient stroke (primary → primary-container).
+ *     Animação stroke-dashoffset 350ms. Use para metrics tipo
+ *     "% de vitórias", "% de bons lances", "horas estudadas".
+ *
+ *   Move List
+ *     Painel --cc-surface-container-low, radius xl.
+ *     Grid 2 colunas, fonte mono.
+ *     Movimento atual: fundo --cc-primary-fixed (sage claro), texto
+ *     --cc-on-primary-fixed (verde escuro), peso 700.
+ *
+ *   Evaluation Bar
+ *     Encostada ao tabuleiro, radius xs.
+ *     White section: warm white. Black section: --cc-board-dark (sage).
+ *
+ *   Player Header
+ *     Avatar 40px CIRCULAR (volta ao redondo — coerente com o sistema novo).
+ *     Nome Manrope 600, rating Plus Jakarta 400 --cc-on-surface-variant.
+ *     Relógio Mono 22px, fundo --cc-surface-container-high. Sob 10s,
+ *     fundo --cc-error-container com texto --cc-on-error-container.
+ *
+ *   Tabs
+ *     Fundo transparente, texto Plus Jakarta 500.
+ *     Indicator 2px --cc-primary com radius pill.
+ *     Active peso 700 cor --cc-primary; inactive --cc-on-surface-variant.
+ *
+ *   Inputs / TextFields
+ *     Fundo --cc-surface-container-low, radius md.
+ *     Borda 1px --cc-outline-variant; focus 2px --cc-primary.
+ *     Placeholder --cc-outline.
+ *
+ *   Chips / Badges
+ *     Pill obrigatório (radius-pill).
+ *     Fundo --cc-primary-fixed para neutros, --cc-secondary-container para
+ *     afetivos (streak, achievement), --cc-error-container para alertas.
+ *     Texto sempre on-*.
+ *
+ * ────────────────────────────────────────────────────────────────────────────
+ *
+ *   RULES
+ *
+ *   1.  Sage is the spine. O verde --cc-primary aparece em CTAs, indicadores
+ *       de tab ativa, ícones de estado positivo. É a cor da marca.
+ *
+ *   2.  Peach is for affect. --cc-secondary-container (peach) reservado a
+ *       conquistas, streaks, milestones — qualquer coisa que celebra. Não
+ *       use para erro nem para texto longo.
+ *
+ *   3.  Surfaces over borders. Hierarquia se constrói com
+ *       surface-container-low/.../highest, NÃO com bordas pesadas. Borda
+ *       fina (outline-variant) só para dividir conteúdo dentro de um card.
+ *
+ *   4.  Shadows are ambient. Use --cc-shadow-ambient ou -soft. Nunca
+ *       sombra preta dura — é wellness, não Stripe.
+ *
+ *   5.  Pills for actions, cards for content. Botões, chips, badges, nav
+ *       flutuante → pill. Recipientes de conteúdo → radius-xl (1.5rem).
+ *
+ *   6.  Manrope sells the page. Headlines em Manrope sempre que houver
+ *       respiro. Use 800 (extra-bold) no logo e em hero displays.
+ *
+ *   7.  Glass on float. Tudo que flutua sobre o conteúdo (top AppBar
+ *       sticky, bottom nav, FAB) usa `.glass-pill` ou
+ *       `backdrop-filter: blur(20px)` + alpha 70-80% do surface.
+ *
+ *   8.  Mono for numbers. Notação, eval, relógio — JetBrains Mono. Mantido.
+ *
+ *   9.  The board stays the board. Casas com radius 0. Container externo
+ *       ganha --cc-radius-xl (1.5rem) para casar com cards.
+ *
+ *   10. Material symbols complement Iconify. Use ícones MD3 (outlined,
+ *       FILL 0 → FILL 1 quando active) onde o sentido for emocional
+ *       (favorite, self_improvement, water_drop). Iconify para genéricos.
+ *
+ *   11. Motion is sober. Mesmos tokens --cc-motion-*. Pills/buttons usam
+ *       active:scale-95 para feedback tátil sutil. Respeita
+ *       prefers-reduced-motion.
+ *
+ * ════════════════════════════════════════════════════════════════════════════
+ */
+
+/* ──── Material Symbols Outlined (icon font) ─────────────────────────────── */
+
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
+
+/* ─────────────────────────── LIGHT MODE (default) ────────────────────────── */
+
+:root {
+  /* ─── MD3 palette roles ──────────────────────────────────────────── */
+  --cc-primary: #55624d;
+  --cc-on-primary: #ffffff;
+  --cc-primary-container: #98a68e;
+  --cc-on-primary-container: #2f3c29;
+  --cc-primary-fixed: #d9e7cd;
+  --cc-primary-fixed-dim: #bdcbb2;
+  --cc-on-primary-fixed: #131e0e;
+  --cc-on-primary-fixed-variant: #3e4a37;
+
+  --cc-secondary: #755754;
+  --cc-on-secondary: #ffffff;
+  --cc-secondary-container: #fed7d2;
+  --cc-on-secondary-container: #795b58;
+  --cc-secondary-fixed: #ffdad6;
+  --cc-secondary-fixed-dim: #e3beba;
+  --cc-on-secondary-fixed: #2b1614;
+  --cc-on-secondary-fixed-variant: #5b403d;
+
+  --cc-tertiary: #605f56;
+  --cc-on-tertiary: #ffffff;
+  --cc-tertiary-container: #a4a298;
+  --cc-on-tertiary-container: #393931;
+  --cc-tertiary-fixed: #e5e2d8;
+  --cc-tertiary-fixed-dim: #c9c7bc;
+  --cc-on-tertiary-fixed: #1c1c15;
+  --cc-on-tertiary-fixed-variant: #48473f;
+
+  --cc-error: #ba1a1a;
+  --cc-on-error: #ffffff;
+  --cc-error-container: #ffdad6;
+  --cc-on-error-container: #93000a;
+
+  --cc-surface: #f8faf3;
+  --cc-surface-bright: #f8faf3;
+  --cc-surface-dim: #d8dbd4;
+  --cc-surface-container-lowest: #ffffff;
+  --cc-surface-container-low: #f2f4ed;
+  --cc-surface-container: #ecefe8;
+  --cc-surface-container-high: #e7e9e2;
+  --cc-surface-container-highest: #e1e3dc;
+  --cc-surface-variant: #e1e3dc;
+  --cc-surface-tint: #55624d;
+  --cc-inverse-surface: #2e312d;
+  --cc-inverse-on-surface: #eff2ea;
+  --cc-inverse-primary: #bdcbb2;
+
+  --cc-on-surface: #191c18;
+  --cc-on-surface-variant: #444841;
+  --cc-on-background: #191c18;
+  --cc-background: #f8faf3;
+
+  --cc-outline: #757870;
+  --cc-outline-variant: #c5c8be;
+
+  /* ─── Legacy CC aliases (back-compat) ────────────────────────────── */
+  --cc-bg0: var(--cc-surface-container-lowest);
+  --cc-bg1: var(--cc-surface);
+  --cc-bg2: var(--cc-surface-container-low);
+  --cc-bg3: var(--cc-surface-container);
+  --cc-bg4: var(--cc-surface-container-high);
+  --cc-bg5: var(--cc-surface-container-highest);
+
+  --cc-nav-bg: var(--cc-surface-container-lowest);
+  --cc-nav-border: var(--cc-outline-variant);
+
+  --cc-text: var(--cc-on-surface);
+  --cc-text-sub: var(--cc-on-surface-variant);
+  --cc-text-muted: var(--cc-outline);
+
+  --cc-primary-dark: #2f3c29;          /* legacy slot */
+  --cc-primary-contrast: var(--cc-on-primary);
+  --cc-primary-muted: rgba(85, 98, 77, 0.12);
+  --cc-primary-subtle: rgba(85, 98, 77, 0.06);
+
+  --cc-green: var(--cc-primary);       /* sage IS the green now */
+  --cc-green-hover: #6a7860;
+  --cc-green-muted: rgba(85, 98, 77, 0.14);
+  --cc-green-subtle: rgba(85, 98, 77, 0.07);
+  --cc-gold: var(--cc-secondary-container);
+
+  --cc-border: var(--cc-outline-variant);
+  --cc-border-hover: var(--cc-outline);
+
+  /* ─── Chess board — sage & paper ─────────────────────────────────── */
+  --cc-board-light: #e8e4d7;
+  --cc-board-dark: #55624d;            /* sage primary — board fits brand */
+
+  /* ─── Shape / radius ─────────────────────────────────────────────── */
+  --cc-radius-xs: 0.25rem;
+  --cc-radius-sm: 0.5rem;
+  --cc-radius-md: 0.75rem;
+  --cc-radius-lg: 1rem;
+  --cc-radius-xl: 1.5rem;
+  --cc-radius-pill: 9999px;
+
+  /* ─── Typography stacks ──────────────────────────────────────────── */
+  --cc-font-body:
+    var(--font-plus-jakarta), -apple-system, "Helvetica Neue", Arial,
+    sans-serif;
+  --cc-font-headline: var(--font-manrope), "Helvetica Neue", Arial, sans-serif;
+  --cc-font-mono:
+    var(--font-jetbrains-mono), "JetBrains Mono", "SFMono-Regular", Menlo,
+    monospace;
+  /* aliases (back-compat) */
+  --cc-font-sans: var(--cc-font-body);
+  --cc-font-serif: var(--cc-font-headline);
+
+  /* ─── Motion ─────────────────────────────────────────────────────── */
+  --cc-motion-easing: cubic-bezier(0.22, 1, 0.36, 1);
+  --cc-motion-duration-fast: 160ms;
+  --cc-motion-duration: 320ms;
+  --cc-motion-duration-slow: 480ms;
+  --cc-motion-distance: 8px;
+
+  /* ─── Elevation ──────────────────────────────────────────────────── */
+  --cc-shadow-ambient: 0 20px 40px -10px rgba(85, 98, 77, 0.06);
+  --cc-shadow-soft: 0 10px 30px rgba(85, 98, 77, 0.03);
+  --cc-shadow-fab: 0 8px 24px rgba(85, 98, 77, 0.2);
+  --cc-shadow-card: var(--cc-shadow-soft);
+  --cc-shadow-menu: 0 12px 36px rgba(0, 0, 0, 0.1);
+  --cc-shadow-dialog: 0 24px 60px rgba(0, 0, 0, 0.18);
+
+  /* ─── Decorative gradients ───────────────────────────────────────── */
+  --cc-gradient-zenith:
+    linear-gradient(135deg, #f8faf3 0%, #f2f4ed 50%, #fed7d2 100%);
+  --cc-gradient-primary:
+    linear-gradient(135deg, #55624d 0%, #98a68e 100%);
+}
+
+/* ──────────────────────── DARK MODE (data-theme) ─────────────────────────── */
+
+:root[data-theme="dark"] {
+  /* ─── MD3 palette roles ──────────────────────────────────────────── */
+  --cc-primary: #bdcbb2;             /* inverse primary — sage claro */
+  --cc-on-primary: #273420;
+  --cc-primary-container: #3e4a37;
+  --cc-on-primary-container: #d9e7cd;
+  --cc-primary-fixed: #d9e7cd;
+  --cc-primary-fixed-dim: #bdcbb2;
+  --cc-on-primary-fixed: #131e0e;
+  --cc-on-primary-fixed-variant: #3e4a37;
+
+  --cc-secondary: #e3beba;
+  --cc-on-secondary: #422a28;
+  --cc-secondary-container: #5b403d;
+  --cc-on-secondary-container: #ffdad6;
+
+  --cc-tertiary: #c9c7bc;
+  --cc-on-tertiary: #313128;
+  --cc-tertiary-container: #48473f;
+  --cc-on-tertiary-container: #e5e2d8;
+
+  --cc-error: #ffb4ab;
+  --cc-on-error: #690005;
+  --cc-error-container: #93000a;
+  --cc-on-error-container: #ffdad6;
+
+  --cc-surface: #11140f;
+  --cc-surface-bright: #373b35;
+  --cc-surface-dim: #11140f;
+  --cc-surface-container-lowest: #0b0e09;
+  --cc-surface-container-low: #191c17;
+  --cc-surface-container: #1d201b;
+  --cc-surface-container-high: #272b25;
+  --cc-surface-container-highest: #323630;
+  --cc-surface-variant: #444841;
+  --cc-surface-tint: #bdcbb2;
+  --cc-inverse-surface: #e1e3dc;
+  --cc-inverse-on-surface: #2e312d;
+  --cc-inverse-primary: #55624d;
+
+  --cc-on-surface: #e1e3dc;
+  --cc-on-surface-variant: #c5c8be;
+  --cc-on-background: #e1e3dc;
+  --cc-background: #11140f;
+
+  --cc-outline: #8f9389;
+  --cc-outline-variant: #444841;
+
+  /* ─── Legacy/derived (re-resolve) ────────────────────────────────── */
+  --cc-primary-dark: #d9e7cd;
+  --cc-primary-muted: rgba(189, 203, 178, 0.16);
+  --cc-primary-subtle: rgba(189, 203, 178, 0.08);
+  --cc-green: var(--cc-primary);
+  --cc-green-hover: #c9d8be;
+  --cc-green-muted: rgba(189, 203, 178, 0.16);
+  --cc-green-subtle: rgba(189, 203, 178, 0.08);
+  --cc-gold: var(--cc-secondary-container);
+
+  /* ─── Board (darker square fits dark UI) ─────────────────────────── */
+  --cc-board-light: #b0bda6;
+  --cc-board-dark: #2f3c29;
+
+  /* ─── Shadows (deeper) ───────────────────────────────────────────── */
+  --cc-shadow-ambient: 0 20px 40px -10px rgba(0, 0, 0, 0.55);
+  --cc-shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --cc-shadow-fab: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --cc-shadow-card: var(--cc-shadow-soft);
+  --cc-shadow-menu: 0 12px 36px rgba(0, 0, 0, 0.55);
+  --cc-shadow-dialog: 0 24px 60px rgba(0, 0, 0, 0.6);
+
+  /* ─── Dark gradient ──────────────────────────────────────────────── */
+  --cc-gradient-zenith:
+    linear-gradient(135deg, #11140f 0%, #1d201b 50%, #5b403d 100%);
+}
+
+/* ─────────────────────────────── GLOBAL BASE ─────────────────────────────── */
+
+html,
+body {
+  background-color: var(--cc-surface);
+  color: var(--cc-on-surface);
+  font-family: var(--cc-font-body);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--cc-font-headline);
+  letter-spacing: -0.02em;
+}
+
+a {
+  text-decoration: none;
+}
+
+#moves-panel {
+  scrollbar-width: thin;
+  scrollbar-color: var(--cc-surface-container-high) transparent;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 24;
+}
+
+/* ─────────────────────────── UTILITY: GLASS PILL ─────────────────────────── */
+
+.glass-pill {
+  background: color-mix(in srgb, var(--cc-surface) 70%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid color-mix(in srgb, var(--cc-on-surface) 6%, transparent);
+}
+
+/* ─────────────────────────── DECORATIVE: ZENITH BG ───────────────────────── */
+
+.bg-zenith-gradient {
+  background: var(--cc-gradient-zenith);
+}
+
+/* ─────────────────── PAGE TRANSITION (route change) ──────────────────────── */
+
+.page-transition {
+  animation: cc-page-enter var(--cc-motion-duration-slow)
+    var(--cc-motion-easing) both;
+  will-change: opacity, transform;
+}
+
+@keyframes cc-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--cc-motion-distance));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─────────────────── TAB PANEL TRANSITION (MUI Tabs) ─────────────────────── */
+
+[role="tabpanel"]:not([hidden]) {
+  animation: cc-tabpanel-enter var(--cc-motion-duration)
+    var(--cc-motion-easing) both;
+}
+
+@keyframes cc-tabpanel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--cc-motion-distance) / 2));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─────────────────────── REDUCED MOTION PREFERENCE ───────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition,
+  [role="tabpanel"]:not([hidden]) {
+    animation: none;
+  }
+}
