@@ -563,6 +563,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  /* Reserve the scrollbar gutter even when no overflow exists. Without this,
+   * appearing/disappearing scrollbars cause main.clientWidth to fluctuate by
+   * ~6px, which makes the board size computation jitter every time a captured
+   * piece, an evaluation line or a new chip appears. Stable gutters keep
+   * sizing fully deterministic. */
+  scrollbar-gutter: stable;
+}
+
 h1,
 h2,
 h3 {

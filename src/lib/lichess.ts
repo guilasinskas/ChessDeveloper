@@ -6,7 +6,6 @@ import {
   LichessGame,
   LichessResponse,
 } from "@/types/lichess";
-import { logErrorToSentry } from "./sentry";
 import { formatUciPv } from "./chess";
 import { LoadedGame } from "@/types/game";
 
@@ -47,7 +46,7 @@ export const getLichessEval = async (
       lines: linesToKeep,
     };
   } catch (error) {
-    logErrorToSentry(error, { fen, multiPv });
+    console.error("Lichess eval failed", { fen, multiPv, error });
 
     return {
       bestMove: "",

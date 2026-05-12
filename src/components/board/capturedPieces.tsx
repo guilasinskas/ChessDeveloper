@@ -1,6 +1,6 @@
 import { getCapturedPieces, getMaterialDifference } from "@/lib/chess";
 import { Color } from "@/types/enums";
-import { Box, Grid2 as Grid, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import { ReactElement, useMemo } from "react";
 
 export interface Props {
@@ -24,13 +24,21 @@ export default function CapturedPieces({ fen, color }: Props) {
   }, [fen, color]);
 
   return (
-    <Grid
-      container
-      alignItems="end"
-      spacing={0.7}
-      size="auto"
-      marginLeft={`-${0.3 * PIECE_SCALE}rem`}
-      minHeight={`${2 * PIECE_SCALE}rem`}
+    <Box
+      sx={{
+        // Fixed height — always reserved, whether or not pieces have been
+        // captured yet. Without this the row collapses to 0 until the first
+        // capture, the player-header column grows, the page overflows 100vh
+        // and a scrollbar appears. The board sizing hook is now viewport-
+        // anchored and ignores main.clientWidth, so a one-off scrollbar no
+        // longer resizes the board — but keeping the height stable here
+        // also avoids the visible layout jump on first capture.
+        height: `${2 * PIECE_SCALE}rem`,
+        display: "flex",
+        alignItems: "center",
+        marginLeft: `-${0.3 * PIECE_SCALE}rem`,
+        gap: "0.35rem",
+      }}
     >
       <Stack direction="row" spacing={0.1}>
         {piecesComponents}
@@ -40,12 +48,11 @@ export default function CapturedPieces({ fen, color }: Props) {
         <Typography
           lineHeight={`${PIECE_SCALE * 1.5}rem`}
           fontSize={`${PIECE_SCALE * 1.5}rem`}
-          marginLeft={0.3}
         >
           +{materialDiff}
         </Typography>
       )}
-    </Grid>
+    </Box>
   );
 }
 

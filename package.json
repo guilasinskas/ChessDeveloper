@@ -49,6 +49,13 @@
       ],
       "signAndEditExecutable": false
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "guilasinskas",
+        "repo": "ChessDeveloper"
+      }
+    ],
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
@@ -65,9 +72,9 @@
     "@mui/lab": "^6.0.0-beta.21",
     "@mui/material": "^6.3.0",
     "@mui/x-data-grid": "^7.23.5",
-    "@sentry/nextjs": "^10.48.0",
     "@tanstack/react-query": "^5.75.5",
     "chess.js": "^1.2.0",
+    "electron-updater": "^6.8.3",
     "firebase": "^11.1.0",
     "idb": "^8.0.1",
     "jotai": "^2.11.0",

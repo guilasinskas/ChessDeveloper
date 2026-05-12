@@ -1,9 +1,5 @@
 import { isWasmSupported } from "@/lib/engine/shared";
 import { Stockfish11 } from "@/lib/engine/stockfish11";
-import { Stockfish16 } from "@/lib/engine/stockfish16";
-import { Stockfish16_1 } from "@/lib/engine/stockfish16_1";
-import { Stockfish17 } from "@/lib/engine/stockfish17";
-import { Stockfish17_1 } from "@/lib/engine/stockfish17_1";
 import { Stockfish18 } from "@/lib/engine/stockfish18";
 import { UciEngine } from "@/lib/engine/uciEngine";
 import { EngineName } from "@/types/enums";
@@ -46,22 +42,6 @@ const pickEngine = (engine: EngineName): Promise<UciEngine> => {
       return Stockfish18.create(false);
     case EngineName.Stockfish18Lite:
       return Stockfish18.create(true);
-    case EngineName.Stockfish17_1:
-      return Stockfish17_1.create(false);
-    case EngineName.Stockfish17_1Lite:
-      return Stockfish17_1.create(true);
-    case EngineName.Stockfish17:
-      return Stockfish17.create(false);
-    case EngineName.Stockfish17Lite:
-      return Stockfish17.create(true);
-    case EngineName.Stockfish16_1:
-      return Stockfish16_1.create(false);
-    case EngineName.Stockfish16_1Lite:
-      return Stockfish16_1.create(true);
-    case EngineName.Stockfish16:
-      return Stockfish16.create(false);
-    case EngineName.Stockfish16NNUE:
-      return Stockfish16.create(true);
     case EngineName.Stockfish11:
       return Stockfish11.create();
   }

@@ -1,4 +1,3 @@
-import { withSentryConfig } from "@sentry/nextjs";
 import { NextConfig } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
@@ -49,20 +48,4 @@ const nextConfig = (phase: string): NextConfig => ({
         ],
 });
 
-export default withSentryConfig(nextConfig, {
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
-  org: process.env.SENTRY_ORG,
-  project: "javascript-nextjs",
-  widenClientFileUpload: true,
-  sourcemaps: {
-    deleteSourcemapsAfterUpload: true,
-  },
-  webpack: {
-    treeshake: {
-      removeDebugLogging: true,
-    },
-    reactComponentAnnotation: {
-      enabled: true,
-    },
-  },
-});
+export default nextConfig;

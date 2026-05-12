@@ -17,21 +17,20 @@ Powered by **Stockfish**, built on **Next.js + Electron**, with everything store
 ## What's inside
 
 - **Analysis** — load a PGN (paste, file, Lichess URL, Chess.com link) and walk the moves with Stockfish evaluations, classifications (best/great/blunder/…), board arrows from `[%cal …]` annotations, and `[%clk]` clock markers inline with the moves
-- **Play vs Stockfish** — pick an Elo and a time control (Bullet → Rapid 15+10), with two live clocks, increments, and timeout detection
 - **Database** — local game library; everything you load is saved to a JSON file under your user data folder
 - **Openings** — build repertoires move-by-move on a tree, with comments, NAGs, variations, mainline promotion, and a training mode that drills you on your own lines
 - **Stats** — slice your games by opening (real variant names, not ECO codes), filter by color, hover for a mini board, drill into the move tree to see win-rates jogada-a-jogada, and load games directly from your Chess.com username
 - **Notes** — searchable notes hub with tags and inline image references
 
-All data lives locally. Nothing is uploaded anywhere.
+All data lives locally. Nothing is uploaded anywhere — no telemetry, no analytics, no error reporting. The only network calls are the ones you ask for (loading a game from Chess.com/Lichess, fetching opening cloud evals from Lichess).
 
 ---
 
 ## Quick start — just use the app
 
-If you don't want to mess with Node and source code, grab the executable:
+If you don't want to mess with Node and source code, grab the executable from the latest [GitHub Release](../../releases/latest):
 
-1. Run the installer (`Chesskit Setup *.exe`) **or** unzip the portable folder
+1. Run the installer (`Chesskit-Setup-*.exe`) **or** unzip the portable folder
 2. Launch **Chesskit** from the Start Menu / desktop shortcut (or run `Chesskit.exe` from the unzipped folder)
 
 That's it. The first launch creates a data folder at:
@@ -41,6 +40,19 @@ That's it. The first launch creates a data folder at:
 ```
 
 Your games (`games.json`), repertoires (`openings.json`), notes (`notes.json`), and any uploaded images live there. Back up that folder if you care about your data — it's not synced anywhere.
+
+### Verifying your download (recommended)
+
+The Windows installer is **not currently code-signed**, which means Windows SmartScreen / Defender may warn you that the publisher is unknown. To be sure the file you downloaded is exactly the one published, every release ships with a `SHA256SUMS.txt` containing the expected hash for each artifact. Verify before running:
+
+```powershell
+# In PowerShell, from the folder where you downloaded the installer
+Get-FileHash -Algorithm SHA256 .\Chesskit-Setup-*.exe
+```
+
+Compare the printed hash with the matching line in `SHA256SUMS.txt`. If they match, the file is authentic.
+
+If you see a SmartScreen prompt despite a matching hash, click **More info → Run anyway**. We're working on adding code signing in a future release.
 
 ---
 
@@ -136,7 +148,7 @@ src/
   components/   reusable UI primitives (Board, NavLink, …)
   hooks/        engine, store, queries
   lib/          chess + PGN logic, analysis tree, Chess.com / Lichess clients
-  pages/        Next.js routes — / · /play · /database · /openings · /notes · /stats
+  pages/        Next.js routes — / · /database · /openings · /notes · /stats
     api/        local JSON-backed API (games, openings, notes, images)
   sections/     page-level compositions (analysis panel, play board, …)
   types/        shared TypeScript types

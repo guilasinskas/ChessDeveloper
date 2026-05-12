@@ -23,7 +23,6 @@ import {
   Box,
   Typography,
 } from "@mui/material";
-import { setContext as setSentryContext } from "@sentry/react";
 import { Chess } from "chess.js";
 import { useRef, useState, useMemo, useEffect } from "react";
 import GamePgnInput from "./gamePgnInput";
@@ -154,7 +153,6 @@ export default function NewGameDialog({ open, onClose, setGame }: Props) {
 
     try {
       const games = getGamesFromPgn(pgn);
-      setSentryContext("loadedGame", { pgn });
 
       if (setGame) {
         const blocks = pgn

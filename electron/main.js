@@ -19,6 +19,7 @@ if (process.env.ELECTRON_RUN_AS_NODE && !_isPackaged) {
 }
 
 const { app, BrowserWindow, shell, dialog } = require("electron");
+const { autoUpdater } = require("electron-updater");
 const { spawn } = require("child_process");
 const path = require("path");
 const http = require("http");
@@ -135,6 +136,57 @@ function startProdServer() {
   require(path.join(standaloneDir, "server.js"));
 }
 
+// ─────────────────────────── Auto-update wiring ───────────────────────────
+//
+// Checks the GitHub Releases feed (configured under "publish" in package.json)
+// for a newer version on startup. When one is found, it downloads in the
+// background and, once ready, asks the user via a dialog whether to install
+// now (relaunches the app) or later (applies on next quit). All of this is
+// no-op in dev mode — electron-updater bails out when app.isPackaged is false.
+
+function setupAutoUpdate(getWindow) {
+  if (isDev) return; // no updates during local dev
+
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on("error", (err) => {
+    console.error("[updater] error:", err?.message ?? err);
+  });
+
+  autoUpdater.on("update-available", (info) => {
+    console.log(`[updater] update available: v${info?.version}`);
+  });
+
+  autoUpdater.on("update-not-available", () => {
+    console.log("[updater] up to date");
+  });
+
+  autoUpdater.on("update-downloaded", async (info) => {
+    const win = getWindow();
+    const result = await dialog.showMessageBox(win, {
+      type: "info",
+      buttons: ["Restart now", "Later"],
+      defaultId: 0,
+      cancelId: 1,
+      title: "Chesskit update ready",
+      message: `Chesskit ${info?.version ?? ""} is ready to install.`,
+      detail:
+        "Choose 'Restart now' to apply the update immediately, or 'Later' to apply it the next time you quit Chesskit.",
+    });
+    if (result.response === 0) {
+      autoUpdater.quitAndInstall();
+    }
+  });
+
+  // Kick off the check shortly after launch so the window is already visible.
+  setTimeout(() => {
+    autoUpdater.checkForUpdates().catch((err) => {
+      console.error("[updater] checkForUpdates failed:", err?.message ?? err);
+    });
+  }, 3000);
+}
+
 function createWindow() {
   const iconPath = isDev
     ? path.join(__dirname, "..", "public", "favicon.png")
@@ -167,6 +219,8 @@ function createWindow() {
     shell.openExternal(url);
     return { action: "deny" };
   });
+
+  return win;
 }
 
 app.whenReady().then(async () => {
@@ -178,7 +232,8 @@ app.whenReady().then(async () => {
     }
 
     await waitForServer();
-    createWindow();
+    const mainWindow = createWindow();
+    setupAutoUpdate(() => mainWindow);
   } catch (err) {
     dialog.showErrorBox("Chesskit failed to start", String(err?.message ?? err));
     app.quit();

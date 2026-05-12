@@ -70,7 +70,14 @@
       "Bash(curl -s -o /tmp/page2.html -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/)",
       "Bash(curl -s -o /tmp/p3.html -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/)",
       "Bash(curl -s -o /dev/null -w \"/notes=%{http_code}\\\\n\" http://localhost:3000/notes)",
-      "PowerShell(npx cross-env ELECTRON_BUILD=1 next build 2>&1)"
+      "PowerShell(npx cross-env ELECTRON_BUILD=1 next build 2>&1)",
+      "Bash(curl -s -o /tmp/gpl3.txt https://www.gnu.org/licenses/gpl-3.0.txt)",
+      "Bash(cp /tmp/gpl3.txt LICENCE && head -5 LICENCE && echo \"---\" && wc -l LICENCE)",
+      "PowerShell(npm uninstall @sentry/nextjs 2>&1)",
+      "PowerShell(npm install electron-updater 2>&1)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }
