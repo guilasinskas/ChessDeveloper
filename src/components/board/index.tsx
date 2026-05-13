@@ -20,6 +20,7 @@ import { CLASSIFICATION_COLORS } from "@/constants";
 import { Player } from "@/types/game";
 import PlayerHeader from "./playerHeader";
 import { boardHueAtom, pieceSetAtom } from "./states";
+import { LAYOUT } from "@/hooks/useScreenSize";
 import tinycolor from "tinycolor2";
 
 export interface Props {
@@ -286,8 +287,8 @@ export default function Board({
 
   const customBoardStyle = useMemo(() => {
     const commonBoardStyle = {
-      borderRadius: "8px",
-      boxShadow: "0 4px 24px rgba(0, 0, 0, 0.35)",
+      borderRadius: "12px",
+      boxShadow: "none",
     };
 
     if (boardHue) {
@@ -300,20 +301,40 @@ export default function Board({
     return commonBoardStyle;
   }, [boardHue]);
 
+  // boardSize is the chessboard SQUARES area, not the whole column. The
+  // eval bar matches the chessboard exactly (same height), and the inner
+  // column width is also boardSize so the chessboard sizes itself square.
   return (
     <Grid
       container
       justifyContent="center"
-      alignItems="center"
+      alignItems="flex-start"
       wrap="nowrap"
-      width={boardSize}
+      sx={{
+        flexShrink: 0,
+        flexGrow: 0,
+        // Outer container is just wide enough for eval bar + chessboard.
+        // No fixed height — content (headers + board) drives it.
+      }}
     >
       {showEvaluationBar && (
-        <EvaluationBar
-          height={boardSize || 400}
-          boardOrientation={boardOrientation}
-          currentPositionAtom={currentPositionAtom}
-        />
+        <Box
+          sx={{
+            // Eval bar aligned to the CHESSBOARD vertically — top-padding
+            // skips the player-header strip + rowGap so the bar starts at
+            // the same Y as the squares, not at the top of the column.
+            pt: `${LAYOUT.playerHeaderHeight + LAYOUT.boardRowGap}px`,
+            display: "flex",
+            flexDirection: "column",
+            alignSelf: "flex-start",
+          }}
+        >
+          <EvaluationBar
+            height={boardSize || 400}
+            boardOrientation={boardOrientation}
+            currentPositionAtom={currentPositionAtom}
+          />
+        </Box>
       )}
 
       <Grid
@@ -322,7 +343,7 @@ export default function Board({
         justifyContent="center"
         alignItems="center"
         paddingLeft={{ xs: 0.5, sm: showEvaluationBar ? 1 : 0 }}
-        size="grow"
+        sx={{ width: boardSize, flexShrink: 0 }}
       >
         <PlayerHeader
           color={boardOrientation === Color.White ? Color.Black : Color.White}
@@ -336,6 +357,16 @@ export default function Board({
           alignItems="center"
           ref={boardRef}
           size={12}
+          sx={{
+            // Frame is rendered via shadow only — no padding. Adding padding
+            // here breaks react-chessboard's hit detection: the library reads
+            // its container's bounding rect to calculate piece positions, so
+            // any inset between the wrapper and the actual <Chessboard /> div
+            // makes the mouse drift away from the squares.
+            borderRadius: "24px",
+            boxShadow: "var(--cc-shadow-ambient)",
+            overflow: "hidden",
+          }}
         >
           <Chessboard
             id={`${boardId}-${canPlay}`}
@@ -346,7 +377,7 @@ export default function Board({
             }
             customBoardStyle={customBoardStyle}
             customLightSquareStyle={{ backgroundColor: "#e8e4d7" }}
-            customDarkSquareStyle={{ backgroundColor: "#2c2823" }}
+            customDarkSquareStyle={{ backgroundColor: "#55624d" }}
             customArrows={customArrows}
             isDraggablePiece={isPiecePlayable}
             customSquare={SquareRenderer}

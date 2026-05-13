@@ -46,10 +46,12 @@ export default function RepertoireBoard({ repertoire, engine }: Props) {
   );
 
   const boardSize = useMemo(() => {
-    const w = screenSize.width;
-    const h = screenSize.height;
-    if (typeof window === "undefined") return Math.min(w, h - 80);
-    if (window.innerWidth < 900) return Math.min(w, h - 80);
+    const { width: w, height: h } = screenSize;
+    // Mobile / narrow desktop: full-width board stacked above the repertoire
+    // tree, leaving room only for the navbar and a small bottom margin.
+    if (w < 900) return Math.min(w - 16, h - 56 - 16);
+    // Desktop: board on the left, tree on the right. Capped at 820 so it
+    // doesn't dominate on ultra-wide displays.
     return Math.min(w * 0.62, h * 0.95, 820);
   }, [screenSize]);
 

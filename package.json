@@ -2,6 +2,12 @@
   "name": "chesskit",
   "version": "0.1.0",
   "private": true,
+  "description": "Personal chess workbench — analyze games, study openings and keep notes, all running locally on your machine. Powered by Stockfish.",
+  "author": {
+    "name": "Guilherme Lasinskas",
+    "url": "https://github.com/guilasinskas/ChessDeveloper"
+  },
+  "homepage": "https://chesskit.org",
   "license": "GPL-3.0-only",
   "main": "electron/main.js",
   "scripts": {
@@ -12,7 +18,7 @@
     "electron": "electron .",
     "electron-dev": "electron .",
     "electron-build": "node scripts/electron-build.mjs",
-    "electron-pack": "npm run electron-build && electron-packager . Chesskit --platform=win32 --arch=x64 --out=dist-electron --icon=public/favicon.ico --overwrite --extra-resource=.electron-standalone --extra-resource=public/favicon.png --ignore=\"node_modules|src|\\.next|\\.electron-standalone|\\.git|dist-electron|data|scripts\"",
+    "electron-pack": "npm run electron-build && electron-builder --win dir",
     "electron-installer": "npm run electron-build && electron-builder --win nsis",
     "make-icon": "node scripts/make-icon.mjs"
   },
@@ -25,12 +31,52 @@
     "files": [
       "electron/**/*",
       "package.json",
-      "!node_modules"
+      "node_modules/**/*",
+      "!node_modules/**/{CHANGELOG.md,README.md,README,readme.md,readme,LICENSE,license,*.d.ts,*.map,*.test.*,test/**,tests/**,__tests__/**,example/**,examples/**}",
+      "!node_modules/.bin/**",
+      "!node_modules/@next/**",
+      "!node_modules/next/**",
+      "!node_modules/react/**",
+      "!node_modules/react-dom/**",
+      "!node_modules/react-is/**",
+      "!node_modules/@types/**",
+      "!node_modules/@mui/**",
+      "!node_modules/@emotion/**",
+      "!node_modules/@iconify/**",
+      "!node_modules/firebase/**",
+      "!node_modules/@firebase/**",
+      "!node_modules/recharts/**",
+      "!node_modules/d3/**",
+      "!node_modules/d3-*/**",
+      "!node_modules/chess.js/**",
+      "!node_modules/react-chessboard/**",
+      "!node_modules/jotai/**",
+      "!node_modules/@tanstack/**",
+      "!node_modules/idb/**",
+      "!node_modules/tinycolor2/**",
+      "!node_modules/@fontsource/**",
+      "!node_modules/@babel/**",
+      "!node_modules/babel-*/**",
+      "!node_modules/@swc/**",
+      "!node_modules/typescript/**",
+      "!node_modules/@grpc/**",
+      "!node_modules/protobufjs/**",
+      "!node_modules/@protobufjs/**",
+      "!node_modules/sharp/**",
+      "!node_modules/dnd-core/**",
+      "!node_modules/react-dnd*/**",
+      "!node_modules/hoist-non-react-statics/**",
+      "!node_modules/react-transition-group/**",
+      "!node_modules/prop-types/**",
+      "!node_modules/loose-envify/**"
     ],
     "extraResources": [
       {
         "from": ".electron-standalone",
-        "to": ".electron-standalone"
+        "to": ".electron-standalone",
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "public/favicon.png",

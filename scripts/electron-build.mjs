@@ -4,7 +4,7 @@
  * Run: node scripts/electron-build.mjs
  */
 import { execSync } from "child_process";
-import { cpSync, existsSync, rmSync } from "fs";
+import { cpSync, existsSync, renameSync, rmSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -54,6 +54,22 @@ for (const dir of dirsToClean) {
     rmSync(p, { recursive: true, force: true });
     console.log(`▶ Removed stray dir from standalone: ${dir}`);
   }
+}
+
+// Rename node_modules → _server_modules. electron-builder's extraResources
+// copy applies file-level filters that silently drop nested `node_modules/`
+// directories on the assumption they belong to the root project (deduped
+// against the asar). Renaming side-steps that detection so the Next.js
+// runtime deps actually make it into the packaged app. main.js sets
+// NODE_PATH to this folder before `require`-ing server.js.
+const standaloneNodeModules = join(outDir, "node_modules");
+const standaloneRenamed = join(outDir, "_server_modules");
+if (existsSync(standaloneNodeModules)) {
+  if (existsSync(standaloneRenamed)) {
+    rmSync(standaloneRenamed, { recursive: true, force: true });
+  }
+  renameSync(standaloneNodeModules, standaloneRenamed);
+  console.log("▶ Renamed standalone/node_modules → _server_modules");
 }
 
 console.log("✓ Build ready at .electron-standalone/  →  run: npm run electron-pack");

@@ -10,7 +10,7 @@ import {
   showPlayerMoveIconAtom,
 } from "../states";
 import { useMemo } from "react";
-import { useScreenSize } from "@/hooks/useScreenSize";
+import { LAYOUT, useScreenSize } from "@/hooks/useScreenSize";
 import { Color } from "@/types/enums";
 import Board from "@/components/board";
 import { usePlayersData } from "@/hooks/usePlayersData";
@@ -33,15 +33,52 @@ export default function BoardContainer() {
     return getCommentArrows(comment) as unknown as Arrow[];
   }, [analysisTree, currentNodeId]);
 
+  // Board sizing — explicit viewport math.
+  //
+  // `boardSize` here is the size of the actual CHESSBOARD SQUARES area,
+  // NOT the outer column. The column also stacks (top to bottom):
+  //   playerHeader · rowGap · chessboard · rowGap · playerHeader
+  // So we subtract two playerHeaderHeights + two rowGaps from the vertical
+  // budget so the whole column fits inside the viewport without overflow.
+  //
+  // Width-wise we subtract the eval bar slot in addition to the sidebar,
+  // page padding, board-panel gap and the panel's min width. The result is
+  // the largest square that fits in either axis — the chessboard.
+  //
+  // Below lg the board stacks above the panel and the math is simpler.
   const boardSize = useMemo(() => {
-    const width = screenSize.width;
-    const height = screenSize.height;
+    const { width, height } = screenSize;
 
-    if (window?.innerWidth < 1200) {
-      return Math.min(width, height - 80);
+    if (width < LAYOUT.bpSideBySide) {
+      const verticalBudget =
+        height -
+        (width < LAYOUT.bpSidebar ? LAYOUT.navbarHeight : 0) -
+        LAYOUT.titleBarHeight -
+        2 * LAYOUT.pagePaddingY -
+        2 * LAYOUT.playerHeaderHeight -
+        2 * LAYOUT.boardRowGap;
+      const horizontalBudget =
+        width -
+        (width < LAYOUT.bpSidebar ? 0 : LAYOUT.sidebarWidth) -
+        2 * LAYOUT.pagePaddingX -
+        LAYOUT.evalBarWidth;
+      return Math.min(horizontalBudget, verticalBudget);
     }
 
-    return Math.min(width - 480, height * 0.98);
+    const verticalBudget =
+      height -
+      LAYOUT.titleBarHeight -
+      2 * LAYOUT.pagePaddingY -
+      2 * LAYOUT.playerHeaderHeight -
+      2 * LAYOUT.boardRowGap;
+    const horizontalBudget =
+      width -
+      LAYOUT.sidebarWidth -
+      2 * LAYOUT.pagePaddingX -
+      LAYOUT.boardPanelGap -
+      LAYOUT.panelMinWidth -
+      LAYOUT.evalBarWidth;
+    return Math.min(verticalBudget, horizontalBudget);
   }, [screenSize]);
 
   return (

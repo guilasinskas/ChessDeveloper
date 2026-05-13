@@ -105,26 +105,87 @@ export default function RepertoireEditorPage() {
   }
 
   return (
-    <Box sx={{ px: { xs: 1, sm: 2, md: 3 }, pt: 2, pb: 4 }}>
+    <Box>
       <PageTitle title={`${repertoire.name} — Chesskit`} />
 
-      <Box sx={{ mb: 1.5 }}>
-        <Button
-          size="small"
-          variant="text"
-          onClick={() => router.push("/openings")}
-          startIcon={<Icon icon="material-symbols:arrow-back" width={16} />}
-          sx={{
-            color: isDark ? CC.textSub : CC.lTextSub,
-            "&:hover": { color: CC.primary },
-          }}
-        >
-          All repertoires
-        </Button>
+      {/* Sticky title bar — Stitch "Repertoire Editor" with repertoire name + back */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          height: 64,
+          px: { xs: 2, md: 3 },
+          backgroundColor:
+            "color-mix(in srgb, var(--cc-surface) 80%, transparent)",
+          backdropFilter: "blur(20px)",
+          borderBottom: `1px solid ${CC.border}`,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
+          <Button
+            size="small"
+            variant="text"
+            onClick={() => router.push("/openings")}
+            sx={{
+              minWidth: 0,
+              p: "6px",
+              borderRadius: "var(--cc-radius-pill)",
+              color: CC.textSub,
+              "&:hover": { color: CC.primary, backgroundColor: "var(--cc-primary-fixed)" },
+            }}
+          >
+            <Icon icon="material-symbols:arrow-back" width={20} />
+          </Button>
+          <Typography
+            sx={{
+              fontFamily: "var(--cc-font-headline)",
+              fontSize: 22,
+              fontWeight: 800,
+              letterSpacing: "-0.02em",
+              color: CC.primary,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {repertoire.name}
+          </Typography>
+          <Box
+            sx={{
+              px: 1.5,
+              py: 0.25,
+              borderRadius: "var(--cc-radius-pill)",
+              backgroundColor:
+                repertoire.color === "w"
+                  ? "var(--cc-primary-fixed)"
+                  : "var(--cc-inverse-surface)",
+              color:
+                repertoire.color === "w"
+                  ? "var(--cc-on-primary-fixed)"
+                  : "var(--cc-inverse-on-surface)",
+              fontFamily: "var(--cc-font-body)",
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              flexShrink: 0,
+            }}
+          >
+            {repertoire.color === "w" ? "WHITE LINES" : "BLACK LINES"}
+          </Box>
+        </Box>
       </Box>
 
       <Box
         sx={{
+          px: { xs: 1, sm: 2, md: 3 },
+          pt: 3,
+          pb: 4,
           display: "grid",
           gridTemplateColumns: {
             xs: "1fr",

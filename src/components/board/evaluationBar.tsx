@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { getEvaluationBarValue } from "@/lib/chess";
 import { Color } from "@/types/enums";
 import { CurrentPosition } from "@/types/eval";
-import { CC } from "@/constants";
 
 interface Props {
   height: number;
@@ -42,20 +41,21 @@ export default function EvaluationBar({
       justifyContent="center"
       alignItems="center"
       flexDirection={isWhiteOnBottom ? "column" : "column-reverse"}
-      width={{ xs: "1.2rem", sm: "1.5rem" }}
+      width={{ xs: "1.5rem", sm: "2rem" }}
       height={height}
       sx={{
-        border: `1px solid ${CC.border}`,
-        borderRadius: "2px",
+        border: "1px solid var(--cc-outline-variant)",
+        borderRadius: "var(--cc-radius-pill)",
         overflow: "hidden",
         flexShrink: 0,
-        backgroundColor: CC.bg0,
+        backgroundColor: "var(--cc-surface-container-high)",
+        boxShadow: "var(--cc-shadow-soft)",
       }}
     >
       {/* Black section */}
       <Box
         sx={{
-          backgroundColor: CC.bg0,
+          backgroundColor: "var(--cc-on-surface)",
           transition: "height 0.7s ease",
           width: "100%",
           display: "flex",
@@ -67,11 +67,12 @@ export default function EvaluationBar({
         {blackIsWinning && showLabel && (
           <Typography
             sx={{
-              color: CC.text,
-              fontSize: { xs: "0.6rem", sm: "0.65rem" },
+              color: "var(--cc-surface)",
+              fontFamily: "var(--cc-font-mono)",
+              fontSize: { xs: "0.6rem", sm: "0.7rem" },
               fontWeight: 700,
               lineHeight: 1,
-              mt: "2px",
+              mt: "4px",
               userSelect: "none",
             }}
           >
@@ -83,7 +84,7 @@ export default function EvaluationBar({
       {/* White section */}
       <Box
         sx={{
-          backgroundColor: CC.text,
+          backgroundColor: "var(--cc-surface)",
           transition: "height 0.7s ease",
           width: "100%",
           display: "flex",
@@ -95,11 +96,12 @@ export default function EvaluationBar({
         {whiteIsWinning && showLabel && (
           <Typography
             sx={{
-              color: CC.bg1,
-              fontSize: { xs: "0.6rem", sm: "0.65rem" },
+              color: "var(--cc-on-surface)",
+              fontFamily: "var(--cc-font-mono)",
+              fontSize: { xs: "0.6rem", sm: "0.7rem" },
               fontWeight: 700,
               lineHeight: 1,
-              mb: "2px",
+              mb: "4px",
               userSelect: "none",
             }}
           >

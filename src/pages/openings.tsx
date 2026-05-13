@@ -64,42 +64,37 @@ export default function OpeningsListPage() {
   };
 
   return (
-    <Box sx={{ px: { xs: 1, sm: 2, md: 3 }, pt: 2, pb: 4 }}>
+    <Box>
       <PageTitle title="Chesskit Opening Studies" />
 
-      <Box sx={{ mb: 1.5 }}>
-        <Button
-          size="small"
-          variant="text"
-          onClick={() => router.push("/")}
-          startIcon={<Icon icon="material-symbols:arrow-back" width={16} />}
+      {/* Sticky title bar — Stitch "Repertoire Editor" pattern */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          height: 64,
+          px: { xs: 2, md: 3 },
+          backgroundColor:
+            "color-mix(in srgb, var(--cc-surface) 80%, transparent)",
+          backdropFilter: "blur(20px)",
+          borderBottom: `1px solid ${CC.border}`,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+        }}
+      >
+        <Typography
           sx={{
-            color: isDark ? CC.textSub : CC.lTextSub,
-            "&:hover": { color: CC.primary },
+            fontFamily: "var(--cc-font-headline)",
+            fontSize: 24,
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+            color: CC.primary,
           }}
         >
-          Back
-        </Button>
-      </Box>
-
-      <Box sx={{ mb: 3, display: "flex", alignItems: "flex-end", gap: 2 }}>
-        <Box sx={{ flex: 1 }}>
-          <Typography
-            variant="h2"
-            sx={{ mb: 0.5, color: isDark ? CC.text : CC.lText }}
-          >
-            Opening Studies
-          </Typography>
-          <Typography
-            sx={{
-              color: isDark ? CC.textSub : CC.lTextSub,
-              fontSize: 14,
-            }}
-          >
-            {repertoires.length} repertoire{repertoires.length !== 1 && "s"} —
-            build move trees and train them
-          </Typography>
-        </Box>
+          Repertoire Editor
+        </Typography>
         <Button
           variant="contained"
           startIcon={<Icon icon="material-symbols:add" width={16} />}
@@ -109,6 +104,19 @@ export default function OpeningsListPage() {
         </Button>
       </Box>
 
+      <Box sx={{ px: { xs: 1, sm: 2, md: 3 }, pt: 3, pb: 4 }}>
+        <Typography
+          sx={{
+            fontFamily: "var(--cc-font-body)",
+            color: CC.textSub,
+            fontSize: 14,
+            mb: 3,
+          }}
+        >
+          {repertoires.length} repertoire{repertoires.length !== 1 && "s"} —
+          build move trees and train them
+        </Typography>
+
       {sorted.length === 0 ? (
         <Box
           sx={{
@@ -117,22 +125,31 @@ export default function OpeningsListPage() {
             alignItems: "center",
             justifyContent: "center",
             py: 8,
-            backgroundColor: isDark ? CC.bg2 : CC.lBg1,
-            borderRadius: "16px",
-            border: `1px solid ${isDark ? CC.border : CC.lBorder}`,
+            backgroundColor: "var(--cc-surface-container-lowest)",
+            borderRadius: "var(--cc-radius-xl)",
+            boxShadow: "var(--cc-shadow-ambient)",
           }}
         >
-          <Icon
-            icon="streamline:book-reading"
-            width={48}
-            color={isDark ? CC.textMuted : "#c0bab4"}
-          />
+          <Box
+            sx={{
+              width: 72,
+              height: 72,
+              borderRadius: "50%",
+              backgroundColor: "var(--cc-primary-fixed)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mb: 2,
+            }}
+          >
+            <Icon icon="material-symbols:menu-book-outline" width={36} color={CC.primary} />
+          </Box>
           <Typography
             sx={{
-              mt: 2,
-              fontSize: 16,
-              fontWeight: 600,
-              color: isDark ? CC.textSub : CC.lTextSub,
+              fontFamily: "var(--cc-font-headline)",
+              fontSize: 22,
+              fontWeight: 700,
+              color: CC.text,
             }}
           >
             No repertoires yet
@@ -140,14 +157,16 @@ export default function OpeningsListPage() {
           <Typography
             sx={{
               mt: 0.5,
-              fontSize: 13,
-              color: isDark ? CC.textMuted : "#a0a09e",
+              fontSize: 14,
+              color: CC.textSub,
+              maxWidth: 360,
+              textAlign: "center",
             }}
           >
             Create your first opening study to start building a move tree.
           </Typography>
           <Button
-            sx={{ mt: 2 }}
+            sx={{ mt: 3 }}
             variant="contained"
             startIcon={<Icon icon="material-symbols:add" width={16} />}
             onClick={() => setCreating(true)}
@@ -178,18 +197,15 @@ export default function OpeningsListPage() {
               <Box
                 key={r.id}
                 sx={{
-                  backgroundColor: isDark ? CC.bg2 : CC.lBg1,
-                  border: `1px solid ${isDark ? CC.border : CC.lBorder}`,
-                  borderRadius: "12px",
-                  p: 2,
+                  backgroundColor: "var(--cc-surface-container-lowest)",
+                  borderRadius: "var(--cc-radius-xl)",
+                  boxShadow: "var(--cc-shadow-soft)",
+                  p: 2.5,
                   cursor: "pointer",
-                  transition: "all 150ms ease",
+                  transition: "all 200ms ease",
                   "&:hover": {
-                    borderColor: CC.primary,
+                    boxShadow: "var(--cc-shadow-ambient)",
                     transform: "translateY(-2px)",
-                    boxShadow: isDark
-                      ? "0 8px 20px rgba(0,0,0,0.4)"
-                      : "0 8px 20px rgba(0,0,0,0.08)",
                   },
                 }}
                 onClick={() => router.push(`/openings/${r.id}`)}
@@ -391,6 +407,7 @@ export default function OpeningsListPage() {
           </Button>
         </DialogActions>
       </Dialog>
+      </Box>
     </Box>
   );
 }

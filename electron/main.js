@@ -19,7 +19,10 @@ if (process.env.ELECTRON_RUN_AS_NODE && !_isPackaged) {
 }
 
 const { app, BrowserWindow, shell, dialog } = require("electron");
-const { autoUpdater } = require("electron-updater");
+// electron-updater is `require`d lazily inside setupAutoUpdate() — see below.
+// Doing it at the top of the file would force dev runs to resolve the module
+// too, and if node_modules is even briefly out of sync the app crashes
+// before reaching the `isDev` guard.
 const { spawn } = require("child_process");
 const path = require("path");
 const http = require("http");
@@ -131,6 +134,30 @@ function startProdServer() {
   process.env.HOSTNAME = "127.0.0.1";
   process.env.DATA_DIR = dataDir;
 
+  // The packaged standalone ships its node deps under `_server_modules/`
+  // (renamed by scripts/electron-build.mjs to avoid electron-builder's
+  // node_modules dedupe filter). Point Node.js's module resolver at it
+  // BEFORE requiring the Next.js server.
+  const serverModulesDir = path.join(standaloneDir, "_server_modules");
+  if (fs.existsSync(serverModulesDir)) {
+    process.env.NODE_PATH = serverModulesDir;
+    // Force Node to re-scan NODE_PATH (it caches paths at startup).
+    require("module").Module._initPaths();
+    // Also bridge `node_modules` → `_server_modules` via a symlink so
+    // `require("next/...")` style relative paths inside the bundle work.
+    const bridge = path.join(standaloneDir, "node_modules");
+    if (!fs.existsSync(bridge)) {
+      try {
+        fs.symlinkSync(serverModulesDir, bridge, "junction");
+      } catch (err) {
+        console.error("[startup] symlink failed, falling back to copy:", err?.message ?? err);
+        // junction usually works on Windows without admin; copy is the
+        // last-resort fallback so the app boots even without permissions.
+        fs.cpSync(serverModulesDir, bridge, { recursive: true });
+      }
+    }
+  }
+
   // Change cwd so Next.js standalone can find its assets
   process.chdir(standaloneDir);
   require(path.join(standaloneDir, "server.js"));
@@ -146,6 +173,14 @@ function startProdServer() {
 
 function setupAutoUpdate(getWindow) {
   if (isDev) return; // no updates during local dev
+
+  let autoUpdater;
+  try {
+    ({ autoUpdater } = require("electron-updater"));
+  } catch (err) {
+    console.error("[updater] electron-updater not bundled, skipping:", err?.message ?? err);
+    return;
+  }
 
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;

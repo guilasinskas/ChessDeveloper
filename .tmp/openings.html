@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&amp;family=Manrope:wght@700;800&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .chess-board-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline-variant": "#c5c8be",
+                      "taupe": "#755754",
+                      "surface-container-highest": "#e1e3dd",
+                      "inverse-primary": "#bdcbb1",
+                      "board-dark": "#55624d",
+                      "peach": "#fed7d2",
+                      "on-error": "#ffffff",
+                      "on-background": "#191c18",
+                      "surface-container-low": "#f2f4ed",
+                      "on-secondary": "#ffffff",
+                      "inverse-on-surface": "#eff2eb",
+                      "on-secondary-fixed-variant": "#5b403d",
+                      "on-secondary-container": "#7a5b58",
+                      "board-light": "#e8e4d7",
+                      "on-tertiary-fixed": "#2b1614",
+                      "primary-container": "#55624d",
+                      "on-primary-fixed": "#131e0e",
+                      "secondary-fixed": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-container": "#ceddc2",
+                      "surface-variant": "#e1e3dd",
+                      "surface-dim": "#d9dbd4",
+                      "on-tertiary-fixed-variant": "#5b403d",
+                      "tertiary": "#5a403d",
+                      "on-primary-fixed-variant": "#3e4a37",
+                      "surface-container-high": "#e7e9e2",
+                      "tertiary-fixed-dim": "#e3beb9",
+                      "error-container": "#ffdad6",
+                      "warm-paper-green": "#f8faf3",
+                      "on-surface-variant": "#444841",
+                      "primary-fixed": "#d9e7cc",
+                      "on-tertiary-container": "#f6cfca",
+                      "surface": "#f8faf3",
+                      "surface-tint": "#55624d",
+                      "on-primary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "primary": "#3e4a37",
+                      "outline": "#757870",
+                      "inverse-surface": "#2e312d",
+                      "background": "#f8faf3",
+                      "secondary-container": "#ffd6d2",
+                      "surface-bright": "#f8faf3",
+                      "primary-fixed-dim": "#bdcbb1",
+                      "on-surface": "#191c18",
+                      "surface-container": "#edefe8",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-fixed": "#ffdad5",
+                      "secondary": "#755754",
+                      "sage": "#55624d",
+                      "secondary-fixed-dim": "#e4beba",
+                      "tertiary-container": "#745753",
+                      "on-secondary-fixed": "#2b1614"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "2rem",
+                      "gutter": "1.5rem",
+                      "margin-mobile": "1rem",
+                      "md": "1rem",
+                      "lg": "1.5rem",
+                      "xs": "0.25rem",
+                      "sm": "0.5rem",
+                      "margin-desktop": "2.5rem"
+              },
+              "fontFamily": {
+                      "label-caps": ["Plus Jakarta Sans"],
+                      "headline-xl": ["Manrope"],
+                      "body-sm": ["Plus Jakarta Sans"],
+                      "headline-md": ["Manrope"],
+                      "headline-lg": ["Manrope"],
+                      "body-lg": ["Plus Jakarta Sans"],
+                      "body-md": ["Plus Jakarta Sans"],
+                      "data-mono": ["JetBrains Mono"],
+                      "data-clock": ["JetBrains Mono"]
+              },
+              "fontSize": {
+                      "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                      "data-clock": ["24px", {"lineHeight": "32px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen z-40 flex flex-col justify-between py-xl px-lg border-r border-outline-variant/30 docked left-0 h-full w-72 rounded-r-xl bg-surface/90 backdrop-blur-xl shadow-[0_20px_40px_-10px] shadow-sage/10">
+<div>
+<div class="mb-xl px-4">
+<h1 class="text-headline-md font-headline-md font-bold text-sage">Zenith Wellness</h1>
+<p class="text-label-caps font-label-caps text-on-surface-variant opacity-70">Deep Game</p>
+</div>
+<nav class="space-y-sm">
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:text-primary transition-colors hover:bg-surface-container-high/50 rounded-full group" href="#">
+<span class="material-symbols-outlined">trophy</span>
+<span class="text-body-md font-body-md">Tournament Arena</span>
+</a>
+<a class="flex items-center gap-3 bg-secondary-container text-on-secondary-container rounded-full px-4 py-3 font-bold shadow-sm" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="text-body-md font-body-md">Repertoire Editor</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:text-primary transition-colors hover:bg-surface-container-high/50 rounded-full group" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span class="text-body-md font-body-md">AI Insights</span>
+</a>
+</nav>
+<div class="mt-xl px-4">
+<button class="w-full bg-sage text-white py-3 rounded-full font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-95">
+<span class="material-symbols-outlined">add</span>
+<span>New Match</span>
+</button>
+</div>
+</div>
+<div class="space-y-sm border-t border-outline-variant/20 pt-lg">
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:text-primary transition-colors hover:bg-surface-container-high/50 rounded-full" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-body-md font-body-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:text-primary transition-colors hover:bg-surface-container-high/50 rounded-full" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="text-body-md font-body-md">Support</span>
+</a>
+<div class="flex items-center gap-3 px-4 py-4 mt-sm bg-surface-container-low/50 rounded-xl">
+<div class="w-10 h-10 rounded-full bg-sage/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-sage">account_circle</span>
+</div>
+<div>
+<p class="text-body-sm font-bold">Magnus C.</p>
+<p class="text-xs text-on-surface-variant">Grandmaster</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-72 z-30 bg-surface/80 backdrop-blur-md">
+<div class="flex justify-between items-center w-full px-xl py-md max-w-7xl mx-auto">
+<div class="flex items-center gap-xl">
+<h2 class="text-headline-md font-headline-md font-extrabold text-sage">Repertoire Editor</h2>
+<nav class="hidden lg:flex items-center gap-lg">
+<a class="text-primary font-bold border-b-2 border-primary text-label-caps font-label-caps py-1" href="#">WHITE LINES</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors text-label-caps font-label-caps py-1" href="#">BLACK LINES</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-72 pt-24 px-xl pb-xl max-w-7xl mx-auto">
+<!-- Dashboard Layout: Bento Grid Style -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Left Column: Visual Decision Tree -->
+<div class="col-span-12 lg:col-span-8 space-y-lg">
+<div class="bg-warm-paper-green rounded-[24px] p-lg shadow-[0_20px_40px_-10px] shadow-sage/10 border border-outline-variant/20">
+<div class="flex justify-between items-center mb-lg">
+<div>
+<h3 class="text-headline-md font-headline-md text-sage">Ruy Lopez Structure</h3>
+<p class="text-body-sm text-on-surface-variant">Main Line: 1. e4 e5 2. Nf3 Nc6 3. Bb5</p>
+</div>
+<div class="flex gap-sm">
+<span class="px-3 py-1 bg-peach text-on-secondary-container rounded-full text-label-caps font-label-caps">92% MASTERED</span>
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full text-label-caps font-label-caps">34 VARIAÇÕES</span>
+</div>
+</div>
+<!-- Visual Tree Canvas (Conceptual) -->
+<div class="relative h-[400px] bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10">
+<div class="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+<span class="material-symbols-outlined text-[200px]">account_tree</span>
+</div>
+<!-- Tree Nodes Simulation -->
+<div class="absolute top-1/2 left-8 -translate-y-1/2 flex flex-col gap-xl">
+<!-- Root -->
+<div class="relative">
+<div class="bg-sage text-white p-4 rounded-xl shadow-lg z-10 relative">
+<p class="text-data-mono font-bold">1. e4 e5</p>
+</div>
+<div class="absolute right-0 top-1/2 w-12 h-[2px] bg-outline-variant translate-x-full"></div>
+</div>
+<!-- Branches -->
+<div class="ml-24 space-y-xl">
+<div class="relative">
+<div class="bg-surface-container-highest p-3 rounded-lg border border-outline-variant/30 flex items-center gap-3">
+<span class="w-3 h-3 rounded-full bg-peach"></span>
+<p class="text-body-md font-bold">2. Nf3 Nc6</p>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">check_circle</span>
+</div>
+<div class="absolute -left-12 top-1/2 w-12 h-[2px] bg-outline-variant -translate-x-full"></div>
+<div class="absolute right-0 top-1/2 w-12 h-[2px] bg-outline-variant translate-x-full"></div>
+<!-- Sub-branches -->
+<div class="ml-32 mt-4 space-y-md">
+<div class="flex items-center gap-3 bg-warm-paper-green p-2 rounded-lg border border-sage/20 shadow-sm">
+<p class="text-body-sm font-data-mono">3. Bb5 (Ruy Lopez)</p>
+<span class="text-xs bg-sage/10 text-sage px-2 rounded-full font-bold">MASTERED</span>
+</div>
+<div class="flex items-center gap-3 bg-warm-paper-green p-2 rounded-lg border border-peach shadow-sm">
+<p class="text-body-sm font-data-mono">3. Bc4 (Italian)</p>
+<span class="text-xs bg-peach text-on-secondary-container px-2 rounded-full font-bold">REVIEW</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="absolute bottom-4 right-4 flex gap-2">
+<button class="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined">zoom_in</span>
+</button>
+<button class="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined">zoom_out</span>
+</button>
+<button class="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined">recenter</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Theory List Card -->
+<div class="bg-white rounded-[24px] p-lg shadow-sm border border-outline-variant/20">
+<h3 class="text-headline-md font-headline-md text-sage mb-md">Linhas Teóricas</h3>
+<div class="space-y-sm">
+<!-- Row 1: Mastered -->
+<div class="flex items-center justify-between p-4 bg-surface-container-low/30 rounded-xl hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded-full bg-sage/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-sage text-sm">school</span>
+</div>
+<div>
+<p class="text-body-md font-bold">Berlin Defense: L'Hermet Variant</p>
+<p class="text-body-sm text-on-surface-variant">1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O Nxe4 5. d4 Nd6</p>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<div class="text-right hidden md:block">
+<p class="text-label-caps font-label-caps text-sage">MEMORIZADO</p>
+<p class="text-xs text-on-surface-variant">Last review: 2 days ago</p>
+</div>
+<span class="material-symbols-outlined text-sage" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Row 2: Needs Study -->
+<div class="flex items-center justify-between p-4 bg-warm-paper-green rounded-xl border-l-4 border-peach hover:shadow-md transition-all group">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded-full bg-peach/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-taupe text-sm">pending</span>
+</div>
+<div>
+<p class="text-body-md font-bold">Marshall Attack: Main Line</p>
+<p class="text-body-sm text-on-surface-variant">1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 O-O 8. c3 d5</p>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<div class="text-right hidden md:block">
+<p class="text-label-caps font-label-caps text-taupe">PRECISA ESTUDAR</p>
+<p class="text-xs text-on-surface-variant">High winrate for opponents</p>
+</div>
+<span class="material-symbols-outlined text-taupe">error</span>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="flex items-center justify-between p-4 bg-surface-container-low/30 rounded-xl hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded-full bg-sage/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-sage text-sm">school</span>
+</div>
+<div>
+<p class="text-body-md font-bold">Chigorin Variation</p>
+<p class="text-body-sm text-on-surface-variant">1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O 9. h3 Na5</p>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<div class="text-right hidden md:block">
+<p class="text-label-caps font-label-caps text-sage">MEMORIZADO</p>
+<p class="text-xs text-on-surface-variant">Last review: 1 week ago</p>
+</div>
+<span class="material-symbols-outlined text-sage" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Sidebar Stats & Small Board -->
+<div class="col-span-12 lg:col-span-4 space-y-lg">
+<!-- Small Board Visualization -->
+<div class="bg-surface-container-high rounded-[24px] p-md shadow-sm border border-outline-variant/30">
+<div class="flex justify-between items-center mb-md">
+<span class="text-label-caps font-label-caps text-sage">PREVISUALIZAÇÃO</span>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">first_page</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">chevron_left</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">chevron_right</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">last_page</span>
+</div>
+</div>
+<div class="aspect-square bg-board-dark rounded-xl overflow-hidden relative border-4 border-board-dark/20">
+<div class="chess-board-grid w-full h-full">
+<!-- Simple checker pattern for board visual -->
+<!-- Row 1 -->
+<div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div>
+<!-- Row 2 -->
+<div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div>
+<!-- Row 3 -->
+<div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div>
+<!-- Row 4 -->
+<div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div>
+<!-- Row 5 -->
+<div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div>
+<!-- Row 6 -->
+<div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div>
+<!-- Row 7 -->
+<div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div>
+<!-- Row 8 -->
+<div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div><div class="bg-board-dark"></div><div class="bg-board-light"></div>
+</div>
+<!-- Simulated Piece (Knight) -->
+<div class="absolute top-[25%] left-[25%] w-[12.5%] h-[12.5%] flex items-center justify-center text-white pointer-events-none">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">chess_knight</span>
+</div>
+<div class="absolute bottom-[25%] right-[37.5%] w-[12.5%] h-[12.5%] flex items-center justify-center text-white pointer-events-none">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">chess</span>
+</div>
+</div>
+<div class="mt-md flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-peach"></span>
+<span class="text-body-sm font-bold text-taupe">Engine: +0.4</span>
+</div>
+<button class="bg-sage/10 text-sage px-4 py-2 rounded-full text-xs font-bold hover:bg-sage/20 transition-all">ANALISAR AGORA</button>
+</div>
+</div>
+<!-- Stats Card -->
+<div class="bg-warm-paper-green rounded-[24px] p-lg shadow-sm border border-outline-variant/20">
+<h3 class="text-headline-md font-headline-md text-sage mb-lg">Performance</h3>
+<div class="space-y-lg">
+<!-- Winrate Bar -->
+<div>
+<div class="flex justify-between mb-2">
+<span class="text-label-caps font-label-caps text-on-surface-variant">VITÓRIAS</span>
+<span class="text-label-caps font-label-caps text-sage">68%</span>
+</div>
+<div class="h-3 w-full bg-surface-container-highest rounded-full overflow-hidden flex">
+<div class="h-full bg-sage" style="width: 68%;"></div>
+<div class="h-full bg-peach" style="width: 20%;"></div>
+<div class="h-full bg-taupe/20" style="width: 12%;"></div>
+</div>
+<div class="flex justify-between mt-2 text-[10px] text-on-surface-variant/60 font-bold">
+<span>68% W</span>
+<span>20% D</span>
+<span>12% L</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div class="bg-white p-4 rounded-xl shadow-sm border border-outline-variant/10 text-center">
+<p class="text-label-caps font-label-caps text-on-surface-variant mb-1">TOTAL GAMES</p>
+<p class="text-headline-md font-bold text-sage">142</p>
+</div>
+<div class="bg-white p-4 rounded-xl shadow-sm border border-outline-variant/10 text-center">
+<p class="text-label-caps font-label-caps text-on-surface-variant mb-1">ACCURACY</p>
+<p class="text-headline-md font-bold text-sage">94.1</p>
+</div>
+</div>
+<!-- Growth Chart Mockup -->
+<div class="pt-md border-t border-outline-variant/20">
+<p class="text-label-caps font-label-caps text-on-surface-variant mb-4">MEMORIZAÇÃO (ÚLTIMOS 30 DIAS)</p>
+<div class="h-24 w-full flex items-end gap-1 px-1">
+<div class="flex-1 bg-sage/20 rounded-t-sm" style="height: 40%;"></div>
+<div class="flex-1 bg-sage/20 rounded-t-sm" style="height: 35%;"></div>
+<div class="flex-1 bg-sage/30 rounded-t-sm" style="height: 50%;"></div>
+<div class="flex-1 bg-sage/40 rounded-t-sm" style="height: 45%;"></div>
+<div class="flex-1 bg-sage/50 rounded-t-sm" style="height: 60%;"></div>
+<div class="flex-1 bg-sage/60 rounded-t-sm" style="height: 75%;"></div>
+<div class="flex-1 bg-sage rounded-t-sm" style="height: 90%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Training Promo -->
+<div class="bg-peach rounded-[24px] p-lg shadow-soft text-on-secondary-container">
+<div class="flex items-start justify-between">
+<div class="max-w-[70%]">
+<h4 class="text-headline-md font-headline-md leading-tight mb-2">Pronto para testar?</h4>
+<p class="text-body-sm opacity-80 mb-4">Inicie um treino de memorização focado nas suas linhas em atraso.</p>
+</div>
+<span class="material-symbols-outlined text-4xl opacity-40">bolt</span>
+</div>
+<button class="w-full bg-white text-taupe py-3 rounded-full font-bold shadow-sm hover:shadow-md transition-all active:scale-95">
+                        INICIAR DRILL
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Contextual FAB (Only for Main Screens) -->
+<button class="fixed bottom-xl right-xl w-14 h-14 bg-sage text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-50">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</body></html>

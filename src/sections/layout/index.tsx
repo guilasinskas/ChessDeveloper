@@ -608,7 +608,6 @@ export default function Layout({ children }: PropsWithChildren) {
         component="main"
         sx={{
           ml: { xs: 0, md: `${SIDEBAR_WIDTH}px` },
-          mb: "2vh",
         }}
       >
         {children}

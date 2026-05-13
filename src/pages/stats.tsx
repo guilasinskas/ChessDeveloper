@@ -128,7 +128,8 @@ function computeStats(
   let totalWins = 0,
     totalDraws = 0,
     totalLosses = 0,
-    totalMoves = 0;
+    totalMoves = 0,
+    longestGame = 0;
 
   for (const game of games) {
     let asWhite: boolean;
@@ -155,6 +156,7 @@ function computeStats(
     else totalLosses++;
 
     totalMoves += game.movesCount;
+    if (game.movesCount > longestGame) longestGame = game.movesCount;
 
     const opening = getOpeningName(game);
     if (!openings.has(opening)) {
@@ -184,7 +186,15 @@ function computeStats(
     .sort((a, b) => b.games - a.games);
 
   const avgMoves = total > 0 ? Math.round(totalMoves / total) : 0;
-  return { total, totalWins, totalDraws, totalLosses, avgMoves, openingStats };
+  return {
+    total,
+    totalWins,
+    totalDraws,
+    totalLosses,
+    avgMoves,
+    longestGame: longestGame || null,
+    openingStats,
+  };
 }
 
 function summaryToSimple(g: GameSummary): SimpleGame {
@@ -216,54 +226,182 @@ function loadedGameToSimple(g: LoadedGame): SimpleGame {
 
 // ─── subcomponents ────────────────────────────────────────────────────────────
 
+/**
+ * Headline number card — Stitch "Total Games" / "Avg Moves" pattern.
+ * Big Manrope number, label-caps row at top, optional footer line.
+ */
 function StatCard({
   label,
   value,
   icon,
-  color,
+  iconColor,
+  footer,
 }: {
   label: string;
   value: string | number;
   icon: string;
-  color?: string;
+  iconColor?: string;
+  footer?: React.ReactNode;
 }) {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
   return (
     <Box
       sx={{
         flex: 1,
-        minWidth: 120,
-        p: 2,
-        borderRadius: "6px",
-        backgroundColor: isDark ? CC.bg2 : CC.lBg1,
-        border: `1px solid ${isDark ? CC.border : CC.lBorder}`,
+        minWidth: 160,
+        p: 2.5,
+        borderRadius: "var(--cc-radius-xl)",
+        backgroundColor: "var(--cc-surface-container-lowest)",
+        boxShadow: "var(--cc-shadow-ambient)",
         display: "flex",
         flexDirection: "column",
-        gap: 0.5,
+        justifyContent: "space-between",
+        minHeight: 130,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-        <Icon
-          icon={icon}
-          width={14}
-          color={color ?? (isDark ? CC.textMuted : "#8b91a0")}
-        />
-        <Typography
-          sx={{ fontSize: "0.7rem", color: isDark ? CC.textMuted : "#8b91a0" }}
+      <Box>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 1,
+          }}
         >
-          {label}
+          <Icon icon={icon} width={20} color={iconColor ?? CC.primary} />
+          <Typography
+            sx={{
+              fontFamily: "var(--cc-font-body)",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: CC.textSub,
+            }}
+          >
+            {label}
+          </Typography>
+        </Box>
+        <Typography
+          sx={{
+            fontFamily: "var(--cc-font-headline)",
+            fontSize: 32,
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+            lineHeight: 1.1,
+            color: CC.text,
+          }}
+        >
+          {value}
         </Typography>
+      </Box>
+      {footer && (
+        <Box
+          sx={{
+            mt: 2,
+            pt: 2,
+            borderTop: `1px solid ${CC.border}`,
+            fontSize: 13,
+          }}
+        >
+          {footer}
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+/**
+ * Circular ring stat — Stitch "Win Rate / Draws / Losses" pattern.
+ * SVG ring with stroke-dashoffset proportional to value (0-100).
+ */
+function RingStat({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number;
+  color: string;
+}) {
+  const circumference = 2 * Math.PI * 40;
+  const offset = circumference * (1 - value / 100);
+  return (
+    <Box
+      sx={{
+        flex: 1,
+        minWidth: 160,
+        p: 2.5,
+        borderRadius: "var(--cc-radius-xl)",
+        backgroundColor: "var(--cc-surface-container-lowest)",
+        boxShadow: "var(--cc-shadow-ambient)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: 130,
+        position: "relative",
+      }}
+    >
+      <Box sx={{ position: "relative", width: 96, height: 96 }}>
+        <svg
+          width={96}
+          height={96}
+          style={{ transform: "rotate(-90deg)", display: "block" }}
+        >
+          <circle
+            cx={48}
+            cy={48}
+            r={40}
+            fill="transparent"
+            stroke="var(--cc-surface-container-high)"
+            strokeWidth={8}
+          />
+          <circle
+            cx={48}
+            cy={48}
+            r={40}
+            fill="transparent"
+            stroke={color}
+            strokeWidth={8}
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            style={{ transition: "stroke-dashoffset 500ms ease" }}
+          />
+        </svg>
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Typography
+            sx={{
+              fontFamily: "var(--cc-font-headline)",
+              fontSize: 22,
+              fontWeight: 800,
+              color,
+            }}
+          >
+            {value}%
+          </Typography>
+        </Box>
       </Box>
       <Typography
         sx={{
-          fontSize: "1.5rem",
+          mt: 1.5,
+          fontFamily: "var(--cc-font-body)",
+          fontSize: 11,
           fontWeight: 700,
-          lineHeight: 1,
-          color: color ?? (isDark ? CC.text : CC.lText),
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: CC.textSub,
         }}
       >
-        {value}
+        {label}
       </Typography>
     </Box>
   );
@@ -282,86 +420,165 @@ function ResultBar({ wins, draws, losses }: OpeningStat) {
         sx={{
           display: "flex",
           height: 8,
-          borderRadius: 1,
+          borderRadius: "var(--cc-radius-pill)",
           overflow: "hidden",
           width: "100%",
           minWidth: 80,
           cursor: "default",
+          backgroundColor: "var(--cc-surface-container-high)",
         }}
       >
         {wPct > 0 && (
-          <Box sx={{ width: `${wPct}%`, backgroundColor: "#22ac38" }} />
+          <Box sx={{ width: `${wPct}%`, backgroundColor: CC.primary }} />
         )}
         {dPct > 0 && (
-          <Box sx={{ width: `${dPct}%`, backgroundColor: "#8b91a0" }} />
+          <Box sx={{ width: `${dPct}%`, backgroundColor: CC.textMuted }} />
         )}
         {lPct > 0 && (
-          <Box sx={{ width: `${lPct}%`, backgroundColor: "#f73c3c" }} />
+          <Box sx={{ width: `${lPct}%`, backgroundColor: CC.error }} />
         )}
       </Box>
     </Tooltip>
   );
 }
 
+/**
+ * Most-played opening highlight — Stitch peach card with success-rate bar.
+ * Variant "peach" gives the peach affective background (matches MOST PLAYED
+ * tile in the reference). Variant "neutral" used for the regular Best/Worst
+ * highlight that lived beside the most played in the old layout.
+ */
 function HighlightCard({
   title,
   name,
   sub,
   icon,
-  iconColor,
+  successRate,
+  variant = "neutral",
 }: {
   title: string;
   name: string;
   sub: string;
   icon: string;
-  iconColor: string;
+  successRate?: number;
+  variant?: "peach" | "neutral";
 }) {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
+  const isPeach = variant === "peach";
   return (
     <Box
       sx={{
         flex: 1,
-        minWidth: 180,
-        p: 2,
-        borderRadius: "6px",
-        backgroundColor: isDark ? CC.bg2 : CC.lBg1,
-        border: `1px solid ${isDark ? CC.border : CC.lBorder}`,
+        minWidth: 220,
+        p: 3,
+        borderRadius: "var(--cc-radius-xl)",
+        backgroundColor: isPeach
+          ? "color-mix(in srgb, var(--cc-secondary-container) 50%, var(--cc-surface-container-lowest))"
+          : "var(--cc-surface-container-lowest)",
+        boxShadow: "var(--cc-shadow-ambient)",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        minHeight: 200,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
-        <Icon icon={icon} width={14} color={iconColor} />
+      <Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1.5 }}>
+          <Icon
+            icon={icon}
+            width={18}
+            color={isPeach ? "var(--cc-on-secondary-container)" : CC.primary}
+          />
+          <Typography
+            sx={{
+              fontFamily: "var(--cc-font-body)",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: isPeach
+                ? "var(--cc-on-secondary-container)"
+                : CC.textSub,
+            }}
+          >
+            {title}
+          </Typography>
+        </Box>
         <Typography
           sx={{
-            fontSize: "0.68rem",
-            color: isDark ? CC.textMuted : "#8b91a0",
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
+            fontFamily: "var(--cc-font-headline)",
+            fontSize: 20,
+            fontWeight: 700,
+            letterSpacing: "-0.01em",
+            color: CC.text,
+            lineHeight: 1.2,
+            mb: 1,
+          }}
+          title={name}
+        >
+          {name}
+        </Typography>
+        <Typography
+          sx={{
+            fontFamily: "var(--cc-font-body)",
+            fontSize: 14,
+            color: CC.textSub,
           }}
         >
-          {title}
+          {sub}
         </Typography>
       </Box>
-      <Typography
-        sx={{
-          fontSize: "0.85rem",
-          fontWeight: 600,
-          color: isDark ? CC.text : CC.lText,
-          lineHeight: 1.3,
-          mb: 0.25,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
-        title={name}
-      >
-        {name}
-      </Typography>
-      <Typography
-        sx={{ fontSize: "0.72rem", color: iconColor, fontWeight: 500 }}
-      >
-        {sub}
-      </Typography>
+      {typeof successRate === "number" && (
+        <Box sx={{ mt: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              mb: 0.75,
+            }}
+          >
+            <Typography
+              sx={{
+                fontFamily: "var(--cc-font-body)",
+                fontSize: 13,
+                fontWeight: 700,
+                color: CC.text,
+              }}
+            >
+              Success Rate
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: "var(--cc-font-headline)",
+                fontSize: 24,
+                fontWeight: 800,
+                color: CC.primary,
+              }}
+            >
+              {successRate}%
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              width: "100%",
+              height: 8,
+              borderRadius: "var(--cc-radius-pill)",
+              backgroundColor: "rgba(255, 255, 255, 0.5)",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                width: `${Math.min(100, Math.max(0, successRate))}%`,
+                height: "100%",
+                backgroundColor: CC.primary,
+                borderRadius: "var(--cc-radius-pill)",
+                transition: "width 500ms ease",
+              }}
+            />
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 }
@@ -370,19 +587,21 @@ function MiniBoard({ fen }: { fen: string }) {
   return (
     <Box
       sx={{
-        borderRadius: "4px",
+        borderRadius: "var(--cc-radius-md)",
         overflow: "hidden",
-        boxShadow: "0 6px 24px rgba(0,0,0,0.7)",
+        boxShadow: "var(--cc-shadow-ambient)",
         lineHeight: 0,
+        padding: "8px",
+        backgroundColor: "var(--cc-surface-container-highest)",
       }}
     >
       <Chessboard
         position={fen}
         boardWidth={180}
         arePiecesDraggable={false}
-        customLightSquareStyle={{ backgroundColor: "#b8bfc6" }}
-        customDarkSquareStyle={{ backgroundColor: "#2c231e" }}
-        customBoardStyle={{ borderRadius: "4px" }}
+        customLightSquareStyle={{ backgroundColor: "#e8e4d7" }}
+        customDarkSquareStyle={{ backgroundColor: "#55624d" }}
+        customBoardStyle={{ borderRadius: "8px" }}
       />
     </Box>
   );
@@ -736,8 +955,6 @@ function MoveBreakdown({
 }
 
 function OpeningRow({ stat, rank }: { stat: OpeningStat; rank: number }) {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
   const winPct =
     stat.games > 0 ? Math.round((stat.wins / stat.games) * 100) : 0;
 
@@ -746,20 +963,22 @@ function OpeningRow({ stat, rank }: { stat: OpeningStat; rank: number }) {
       sx={{
         display: "flex",
         alignItems: "center",
-        gap: 1.5,
-        px: 2,
-        py: 1,
-        borderBottom: `1px solid ${isDark ? CC.border : CC.lBorder}`,
+        gap: 2,
+        px: 3,
+        py: 2.5,
+        borderBottom: `1px solid ${CC.border}`,
         "&:last-child": { borderBottom: "none" },
-        "&:hover": { backgroundColor: isDark ? CC.bg3 : CC.lBg3 },
+        "&:hover": { backgroundColor: "var(--cc-surface-container-low)" },
+        transition: "background-color 120ms ease",
       }}
     >
       <Typography
         sx={{
-          width: 22,
+          width: 24,
           flexShrink: 0,
-          fontSize: "0.72rem",
-          color: isDark ? CC.textMuted : "#a0a09e",
+          fontFamily: "var(--cc-font-mono)",
+          fontSize: 12,
+          color: CC.textMuted,
           textAlign: "right",
         }}
       >
@@ -783,8 +1002,10 @@ function OpeningRow({ stat, rank }: { stat: OpeningStat; rank: number }) {
         <Typography
           sx={{
             flex: 1,
-            fontSize: "0.8rem",
-            color: isDark ? CC.text : CC.lText,
+            fontFamily: "var(--cc-font-body)",
+            fontSize: 14,
+            fontWeight: 700,
+            color: CC.text,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -797,33 +1018,29 @@ function OpeningRow({ stat, rank }: { stat: OpeningStat; rank: number }) {
       </Tooltip>
       <Typography
         sx={{
-          width: 36,
+          width: 48,
           flexShrink: 0,
-          fontSize: "0.72rem",
-          color: isDark ? CC.textMuted : "#a0a09e",
+          fontFamily: "var(--cc-font-mono)",
+          fontSize: 13,
+          color: CC.textSub,
           textAlign: "center",
         }}
       >
         {stat.games}
       </Typography>
-      <Box sx={{ width: 120, flexShrink: 0 }}>
+      <Box sx={{ width: 160, flexShrink: 0 }}>
         <ResultBar {...stat} />
       </Box>
       <Typography
         sx={{
-          width: 36,
+          width: 56,
           flexShrink: 0,
-          fontSize: "0.8rem",
-          fontWeight: 600,
+          fontFamily: "var(--cc-font-mono)",
+          fontSize: 14,
+          fontWeight: 700,
           textAlign: "right",
           color:
-            winPct >= 60
-              ? "#22ac38"
-              : winPct <= 35
-                ? "#f73c3c"
-                : isDark
-                  ? CC.text
-                  : CC.lText,
+            winPct >= 60 ? CC.primary : winPct <= 35 ? CC.error : CC.text,
         }}
       >
         {winPct}%
@@ -1116,32 +1333,56 @@ export default function StatsPage() {
       : (chessComGames?.length ?? 0) > 0;
 
   return (
-    <Grid
-      container
-      justifyContent="center"
-      sx={{ pt: { xs: 1, lg: 2 }, px: { xs: 1, sm: 2 }, pb: 4 }}
-    >
+    <Box>
       <PageTitle title="Chesskit Statistics" />
 
-      <Grid container size={12} maxWidth={900} gap={3} direction="column">
-        {/* Header */}
-        <Box
+      {/* Sticky title bar — Stitch pattern */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          height: 64,
+          px: { xs: 2, md: 3 },
+          backgroundColor:
+            "color-mix(in srgb, var(--cc-surface) 80%, transparent)",
+          backdropFilter: "blur(20px)",
+          borderBottom: `1px solid ${CC.border}`,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+        }}
+      >
+        <Typography
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 2,
+            fontFamily: "var(--cc-font-headline)",
+            fontSize: 24,
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+            color: CC.primary,
           }}
         >
-          <Typography
-            variant="h5"
-            sx={{ fontWeight: 700, color: isDark ? CC.text : CC.lText }}
-          >
-            Statistics
-          </Typography>
+          Recent Insights
+        </Typography>
+      </Box>
 
-          <ToggleButtonGroup
+      <Grid
+        container
+        justifyContent="center"
+        sx={{ pt: { xs: 1, lg: 2 }, px: { xs: 1, sm: 2 }, pb: 4 }}
+      >
+        <Grid container size={12} maxWidth={900} gap={3} direction="column">
+          {/* Source selector */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              flexWrap: "wrap",
+              gap: 2,
+            }}
+          >
+            <ToggleButtonGroup
             value={source}
             exclusive
             size="small"
@@ -1305,113 +1546,162 @@ export default function StatsPage() {
           </Box>
         ) : (
           <>
-            {/* Overview cards */}
-            <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+            {/* Bento Grid — 5 metric cards (Stitch "Summary" pattern) */}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr 1fr",
+                  md: "repeat(5, 1fr)",
+                },
+                gap: 2,
+              }}
+            >
               <StatCard
-                label="Total games"
-                value={stats.total}
-                icon="streamline:database"
+                label="Total Games"
+                value={stats.total.toLocaleString()}
+                icon="material-symbols:sports-esports-outline"
+                footer={
+                  <Typography sx={{ fontSize: 13, color: CC.textSub }}>
+                    Longest game:{" "}
+                    <Box
+                      component="span"
+                      sx={{
+                        fontFamily: "var(--cc-font-mono)",
+                        fontWeight: 700,
+                        color: CC.text,
+                      }}
+                    >
+                      {stats.longestGame ?? "—"}
+                    </Box>
+                  </Typography>
+                }
               />
-              <StatCard
-                label="Wins"
-                value={`${winPct}%`}
-                icon="mdi:trophy-outline"
-                color="#22ac38"
-              />
-              <StatCard
+              <RingStat label="Win Rate" value={winPct} color={CC.primary} />
+              <RingStat
                 label="Draws"
-                value={`${drawPct}%`}
-                icon="mdi:handshake-outline"
-                color="#8b91a0"
+                value={drawPct}
+                color="var(--cc-on-surface-variant)"
               />
+              <RingStat label="Losses" value={lossPct} color={CC.error} />
               <StatCard
-                label="Losses"
-                value={`${lossPct}%`}
-                icon="mdi:close-circle-outline"
-                color="#f73c3c"
-              />
-              <StatCard
-                label="Avg moves"
+                label="Avg Moves"
                 value={stats.avgMoves}
-                icon="mdi:arrow-right-circle-outline"
+                icon="material-symbols:timeline-outline"
+                footer={
+                  <Typography sx={{ fontSize: 13, color: CC.textSub }}>
+                    Across all games
+                  </Typography>
+                }
               />
             </Box>
 
-            {/* Highlights */}
-            {(bestOpening || worstOpening || mostPlayed) && (
-              <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-                {bestOpening && (
-                  <HighlightCard
-                    title="Best opening"
-                    name={bestOpening.name}
-                    sub={`${Math.round((bestOpening.wins / bestOpening.games) * 100)}% win · ${bestOpening.games} games`}
-                    icon="mdi:trophy-outline"
-                    iconColor="#22ac38"
-                  />
-                )}
-                {mostPlayed && (
-                  <HighlightCard
-                    title="Most played"
-                    name={mostPlayed.name}
-                    sub={`${mostPlayed.games} games`}
-                    icon="mdi:fire"
-                    iconColor={CC.primary}
-                  />
-                )}
-                {worstOpening && worstOpening.name !== bestOpening?.name && (
-                  <HighlightCard
-                    title="To improve"
-                    name={worstOpening.name}
-                    sub={`${Math.round((worstOpening.wins / worstOpening.games) * 100)}% win · ${worstOpening.games} games`}
-                    icon="mdi:chart-line-variant"
-                    iconColor="#f73c3c"
-                  />
-                )}
+            {/* Most Played + Move Tree — 1/3 + 2/3 split */}
+            {mostPlayed && (
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", lg: "1fr 2fr" },
+                  gap: 3,
+                }}
+              >
+                <HighlightCard
+                  title="Most Played Opening"
+                  name={mostPlayed.name}
+                  sub={`Played ${mostPlayed.games} time${
+                    mostPlayed.games !== 1 ? "s" : ""
+                  } this season`}
+                  icon="material-symbols:local-fire-department-outline"
+                  successRate={Math.round(
+                    (mostPlayed.wins / mostPlayed.games) * 100
+                  )}
+                  variant="peach"
+                />
+                <MoveBreakdown
+                  games={activeGames}
+                  player={resolvedPlayer}
+                  colorFilter={colorFilter}
+                />
               </Box>
             )}
 
-            {/* Move tree */}
-            <MoveBreakdown
-              games={activeGames}
-              player={resolvedPlayer}
-              colorFilter={colorFilter}
-            />
+            {!mostPlayed && (
+              <MoveBreakdown
+                games={activeGames}
+                player={resolvedPlayer}
+                colorFilter={colorFilter}
+              />
+            )}
 
-            {/* Opening table */}
+            {/* Opening Performance table — Stitch detailed table card */}
             <Box
               sx={{
-                borderRadius: "6px",
-                border: `1px solid ${isDark ? CC.border : CC.lBorder}`,
+                borderRadius: "var(--cc-radius-xl)",
                 overflow: "hidden",
-                backgroundColor: isDark ? CC.bg2 : CC.lBg1,
+                backgroundColor: "var(--cc-surface-container-lowest)",
+                boxShadow: "var(--cc-shadow-ambient)",
               }}
             >
               <Box
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 1.5,
-                  px: 2,
-                  py: 1.2,
-                  borderBottom: `1px solid ${isDark ? CC.border : CC.lBorder}`,
-                  backgroundColor: isDark ? CC.bg3 : CC.lBg2,
+                  justifyContent: "space-between",
+                  px: 3,
+                  py: 2.5,
+                  borderBottom: `1px solid ${CC.border}`,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontFamily: "var(--cc-font-headline)",
+                    fontSize: 22,
+                    fontWeight: 700,
+                    color: CC.text,
+                  }}
+                >
+                  Opening Performance
+                </Typography>
+                {(bestOpening || worstOpening) && (
+                  <Typography
+                    sx={{
+                      fontFamily: "var(--cc-font-body)",
+                      fontSize: 13,
+                      color: CC.textSub,
+                    }}
+                  >
+                    Showing top {Math.min(stats.openingStats.length, 30)}
+                  </Typography>
+                )}
+              </Box>
+
+              {/* Column headers */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  px: 3,
+                  py: 1.5,
+                  backgroundColor: "var(--cc-surface-container-low)",
                 }}
               >
                 {[
-                  { label: "#", width: 22, align: "right" as const },
-                  { label: "Opening", flex: true },
-                  { label: "Games", width: 36, align: "center" as const },
-                  { label: "Results", width: 120 },
-                  { label: "Win%", width: 36, align: "right" as const },
+                  { label: "#", width: 24, align: "right" as const },
+                  { label: "OPENING NAME", flex: true },
+                  { label: "GAMES", width: 48, align: "center" as const },
+                  { label: "RESULTS DISTRIBUTION", width: 160 },
+                  { label: "WIN %", width: 56, align: "right" as const },
                 ].map(({ label, width, flex, align }) => (
                   <Typography
                     key={label}
                     sx={{
                       ...(flex ? { flex: 1 } : { width, flexShrink: 0 }),
-                      fontSize: "0.68rem",
-                      color: isDark ? CC.textMuted : "#a0a09e",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
+                      fontFamily: "var(--cc-font-body)",
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: "0.08em",
+                      color: CC.textSub,
                       textAlign: align,
                     }}
                   >
@@ -1421,11 +1711,12 @@ export default function StatsPage() {
               </Box>
 
               {stats.openingStats.length === 0 ? (
-                <Box sx={{ px: 2, py: 3, textAlign: "center" }}>
+                <Box sx={{ px: 3, py: 6, textAlign: "center" }}>
                   <Typography
                     sx={{
-                      fontSize: "0.85rem",
-                      color: isDark ? CC.textMuted : "#a0a09e",
+                      fontFamily: "var(--cc-font-body)",
+                      fontSize: 14,
+                      color: CC.textSub,
                     }}
                   >
                     No completed games found for this player.
@@ -1472,7 +1763,8 @@ export default function StatsPage() {
             </Box>
           </>
         )}
+        </Grid>
       </Grid>
-    </Grid>
+    </Box>
   );
 }

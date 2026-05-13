@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-container": "#f6cfca",
+                      "inverse-on-surface": "#eff2eb",
+                      "on-secondary-fixed-variant": "#5b403d",
+                      "tertiary-container": "#745753",
+                      "secondary": "#755754",
+                      "primary": "#3e4a37",
+                      "surface-variant": "#e1e3dd",
+                      "outline": "#757870",
+                      "surface-container": "#edefe8",
+                      "surface": "#f8faf3",
+                      "taupe": "#755754",
+                      "surface-bright": "#f8faf3",
+                      "background": "#f8faf3",
+                      "secondary-container": "#ffd6d2",
+                      "on-tertiary": "#ffffff",
+                      "warm-paper-green": "#f8faf3",
+                      "on-surface": "#191c18",
+                      "surface-container-highest": "#e1e3dd",
+                      "on-error-container": "#93000a",
+                      "surface-container-high": "#e7e9e2",
+                      "on-tertiary-fixed": "#2b1614",
+                      "on-primary": "#ffffff",
+                      "on-secondary-container": "#7a5b58",
+                      "on-background": "#191c18",
+                      "inverse-surface": "#2e312d",
+                      "error-container": "#ffdad6",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#5b403d",
+                      "outline-variant": "#c5c8be",
+                      "surface-dim": "#d9dbd4",
+                      "secondary-fixed": "#ffdad6",
+                      "on-primary-fixed": "#131e0e",
+                      "board-dark": "#55624d",
+                      "peach": "#fed7d2",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed": "#d9e7cc",
+                      "tertiary-fixed": "#ffdad5",
+                      "primary-fixed-dim": "#bdcbb1",
+                      "on-error": "#ffffff",
+                      "sage": "#55624d",
+                      "inverse-primary": "#bdcbb1",
+                      "tertiary": "#5a403d",
+                      "on-primary-container": "#ceddc2",
+                      "surface-tint": "#55624d",
+                      "primary-container": "#55624d",
+                      "surface-container-low": "#f2f4ed",
+                      "error": "#ba1a1a",
+                      "on-surface-variant": "#444841",
+                      "tertiary-fixed-dim": "#e3beb9",
+                      "on-secondary-fixed": "#2b1614",
+                      "secondary-fixed-dim": "#e4beba",
+                      "on-primary-fixed-variant": "#3e4a37",
+                      "board-light": "#e8e4d7"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "0.5rem",
+                      "margin-desktop": "2.5rem",
+                      "lg": "1.5rem",
+                      "xs": "0.25rem",
+                      "md": "1rem",
+                      "xl": "2rem",
+                      "gutter": "1.5rem",
+                      "margin-mobile": "1rem"
+              },
+              "fontFamily": {
+                      "data-mono": ["JetBrains Mono"],
+                      "headline-lg": ["Manrope"],
+                      "headline-md": ["Manrope"],
+                      "label-caps": ["Plus Jakarta Sans"],
+                      "data-clock": ["JetBrains Mono"],
+                      "body-lg": ["Plus Jakarta Sans"],
+                      "headline-xl": ["Manrope"],
+                      "body-sm": ["Plus Jakarta Sans"],
+                      "body-md": ["Plus Jakarta Sans"]
+              },
+              "fontSize": {
+                      "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "data-clock": ["24px", {"lineHeight": "32px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+        .chess-grid-sage {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            aspect-ratio: 1 / 1;
+        }
+        .chess-grid-sage div:nth-child(even) { background-color: #e8e4d7; }
+        .chess-grid-sage div:nth-child(odd) { background-color: #55624d; }
+        .chess-grid-row:nth-child(even) div:nth-child(even) { background-color: #55624d; }
+        .chess-grid-row:nth-child(even) div:nth-child(odd) { background-color: #e8e4d7; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c5c8be; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-warm-paper-green text-on-surface font-body-md min-h-screen">
+<!-- Sidebar Navigation Shell -->
+<aside class="hidden md:flex flex-col h-full w-64 fixed left-0 top-0 border-r border-outline-variant/30 backdrop-blur-xl bg-surface-container-lowest/80 dark:bg-surface-container-lowest/20 p-lg gap-xl z-50">
+<div class="font-headline-xl text-headline-xl font-extrabold tracking-tighter text-sage dark:text-primary-fixed-dim">
+            ZenChess
+        </div>
+<nav class="flex flex-col gap-md">
+<div class="flex items-center gap-3 text-on-surface-variant font-medium hover:text-sage transition-colors duration-300">
+<span class="material-symbols-outlined" data-icon="chess">chess</span>
+<span class="font-body-md text-body-md">Play</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant font-medium hover:text-sage transition-colors duration-300">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+<span class="font-body-md text-body-md">Analyze</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant font-medium hover:text-sage transition-colors duration-300">
+<span class="material-symbols-outlined" data-icon="extension">extension</span>
+<span class="font-body-md text-body-md">Puzzles</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface font-bold relative before:absolute before:-left-4 before:w-2 before:h-2 before:bg-sage before:rounded-full">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+<span class="font-body-md text-body-md">Learn</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant font-medium hover:text-sage transition-colors duration-300">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</div>
+</nav>
+<div class="mt-auto flex items-center gap-3 p-md bg-surface-container-low rounded-xl">
+<img alt="User profile" class="w-10 h-10 rounded-full bg-sage/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7FxcGJ7v5DYkFsOQHzTdMPbUjXsuQzVymZlxZiuPrgOjqn4j5sS3gfadpskeM6v3Mi8Jgsy8pTaloexqn0QbexESIkF-bpw0a4SWjmQNWBC19NLCGDDQnhF3bInVz0Q9K-ltVXkXgUTZr6STI_AktcmXNegKGBgiuxjTEpLdzzH7aVPnPQJTvV3zKtE7lENBVsKZpPM8LgTRB0llppXh8Z3MHjgjp23BvToZI1cIhDIjAEsIPJbYY1HwSOkbMbjT4B1M9bCNE8Nxm"/>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface">Grandmaster</span>
+<span class="text-body-sm text-on-surface-variant">Zen Player</span>
+</div>
+</div>
+</aside>
+<!-- Top App Bar -->
+<header class="sticky top-0 w-full z-40 backdrop-blur-md bg-surface-container-lowest/70 border-b border-outline-variant/20 flex justify-between items-center h-16 px-margin-desktop md:ml-64">
+<div class="flex items-center gap-md">
+<h1 class="font-headline-md text-headline-md font-extrabold text-sage dark:text-primary-fixed-dim">Explorador de Aberturas</h1>
+</div>
+<div class="flex items-center gap-lg">
+<div class="hidden md:flex bg-surface-container-high/40 rounded-full px-md py-xs items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-sm w-48" placeholder="Buscar aberturas..." type="text"/>
+</div>
+<button class="bg-sage text-white px-lg py-sm rounded-full font-label-caps text-label-caps hover:opacity-90 transition-opacity">
+                Connect Engine
+            </button>
+<div class="flex gap-md">
+<span class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-high/50 p-xs rounded-full transition-all duration-300" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-high/50 p-xs rounded-full transition-all duration-300" data-icon="person_outline">person_outline</span>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="md:ml-64 p-margin-desktop max-w-[1400px] mx-auto">
+<!-- Hero Search Section -->
+<section class="mb-xl text-center max-w-2xl mx-auto">
+<h2 class="font-headline-xl text-headline-xl text-sage mb-md">Domine o Início do Jogo</h2>
+<p class="text-body-lg text-on-surface-variant italic font-serif">"O segredo do xadrez não está em decorar variantes, mas em compreender o silêncio entre as peças."</p>
+</section>
+<!-- Featured Openings Gallery (Bento Grid) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg mb-xl">
+<!-- Opening Card 1 -->
+<div class="md:col-span-2 group relative overflow-hidden bg-white rounded-[1.5rem] shadow-[0_20px_40px_-10px_rgba(85,98,77,0.15)] border border-outline-variant/10 p-lg hover:shadow-[0_25px_50px_-12px_rgba(85,98,77,0.25)] transition-all duration-500">
+<div class="flex flex-col md:flex-row gap-lg items-center">
+<div class="w-full md:w-1/2 aspect-square rounded-[1.25rem] overflow-hidden bg-sage relative group-hover:scale-[1.02] transition-transform duration-500">
+<!-- Miniature Chess Board (Sage) -->
+<div class="grid grid-cols-8 grid-rows-8 h-full">
+<div class="chess-grid-sage w-full h-full col-span-8 row-span-8">
+<!-- Generated Board Grid -->
+<script>
+                                    for(let i=0; i<64; i++) {
+                                        document.write('<div></div>');
+                                    }
+                                </script>
+</div>
+</div>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<span class="text-white/20 font-headline-xl opacity-40">Ruy López</span>
+</div>
+</div>
+<div class="w-full md:w-1/2 flex flex-col justify-center">
+<div class="flex gap-sm mb-sm">
+<span class="bg-peach text-on-secondary-fixed-variant px-sm py-xs rounded-full font-label-caps text-[10px] uppercase tracking-wider">Solid</span>
+<span class="bg-sage text-white px-sm py-xs rounded-full font-label-caps text-[10px] uppercase tracking-wider">Classic</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-sage mb-sm">Abertura Espanhola</h3>
+<p class="text-body-md text-on-surface-variant mb-md">Uma das aberturas mais ricas e antigas do xadrez, focada no controle central e pressão de longo prazo.</p>
+<div class="flex items-center gap-md">
+<span class="font-data-mono text-data-mono bg-surface-container-low px-md py-xs rounded-lg">1. e4 e5 2. Nf3 Nc6 3. Bb5</span>
+<button class="ml-auto w-10 h-10 rounded-full bg-sage/5 flex items-center justify-center text-sage hover:bg-sage hover:text-white transition-all">
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Card: Strategic Ideas -->
+<div class="bg-peach/30 rounded-[1.5rem] p-lg shadow-[0_10px_30px_rgba(117,87,84,0.05)] border border-peach/20 flex flex-col gap-md">
+<div class="flex items-center gap-sm text-secondary">
+<span class="material-symbols-outlined" data-icon="lightbulb">lightbulb</span>
+<h3 class="font-headline-md text-headline-md">Ideias Estratégicas</h3>
+</div>
+<div class="space-y-md">
+<div class="p-md bg-white/60 rounded-xl border border-white/80">
+<h4 class="font-bold text-sage mb-xs">Controle do Centro</h4>
+<p class="text-body-sm text-on-surface-variant">Priorize a ocupação dos quadrados d4, e4, d5, e5 para ditar o ritmo da partida.</p>
+</div>
+<div class="p-md bg-white/60 rounded-xl border border-white/80">
+<h4 class="font-bold text-sage mb-xs">Harmonia das Peças</h4>
+<p class="text-body-sm text-on-surface-variant">Desenvolva cavalos antes de bispos e garanta que nenhuma peça obstrua a outra.</p>
+</div>
+<div class="p-md bg-white/60 rounded-xl border border-white/80">
+<h4 class="font-bold text-sage mb-xs">Segurança do Rei</h4>
+<p class="text-body-sm text-on-surface-variant">O roque não é apenas defesa, é a preparação para conectar suas torres na base.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Variation List and Technical Section -->
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-xl">
+<!-- Technical Variations Table -->
+<div class="lg:col-span-3 bg-white rounded-[1.5rem] shadow-[0_20px_40px_-10px_rgba(85,98,77,0.15)] overflow-hidden">
+<div class="px-xl py-lg border-b border-outline-variant/10 flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-sage">Variações Técnicas</h3>
+<div class="flex gap-sm">
+<button class="p-xs hover:bg-surface-container rounded-lg transition-colors">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-xl py-md font-label-caps text-label-caps text-on-surface-variant">Nome da Variante</th>
+<th class="px-xl py-md font-label-caps text-label-caps text-on-surface-variant">Lances (PGN)</th>
+<th class="px-xl py-md font-label-caps text-label-caps text-on-surface-variant">Estilo</th>
+<th class="px-xl py-md font-label-caps text-label-caps text-on-surface-variant">Popularidade</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<tr class="hover:bg-surface-container-lowest/50 transition-colors group">
+<td class="px-xl py-lg font-bold text-on-surface">Variante Berlinesa</td>
+<td class="px-xl py-lg">
+<span class="font-data-mono text-data-mono text-sage bg-sage/5 px-sm py-xs rounded">... Nf6</span>
+</td>
+<td class="px-xl py-lg">
+<span class="bg-surface-container-highest text-on-surface-variant px-sm py-xs rounded-full font-label-caps text-[10px]">Solid</span>
+</td>
+<td class="px-xl py-lg">
+<div class="flex items-center gap-xs">
+<div class="w-16 h-1 bg-outline-variant/30 rounded-full overflow-hidden">
+<div class="bg-sage h-full w-[85%]"></div>
+</div>
+<span class="text-body-sm text-on-surface-variant">85%</span>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest/50 transition-colors group">
+<td class="px-xl py-lg font-bold text-on-surface">Defesa Marshall</td>
+<td class="px-xl py-lg">
+<span class="font-data-mono text-data-mono text-sage bg-sage/5 px-sm py-xs rounded">... d5</span>
+</td>
+<td class="px-xl py-lg">
+<span class="bg-secondary-container text-on-secondary-container px-sm py-xs rounded-full font-label-caps text-[10px]">Aggressive</span>
+</td>
+<td class="px-xl py-lg">
+<div class="flex items-center gap-xs">
+<div class="w-16 h-1 bg-outline-variant/30 rounded-full overflow-hidden">
+<div class="bg-sage h-full w-[62%]"></div>
+</div>
+<span class="text-body-sm text-on-surface-variant">62%</span>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest/50 transition-colors group">
+<td class="px-xl py-lg font-bold text-on-surface">Variante das Trocas</td>
+<td class="px-xl py-lg">
+<span class="font-data-mono text-data-mono text-sage bg-sage/5 px-sm py-xs rounded">Bxc6</span>
+</td>
+<td class="px-xl py-lg">
+<span class="bg-surface-container-highest text-on-surface-variant px-sm py-xs rounded-full font-label-caps text-[10px]">Solid</span>
+</td>
+<td class="px-xl py-lg">
+<div class="flex items-center gap-xs">
+<div class="w-16 h-1 bg-outline-variant/30 rounded-full overflow-hidden">
+<div class="bg-sage h-full w-[45%]"></div>
+</div>
+<span class="text-body-sm text-on-surface-variant">45%</span>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest/50 transition-colors group">
+<td class="px-xl py-lg font-bold text-on-surface">Variante Arkhangelsk</td>
+<td class="px-xl py-lg">
+<span class="font-data-mono text-data-mono text-sage bg-sage/5 px-sm py-xs rounded">... Bb7</span>
+</td>
+<td class="px-xl py-lg">
+<span class="bg-secondary-container text-on-secondary-container px-sm py-xs rounded-full font-label-caps text-[10px]">Aggressive</span>
+</td>
+<td class="px-xl py-lg">
+<div class="flex items-center gap-xs">
+<div class="w-16 h-1 bg-outline-variant/30 rounded-full overflow-hidden">
+<div class="bg-sage h-full w-[38%]"></div>
+</div>
+<span class="text-body-sm text-on-surface-variant">38%</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Stats/Mini Sidebar -->
+<div class="space-y-lg">
+<div class="bg-sage text-white rounded-[1.5rem] p-lg shadow-lg">
+<h4 class="font-label-caps text-label-caps mb-md opacity-80">Win Probability (White)</h4>
+<div class="flex items-end gap-xs h-32 mb-md">
+<div class="flex-1 bg-white/20 h-[60%] rounded-t-lg"></div>
+<div class="flex-1 bg-white/40 h-[85%] rounded-t-lg"></div>
+<div class="flex-1 bg-white/60 h-[70%] rounded-t-lg"></div>
+<div class="flex-1 bg-white/30 h-[95%] rounded-t-lg"></div>
+<div class="flex-1 bg-white h-[80%] rounded-t-lg"></div>
+</div>
+<p class="text-headline-md font-bold">54.2%</p>
+<p class="text-body-sm opacity-70">+0.4 Advantage</p>
+</div>
+<div class="bg-white rounded-[1.5rem] p-lg border border-outline-variant/10">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-md">Recent Insights</h4>
+<div class="space-y-md">
+<div class="flex gap-md">
+<img alt="Study tip" class="w-10 h-10 rounded-xl bg-peach/10 p-2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3N3lDK9AgLiXUSXz4FvfFHFJhhCTPndY_5Hnl9sFRqdDdyrQeqfq5ysOc7hX76QzVcSX2D3fVo8LK70rQj5oBXl_Qc4nFc-daU0ZupjhhdC6yqF9irlSNOzj113wvACchDmywXcTdUE9n--N7ntOMvwGu1lMrRfWUzk7wvuzH5OT_pCj-cF0lWSCPBs9kcNSrqJUFBHKep2OrWTbLEcmQXIm5uNyKeqENFawzjbupsrgVI0GpIilMTxktKcjuV2rrZntEVSy6Qrao"/>
+<div>
+<p class="text-body-sm font-bold text-on-surface">New Study Added</p>
+<p class="text-[12px] text-on-surface-variant">Magnus Carlsen on the Berlin Defense</p>
+</div>
+</div>
+<div class="flex gap-md">
+<img alt="Trend icon" class="w-10 h-10 rounded-xl bg-sage/10 p-2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxHm0NvSSxNNpwYoE-YYVkni1uxCuVnfA86Dr4TGxmJbbQVURoXmMm_cmKyehwPqqieKn3KgnyMvRStvltfA5s9FLGPdl9fziFq-wNtxPioWZKNlleSssUrko1qqKjz11irRarXLFVxVg_Z6j68PCHq4GG-T_fXI7LK4yELkLXxw72AoaFGu897OdJsG1iY-JsVpxdvM7P-I-vsWteqt6pdbIIu8rGfHL5Q9ZbbOTtg0-ccHeZNuHDR4Mi6CoH08Em4Ne_7bgwiniv"/>
+<div>
+<p class="text-body-sm font-bold text-on-surface">Trending Line</p>
+<p class="text-[12px] text-on-surface-variant">Anti-Marshall variations rising in popularity</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Visual Decorative Section -->
+<section class="mt-xl grid grid-cols-1 md:grid-cols-2 gap-lg h-[400px]">
+<div class="relative rounded-[1.5rem] overflow-hidden group">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A macro photography shot of a single white chess knight piece standing elegantly on a minimalist sage green wooden board. The lighting is soft and directional, casting long, gentle shadows that create a peaceful, zen atmosphere. The background is a blurred wash of warm paper green tones, emphasizing the clean lines and tactical nature of the piece." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9Mqo1ppwXjQyWmFtOtixxd-dN2CtqwCBvB-EhlNl2TlETsnPxqmReVNxcH0ZmR9obvLR8PYbYDA6QtWbwK85P-vEYfpcQtQc5xn0tgCuLpmkyv5aEgw1wUbERjmDBVK-YnLQhDF9ty5u0r9VsvSjtxJBdJgR35EWz21ArMPVbdAmokREL5QSC1EQXPYDQnlOfvbT7fZPNkyHLik3LD30-Olkcbv0tR_56IFRoRa64xqzxWzO0ZX11_CM4NEAfoA7Ictc4V4j9G4W8"/>
+<div class="absolute inset-0 bg-gradient-to-t from-sage/80 to-transparent p-xl flex flex-col justify-end">
+<span class="font-label-caps text-label-caps text-white/70 mb-xs">Inspiration</span>
+<h3 class="font-headline-lg text-headline-lg text-white">O Cavaleiro da Estratégia</h3>
+</div>
+</div>
+<div class="relative rounded-[1.5rem] overflow-hidden group">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="An artistic view of a chess board from a high angle, where the squares are rendered in sophisticated muted tones of sage green and light cream. The scene is illuminated by natural light from a nearby window, creating a serene and thoughtful environment. Minimalist wooden chess pieces are scattered in an unfinished game state, suggesting deep analysis and mental clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPriubj3Eb04WblSThmixOOK2plYme6_ce0rXjkwn626girQI3k5cKkbO9ORNgMioJZl2NeTLZP-z73cdKCtu7yENdSfEeJ9M8itTzi229WsDfAfITvUFrrLE2Cpe_1r7_tBy3-pounWGRUorHv5WM62yZMW29j1Wn4bDV9z57i5QKHMvuY4ISzGpOf2CxV2tLZDsTW7p-IGt6mhIsK5U9fGUJTc5cRtZ0bGzBL7MIXby9O4qYZ2vGKDgiZNYURS6p8jgIRguowow5"/>
+<div class="absolute inset-0 bg-gradient-to-t from-secondary/80 to-transparent p-xl flex flex-col justify-end">
+<span class="font-label-caps text-label-caps text-white/70 mb-xs">Library</span>
+<h3 class="font-headline-lg text-headline-lg text-white">Arquivo de Mestres</h3>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-surface-container-lowest/90 backdrop-blur-md flex justify-around items-center h-16 z-50 border-t border-outline-variant/10">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="chess">chess</span>
+<span class="text-[10px] font-label-caps">Play</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+<span class="text-[10px] font-label-caps">Stats</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-sage">
+<span class="material-symbols-outlined" data-icon="school" data-weight="fill">school</span>
+<span class="text-[10px] font-label-caps">Learn</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-[10px] font-label-caps">Settings</span>
+</button>
+</nav>
+</body></html>

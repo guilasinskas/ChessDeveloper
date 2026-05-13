@@ -17,7 +17,6 @@ import {
   TextField,
   Typography,
   useTheme,
-  alpha,
   Chip,
   IconButton,
   Tooltip,
@@ -28,6 +27,7 @@ import LoadGameButton from "@/sections/loadGame/loadGameButton";
 import { useGameDatabase } from "@/hooks/useGameDatabase";
 import { useRouter } from "next/router";
 import { PageTitle } from "@/components/pageTitle";
+import FolderCoverCard from "@/components/FolderCoverCard";
 import { CC } from "@/constants";
 import { Game, GameSummary } from "@/types/game";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
@@ -466,38 +466,100 @@ export default function GameDatabase() {
   }, [menuGameId, games, getGame]);
 
   return (
-    <Box sx={{ px: { xs: 1, sm: 2, md: 3 }, pt: 3, pb: 4 }}>
+    <Box>
       <PageTitle title="Chesskit Game Database" />
 
-      {/* Header */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h2" sx={{ mb: 0.5, color: isDark ? CC.text : CC.lText }}>
-          My Games
-        </Typography>
-        <Typography sx={{ color: isDark ? CC.textSub : CC.lTextSub, fontSize: 14 }}>
-          {totalAll.toLocaleString()} game{totalAll !== 1 && "s"} in your database
-        </Typography>
+      {/* Sticky title bar — same pattern as analysis page */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          height: 64,
+          px: { xs: 2, md: 3 },
+          backgroundColor:
+            "color-mix(in srgb, var(--cc-surface) 80%, transparent)",
+          backdropFilter: "blur(20px)",
+          borderBottom: `1px solid ${CC.border}`,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Typography
+            sx={{
+              fontFamily: "var(--cc-font-headline)",
+              fontSize: 24,
+              fontWeight: 800,
+              letterSpacing: "-0.02em",
+              color: CC.primary,
+            }}
+          >
+            Database
+          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.75,
+              px: 1.5,
+              py: 0.5,
+              borderRadius: "var(--cc-radius-pill)",
+              backgroundColor: "var(--cc-surface-container-low)",
+              border: `1px solid ${CC.border}`,
+            }}
+          >
+            <Icon icon="material-symbols:lock-outline" width={14} color={CC.primary} />
+            <Typography
+              sx={{
+                fontFamily: "var(--cc-font-body)",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+                color: CC.textSub,
+              }}
+            >
+              {totalAll.toLocaleString()} GAMES · OFFLINE
+            </Typography>
+          </Box>
+        </Box>
       </Box>
 
-      <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+      <Box sx={{ px: { xs: 1, sm: 2, md: 3 }, py: 3, display: "flex", gap: 2, alignItems: "flex-start" }}>
 
         {/* Folder sidebar */}
         <Box
           sx={{
-            width: 210,
+            width: 240,
             flexShrink: 0,
-            backgroundColor: isDark ? CC.bg2 : "#ffffff",
-            borderRadius: "16px",
-            border: `1px solid ${isDark ? CC.border : CC.lBorder}`,
+            backgroundColor: "var(--cc-surface-container-lowest)",
+            borderRadius: "var(--cc-radius-xl)",
             overflow: "hidden",
-            boxShadow: isDark ? "0 4px 16px rgba(0,0,0,0.35)" : "0 4px 16px rgba(0,0,0,0.07)",
+            boxShadow: "var(--cc-shadow-ambient)",
           }}
         >
-          <Box sx={{ px: 2, pt: 2, pb: 1 }}>
+          <Box sx={{ px: 2.5, pt: 2.5, pb: 1.5 }}>
             <Typography
-              sx={{ fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", color: isDark ? CC.textMuted : "#a0a09e" }}
+              sx={{
+                fontFamily: "var(--cc-font-headline)",
+                fontSize: 18,
+                fontWeight: 700,
+                color: CC.primary,
+                lineHeight: 1.2,
+              }}
             >
-              Folders
+              Storage
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: "var(--cc-font-body)",
+                fontSize: 12,
+                color: CC.textSub,
+                mt: 0.25,
+              }}
+            >
+              {folders.length} folders · {totalAll.toLocaleString()} games
             </Typography>
           </Box>
 
@@ -524,7 +586,16 @@ export default function GameDatabase() {
                 key={key}
                 selected={selectedFolder === key}
                 onClick={() => setSelectedFolder(key)}
-                sx={{ borderRadius: "10px", mb: 0.25 }}
+                sx={{
+                  borderRadius: "var(--cc-radius-md)",
+                  mb: 0.5,
+                  py: 1,
+                  "&.Mui-selected": {
+                    backgroundColor: "var(--cc-primary-fixed)",
+                    color: "var(--cc-on-primary-fixed)",
+                    "&:hover": { backgroundColor: "var(--cc-primary-fixed-dim)" },
+                  },
+                }}
               >
                 <ListItemIcon sx={{ minWidth: 28 }}>
                   <Icon icon={icon} width={16} color={selectedFolder === key ? CC.green : undefined} />
@@ -546,7 +617,16 @@ export default function GameDatabase() {
                 key={name}
                 selected={selectedFolder === name}
                 onClick={() => setSelectedFolder(name)}
-                sx={{ borderRadius: "10px", mb: 0.25 }}
+                sx={{
+                  borderRadius: "var(--cc-radius-md)",
+                  mb: 0.5,
+                  py: 1,
+                  "&.Mui-selected": {
+                    backgroundColor: "var(--cc-primary-fixed)",
+                    color: "var(--cc-on-primary-fixed)",
+                    "&:hover": { backgroundColor: "var(--cc-primary-fixed-dim)" },
+                  },
+                }}
               >
                 <ListItemIcon sx={{ minWidth: 28 }}>
                   <Icon
@@ -569,6 +649,61 @@ export default function GameDatabase() {
 
         {/* Main content */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
+          {/* Folder cover cards — horizontal-scroll strip of photo cards.
+              Each card represents a folder; clicking selects that folder
+              in the sidebar. Matches the Stitch "Explorador de Aberturas"
+              photo-card pattern. */}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1.5,
+              mb: 2.5,
+              overflowX: "auto",
+              pb: 1,
+              // hide scrollbar visually but keep functional
+              scrollbarWidth: "thin",
+              "&::-webkit-scrollbar": { height: 6 },
+            }}
+          >
+            <Box sx={{ minWidth: 180, width: 180, flexShrink: 0 }}>
+              <FolderCoverCard
+                title="All games"
+                label="Library"
+                meta={`${totalAll.toLocaleString()} games`}
+                cover="/folder-covers/board.jpg"
+                variant="peach"
+                selected={selectedFolder === ALL_FOLDER}
+                onClick={() => setSelectedFolder(ALL_FOLDER)}
+              />
+            </Box>
+            {totalUnfoldered > 0 && (
+              <Box sx={{ minWidth: 180, width: 180, flexShrink: 0 }}>
+                <FolderCoverCard
+                  title="No folder"
+                  label="Inbox"
+                  meta={`${totalUnfoldered.toLocaleString()} games`}
+                  cover="/folder-covers/knight.jpg"
+                  selected={selectedFolder === NO_FOLDER}
+                  onClick={() => setSelectedFolder(NO_FOLDER)}
+                />
+              </Box>
+            )}
+            {folders.map(({ name, count }) => (
+              <Box
+                key={name}
+                sx={{ minWidth: 180, width: 180, flexShrink: 0 }}
+              >
+                <FolderCoverCard
+                  title={name}
+                  label="Folder"
+                  meta={`${count.toLocaleString()} games`}
+                  selected={selectedFolder === name}
+                  onClick={() => setSelectedFolder(name)}
+                />
+              </Box>
+            ))}
+          </Box>
+
           {/* Toolbar */}
           <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1.5, flexWrap: "wrap" }}>
             <LoadGameButton />
@@ -609,7 +744,10 @@ export default function GameDatabase() {
                   label={`${selected.size} selected`}
                   size="small"
                   sx={{
-                    backgroundColor: alpha(CC.green, isDark ? 0.2 : 0.12),
+                    // alpha() can't process var(--cc-*) — use the muted token
+                    // which is already pre-multiplied with the right alpha in
+                    // design.css.
+                    backgroundColor: CC.greenMuted,
                     color: CC.greenHover,
                     fontWeight: 700,
                     fontSize: 12,
@@ -684,16 +822,36 @@ export default function GameDatabase() {
                 alignItems: "center",
                 justifyContent: "center",
                 py: 8,
-                backgroundColor: isDark ? CC.bg2 : "#ffffff",
-                borderRadius: "16px",
-                border: `1px solid ${isDark ? CC.border : CC.lBorder}`,
+                backgroundColor: "var(--cc-surface-container-lowest)",
+                borderRadius: "var(--cc-radius-xl)",
+                boxShadow: "var(--cc-shadow-soft)",
               }}
             >
-              <Icon icon="streamline:database" width={48} color={isDark ? CC.textMuted : "#c0bab4"} />
-              <Typography sx={{ mt: 2, fontSize: 16, fontWeight: 600, color: isDark ? CC.textSub : CC.lTextSub }}>
+              <Box
+                sx={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: "50%",
+                  backgroundColor: "var(--cc-primary-fixed)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  mb: 2,
+                }}
+              >
+                <Icon icon="material-symbols:library-books-outline" width={36} color={CC.primary} />
+              </Box>
+              <Typography
+                sx={{
+                  fontFamily: "var(--cc-font-headline)",
+                  fontSize: 20,
+                  fontWeight: 700,
+                  color: CC.text,
+                }}
+              >
                 No games found
               </Typography>
-              <Typography sx={{ mt: 0.5, fontSize: 13, color: isDark ? CC.textMuted : "#a0a09e" }}>
+              <Typography sx={{ mt: 0.5, fontSize: 14, color: CC.textSub }}>
                 {search || selectedFolder !== ALL_FOLDER
                   ? "Try clearing filters."
                   : "Add games using the button above"}

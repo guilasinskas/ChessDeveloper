@@ -10,6 +10,7 @@ import {
   Grid2 as Grid,
   Tab,
   Tabs,
+  Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -39,40 +40,87 @@ export default function GameAnalysis() {
   }, [showMovesTab, gameEval, tab]);
 
   return (
-    <Grid
-      container
-      gap={2}
-      justifyContent="space-evenly"
-      alignItems="start"
-      sx={{ pt: { xs: 1, lg: 1 }, px: { xs: 1, sm: 1.5 } }}
+    <Box
+      sx={{
+        height: { lg: "100dvh" },
+        display: "flex",
+        flexDirection: "column",
+        overflow: { lg: "hidden" },
+      }}
     >
       <PageTitle title="Chesskit Game Analysis" />
 
-      <Board />
+      {/* Page header bar — sticky title, matches the Stitch reference's
+       * "Game Analysis" sticky bar with glass background. */}
+      {isLgOrGreater && (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            height: 64,
+            px: 3,
+            backgroundColor:
+              "color-mix(in srgb, var(--cc-surface) 80%, transparent)",
+            backdropFilter: "blur(20px)",
+            borderBottom: `1px solid ${CC.border}`,
+            flexShrink: 0,
+          }}
+        >
+          <Typography
+            sx={{
+              fontFamily: "var(--cc-font-headline)",
+              fontSize: 24,
+              fontWeight: 800,
+              letterSpacing: "-0.02em",
+              color: CC.primary,
+            }}
+          >
+            Game Analysis
+          </Typography>
+        </Box>
+      )}
 
-      {/* Analysis panel */}
       <Grid
         container
-        justifyContent="start"
-        alignItems="center"
+        gap={2}
+        justifyContent="space-evenly"
+        alignItems={{ xs: "start", lg: "stretch" }}
         sx={{
-          backgroundColor: isDark ? CC.bg2 : CC.lBg1,
-          borderRadius: "6px",
-          border: `1px solid ${isDark ? CC.border : CC.lBorder}`,
-          boxShadow: isDark
-            ? "0 2px 8px rgba(0,0,0,0.5)"
-            : "0 1px 4px rgba(0,0,0,0.1)",
-          overflow: "hidden",
-          maxWidth: 1200,
+          py: 1,
+          px: { xs: 1, sm: 1.5 },
+          flex: { lg: 1 },
+          minHeight: 0,
+          overflow: { lg: "hidden" },
+          flexWrap: { xs: "wrap", lg: "nowrap" },
         }}
-        padding={{ xs: "8px 6px 16px", sm: "12px 12px 16px" }}
-        rowGap={1}
-        height={{ xs: tab === 1 ? "40rem" : "auto", lg: "calc(98vh - 16px)" }}
-        display="flex"
-        flexDirection="column"
-        flexWrap="nowrap"
-        size={{ xs: 12, lg: "grow" }}
       >
+        <Board />
+
+        {/* Analysis panel — rounded-xl card with ambient shadow, no border
+         * (matches Stitch reference where surfaces float on shadow alone). */}
+        <Grid
+          container
+          justifyContent="start"
+          alignItems="center"
+          sx={{
+            backgroundColor: "var(--cc-surface-container-lowest)",
+            borderRadius: "var(--cc-radius-xl)",
+            boxShadow: "var(--cc-shadow-ambient)",
+            // minWidth: 0 lets the flex item shrink below its intrinsic
+            // content width — without this, a wide engine line or move text
+            // pushes the panel out and squeezes the board.
+            minWidth: 0,
+            overflow: "hidden",
+            maxWidth: 1200,
+          }}
+          padding={{ xs: "8px 6px 16px", sm: "16px" }}
+          rowGap={1}
+          height={{ xs: tab === 1 ? "40rem" : "auto", lg: "100%" }}
+          display="flex"
+          flexDirection="column"
+          flexWrap="nowrap"
+          size={{ xs: 12, lg: "grow" }}
+        >
         {isLgOrGreater ? (
           <Box width="100%">
             <PanelHeader key="analysis-panel-header" />
@@ -137,9 +185,10 @@ export default function GameAnalysis() {
             <PanelHeader key="analysis-panel-header" />
           </Box>
         )}
-      </Grid>
+        </Grid>
 
-      <EngineSettingsButton />
-    </Grid>
+        <EngineSettingsButton />
+      </Grid>
+    </Box>
   );
 }

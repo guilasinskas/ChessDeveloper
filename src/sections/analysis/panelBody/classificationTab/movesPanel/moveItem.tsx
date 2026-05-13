@@ -32,20 +32,27 @@ const baseSx = {
   backgroundColor: "transparent",
 } as const;
 
+// Current-move highlight uses the peach affective tint from the Zenith
+// design system — the same color used in the Stitch reference for the
+// active move row.
 const currentSxLight = {
   ...baseSx,
-  pl: "4px",
+  pl: "6px",
   cursor: "default",
-  borderLeft: `2px solid ${CC.primaryDark}`,
-  backgroundColor: CC.primaryMuted,
+  borderLeft: "2px solid transparent",
+  borderRadius: "var(--cc-radius-sm)",
+  backgroundColor: "var(--cc-secondary-container)",
+  color: "var(--cc-on-secondary-container)",
 } as const;
 
 const currentSxDark = {
   ...baseSx,
-  pl: "4px",
+  pl: "6px",
   cursor: "default",
-  borderLeft: `2px solid ${CC.primary}`,
-  backgroundColor: CC.primaryMuted,
+  borderLeft: "2px solid transparent",
+  borderRadius: "var(--cc-radius-sm)",
+  backgroundColor: "var(--cc-primary-fixed)",
+  color: "var(--cc-on-primary-fixed)",
 } as const;
 
 const hoverSxLight = {

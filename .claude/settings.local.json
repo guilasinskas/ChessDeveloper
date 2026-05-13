@@ -74,7 +74,25 @@
       "Bash(curl -s -o /tmp/gpl3.txt https://www.gnu.org/licenses/gpl-3.0.txt)",
       "Bash(cp /tmp/gpl3.txt LICENCE && head -5 LICENCE && echo \"---\" && wc -l LICENCE)",
       "PowerShell(npm uninstall @sentry/nextjs 2>&1)",
-      "PowerShell(npm install electron-updater 2>&1)"
+      "PowerShell(npm install electron-updater 2>&1)",
+      "Bash(node -e \"const c=require\\('/c/Users/Usuario/.claude.json'\\); console.log\\('Top-level keys:', Object.keys\\(c\\).join\\(', '\\)\\); console.log\\('Has mcpServers:', !!c.mcpServers, c.mcpServers ? Object.keys\\(c.mcpServers\\).join\\(','\\) : 'n/a'\\);\")",
+      "Bash(node -e \"const c=JSON.parse\\(require\\('fs'\\).readFileSync\\(process.env.USERPROFILE + '/.claude.json','utf8'\\)\\); console.log\\('Top-level keys:', Object.keys\\(c\\).slice\\(0,40\\).join\\(', '\\)\\); console.log\\('Has mcpServers:', !!c.mcpServers, c.mcpServers ? Object.keys\\(c.mcpServers\\).join\\(','\\) : 'n/a'\\);\")",
+      "Bash(curl -L -s -o .tmp/zenith-screenshot.png \"https://lh3.googleusercontent.com/aida/ADBb0ui-Z37kNoosKmfBNuravcQLyxqjsrw1n8VgdBM7Xs_63M82dM6Lt5vZCYxXj6OJaaWIlsXwJgqW7Q30iY8d709Nklj0v8BSxBnbrrwwq7mi8dYrKepNvBeaXRqXEvOoI_qM97B1TP6vEOUTPtrTvISJQw7VFUsP0hi9eP9hGtt2N71Cfzh06Zdq797WQ4akSMUIi7lAELlVT4BR-07zLf0V_9uuFrbCW0pqviGcvQRcM-F2QpeBJb2EXskd\" -w \"image: HTTP %{http_code}, %{size_download} bytes, type=%{content_type}\\\\n\")",
+      "Bash(curl -L -s -o .tmp/zenith.html \"https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ8Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpbCiVodG1sXzdlZDcwM2JhNTc3MzQ4ZDdiNjc2YmE0N2ZjMDBkMTYyEgsSBxCEj67GqggYAZIBJAoKcHJvamVjdF9pZBIWQhQxNDI2MTYxMTcyMTU0MzE1NTI3Ng&filename=&opi=89354086\" -w \"html: HTTP %{http_code}, %{size_download} bytes, type=%{content_type}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"/database=%{http_code}\\\\n\" http://localhost:3000/database)",
+      "Bash(taskkill //F //PID 9656)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('package.json','utf8'\\)\\); console.log\\('package.json valid JSON'\\);\")",
+      "PowerShell(npm run electron-installer 2>&1)",
+      "Bash(curl -L -s -o .tmp/study-screenshot.png \"https://lh3.googleusercontent.com/aida/ADBb0uhtM0VhEX6iZlpdxIsmhI66S0TqqC94__t3auEc7syZQ12qCM7UxsSr0go__9acFIIWKzBmD1r0Ccj3ebb7S2ET30TllCqdp0cNp3kC_WkiWNI2AtiPBqQM7PahDiKWsWoauXOHZ4GnzLNk_QMOjBKWhFrVpg00-N6EoISQDxmIXhQPW6GUskQixEO45WwkIR8OQzGUUKIUe2Yg4Qpl8wD5AwjaEKUy5nyBMdXWP7PR5yXigpKzIoEw0_s\" -w \"screenshot: %{http_code} %{size_download}b\\\\n\")",
+      "Bash(curl -L -s -o .tmp/study.html \"https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ8Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpbCiVodG1sXzJlYmIyNjQwYjg0NTQ5N2ViNjM3MzYzZDZjZTFmMTU1EgsSBxCEj67GqggYAZIBJAoKcHJvamVjdF9pZBIWQhQxNDI2MTYxMTcyMTU0MzE1NTI3Ng&filename=&opi=89354086\" -w \"html: %{http_code} %{size_download}b\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"/openings=%{http_code}\\\\n\" http://localhost:3000/openings)",
+      "Bash(curl -L -s -o public/folder-covers/knight.jpg \"https://lh3.googleusercontent.com/aida-public/AB6AXuD9Mqo1ppwXjQyWmFtOtixxd-dN2CtqwCBvB-EhlNl2TlETsnPxqmReVNxcH0ZmR9obvLR8PYbYDA6QtWbwK85P-vEYfpcQtQc5xn0tgCuLpmkyv5aEgw1wUbERjmDBVK-YnLQhDF9ty5u0r9VsvSjtxJBdJgR35EWz21ArMPVbdAmokREL5QSC1EQXPYDQnlOfvbT7fZPNkyHLik3LD30-Olkcbv0tR_56IFRoRa64xqzxWzO0ZX11_CM4NEAfoA7Ictc4V4j9G4W8\" -w \"knight: %{http_code} %{size_download}b\\\\n\")",
+      "Bash(curl -L -s -o public/folder-covers/board.jpg \"https://lh3.googleusercontent.com/aida-public/AB6AXuDPriubj3Eb04WblSThmixOOK2plYme6_ce0rXjkwn626girQI3k5cKkbO9ORNgMioJZl2NeTLZP-z73cdKCtu7yENdSfEeJ9M8itTzi229WsDfAfITvUFrrLE2Cpe_1r7_tBy3-pounWGRUorHv5WM62yZMW29j1Wn4bDV9z57i5QKHMvuY4ISzGpOf2CxV2tLZDsTW7p-IGt6mhIsK5U9fGUJTc5cRtZ0bGzBL7MIXby9O4qYZ2vGKDgiZNYURS6p8jgIRguowow5\" -w \"board: %{http_code} %{size_download}b\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"knight=%{http_code} \" http://localhost:3000/folder-covers/knight.jpg)",
+      "Bash(curl -s -o /dev/null -w \"board=%{http_code}\\\\n\" http://localhost:3000/folder-covers/board.jpg)",
+      "Bash(curl -s -o /dev/null -w \"/=%{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"/stats=%{http_code}\\\\n\" http://localhost:3000/stats)",
+      "PowerShell(npm run electron-pack 2>&1)"
     ],
     "additionalDirectories": [
       "\\tmp"

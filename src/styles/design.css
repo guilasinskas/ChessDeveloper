@@ -609,20 +609,26 @@ a {
 
 /* ─────────────────── PAGE TRANSITION (route change) ──────────────────────── */
 
+/*
+ * Opacity-only animation. We used to also translate the page in Y, but
+ * `transform: translateY(0)` + `will-change: transform` left the page-
+ * transition wrapper in a permanent compositor layer. react-chessboard's
+ * HTML5 drag preview was being captured against that layer's local
+ * coordinate space, so the dragged piece appeared offset from the mouse.
+ * Pure opacity keeps the transition pleasant without creating a layer.
+ */
+
 .page-transition {
   animation: cc-page-enter var(--cc-motion-duration-slow)
     var(--cc-motion-easing) both;
-  will-change: opacity, transform;
 }
 
 @keyframes cc-page-enter {
   from {
     opacity: 0;
-    transform: translateY(var(--cc-motion-distance));
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
