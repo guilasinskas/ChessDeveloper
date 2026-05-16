@@ -65,7 +65,7 @@ export default function OpeningsListPage() {
 
   return (
     <Box>
-      <PageTitle title="Chesskit Opening Studies" />
+      <PageTitle title="White to Move — Opening Studies" />
 
       {/* Sticky title bar — Stitch "Repertoire Editor" pattern */}
       <Box

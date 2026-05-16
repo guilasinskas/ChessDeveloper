@@ -31,6 +31,7 @@ import FolderCoverCard from "@/components/FolderCoverCard";
 import { CC } from "@/constants";
 import { Game, GameSummary } from "@/types/game";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useFolderCovers } from "@/hooks/useFolderCovers";
 
 const ALL_FOLDER = "__all__";
 const NO_FOLDER = "__none__";
@@ -280,6 +281,7 @@ export default function GameDatabase() {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
   const queryClient = useQueryClient();
+  const { getCoverUrl, uploadCover, clearCover } = useFolderCovers();
 
   const [selectedFolder, setSelectedFolder] = useState<string>(ALL_FOLDER);
   const [searchInput, setSearchInput] = useState("");
@@ -467,7 +469,7 @@ export default function GameDatabase() {
 
   return (
     <Box>
-      <PageTitle title="Chesskit Game Database" />
+      <PageTitle title="White to Move — Game Database" />
 
       {/* Sticky title bar — same pattern as analysis page */}
       <Box
@@ -670,7 +672,10 @@ export default function GameDatabase() {
                 title="All games"
                 label="Library"
                 meta={`${totalAll.toLocaleString()} games`}
-                cover="/folder-covers/board.jpg"
+                cover={getCoverUrl(ALL_FOLDER) ?? "/folder-covers/board.jpg"}
+                hasCustomCover={!!getCoverUrl(ALL_FOLDER)}
+                onUploadCover={(file) => uploadCover(ALL_FOLDER, file)}
+                onClearCover={() => clearCover(ALL_FOLDER)}
                 variant="peach"
                 selected={selectedFolder === ALL_FOLDER}
                 onClick={() => setSelectedFolder(ALL_FOLDER)}
@@ -682,7 +687,10 @@ export default function GameDatabase() {
                   title="No folder"
                   label="Inbox"
                   meta={`${totalUnfoldered.toLocaleString()} games`}
-                  cover="/folder-covers/knight.jpg"
+                  cover={getCoverUrl(NO_FOLDER) ?? "/folder-covers/knight.jpg"}
+                  hasCustomCover={!!getCoverUrl(NO_FOLDER)}
+                  onUploadCover={(file) => uploadCover(NO_FOLDER, file)}
+                  onClearCover={() => clearCover(NO_FOLDER)}
                   selected={selectedFolder === NO_FOLDER}
                   onClick={() => setSelectedFolder(NO_FOLDER)}
                 />
@@ -697,6 +705,10 @@ export default function GameDatabase() {
                   title={name}
                   label="Folder"
                   meta={`${count.toLocaleString()} games`}
+                  cover={getCoverUrl(name)}
+                  hasCustomCover={!!getCoverUrl(name)}
+                  onUploadCover={(file) => uploadCover(name, file)}
+                  onClearCover={() => clearCover(name)}
                   selected={selectedFolder === name}
                   onClick={() => setSelectedFolder(name)}
                 />

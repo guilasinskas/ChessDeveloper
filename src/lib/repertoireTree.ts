@@ -306,7 +306,7 @@ export const repertoireToPgnVariations = (
 ): string => {
   const headers = [
     `[Event "${repertoire.name}"]`,
-    `[Site "Chesskit"]`,
+    `[Site "White to Move"]`,
     `[Date "${repertoire.createdAt.split("T")[0].replace(/-/g, ".")}"]`,
     `[White "${repertoire.color === Color.White ? "Repertoire" : "?"}"]`,
     `[Black "${repertoire.color === Color.Black ? "Repertoire" : "?"}"]`,

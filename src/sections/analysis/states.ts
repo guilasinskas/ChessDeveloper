@@ -35,6 +35,12 @@ export const boardOrientationAtom = atom(true);
 export const showBestMoveArrowAtom = atom(true);
 export const showPlayerMoveIconAtom = atom(true);
 
+// Master toggle for live engine output: eval bar, top lines, best-move
+// arrow and live move classification. Lets the user study a position
+// without the engine spoiling the answer. Persisted via useAtomLocalStorage
+// in the panel toolbar.
+export const showEngineAtom = atom(true);
+
 export const engineNameAtom = atom<EngineName>(DEFAULT_ENGINE);
 export const engineDepthAtom = atom(14);
 export const engineMultiPvAtom = atom(3);

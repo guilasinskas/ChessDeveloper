@@ -1,13 +1,13 @@
 {
-  "name": "chesskit",
+  "name": "white-to-move",
   "version": "0.1.0",
   "private": true,
   "description": "Personal chess workbench — analyze games, study openings and keep notes, all running locally on your machine. Powered by Stockfish.",
   "author": {
     "name": "Guilherme Lasinskas",
-    "url": "https://github.com/guilasinskas/ChessDeveloper"
+    "url": "https://github.com/guilasinskas/white-to-move"
   },
-  "homepage": "https://chesskit.org",
+  "homepage": "https://github.com/guilasinskas/white-to-move",
   "license": "GPL-3.0-only",
   "main": "electron/main.js",
   "scripts": {
@@ -23,8 +23,9 @@
     "make-icon": "node scripts/make-icon.mjs"
   },
   "build": {
-    "appId": "app.chesskit.local",
-    "productName": "Chesskit",
+    "appId": "app.whitetomove.local",
+    "productName": "White to Move",
+    "afterPack": "scripts/electron-after-pack.mjs",
     "directories": {
       "output": "dist-electron"
     },
@@ -99,7 +100,7 @@
       {
         "provider": "github",
         "owner": "guilasinskas",
-        "repo": "ChessDeveloper"
+        "repo": "white-to-move"
       }
     ],
     "nsis": {
@@ -107,7 +108,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Chesskit"
+      "shortcutName": "White to Move"
     }
   },
   "dependencies": {

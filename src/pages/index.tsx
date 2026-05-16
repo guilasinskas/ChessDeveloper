@@ -3,7 +3,12 @@ import PanelHeader from "@/sections/analysis/panelHeader";
 import PanelToolBar from "@/sections/analysis/panelToolbar";
 import AnalysisTab from "@/sections/analysis/panelBody/analysisTab";
 import ClassificationTab from "@/sections/analysis/panelBody/classificationTab";
-import { boardAtom, gameAtom, gameEvalAtom } from "@/sections/analysis/states";
+import {
+  boardAtom,
+  gameAtom,
+  gameEvalAtom,
+  showEngineAtom,
+} from "@/sections/analysis/states";
 import {
   Box,
   Divider,
@@ -31,13 +36,15 @@ export default function GameAnalysis() {
   const gameEval = useAtomValue(gameEvalAtom);
   const game = useAtomValue(gameAtom);
   const board = useAtomValue(boardAtom);
+  const showEngine = useAtomValue(showEngineAtom);
 
   const showMovesTab = game.history().length > 0 || board.history().length > 0;
+  const showGraphTab = !!gameEval && showEngine;
 
   useEffect(() => {
     if (tab === 1 && !showMovesTab) setTab(0);
-    if (tab === 2 && !gameEval) setTab(0);
-  }, [showMovesTab, gameEval, tab]);
+    if (tab === 2 && !showGraphTab) setTab(0);
+  }, [showMovesTab, showGraphTab, tab]);
 
   return (
     <Box
@@ -48,7 +55,7 @@ export default function GameAnalysis() {
         overflow: { lg: "hidden" },
       }}
     >
-      <PageTitle title="Chesskit Game Analysis" />
+      <PageTitle title="White to Move — Game Analysis" />
 
       {/* Page header bar — sticky title, matches the Stitch reference's
        * "Game Analysis" sticky bar with glass background. */}
@@ -146,7 +153,7 @@ export default function GameAnalysis() {
               {[
                 { label: "Analysis", icon: "mdi:magnify", id: "tab0" },
                 { label: "Moves", icon: "mdi:format-list-bulleted", id: "tab1", hidden: !showMovesTab },
-                { label: "Graph", icon: "mdi:chart-line", id: "tab2", hidden: !gameEval },
+                { label: "Graph", icon: "mdi:chart-line", id: "tab2", hidden: !showGraphTab },
               ].map(({ label, icon, id, hidden }) => (
                 <Tab
                   key={id}

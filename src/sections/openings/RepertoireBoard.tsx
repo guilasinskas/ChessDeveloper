@@ -1,5 +1,5 @@
 import Board from "@/components/board";
-import { useScreenSize } from "@/hooks/useScreenSize";
+import { LAYOUT, useScreenSize } from "@/hooks/useScreenSize";
 import { useRepertoireEngine } from "@/hooks/useRepertoireEngine";
 import { UciEngine } from "@/lib/engine/uciEngine";
 import { Color } from "@/types/enums";
@@ -46,14 +46,39 @@ export default function RepertoireBoard({ repertoire, engine }: Props) {
   );
 
   const boardSize = useMemo(() => {
-    const { width: w, height: h } = screenSize;
-    // Mobile / narrow desktop: full-width board stacked above the repertoire
-    // tree, leaving room only for the navbar and a small bottom margin.
-    if (w < 900) return Math.min(w - 16, h - 56 - 16);
-    // Desktop: board on the left, tree on the right. Capped at 820 so it
-    // doesn't dominate on ultra-wide displays.
-    return Math.min(w * 0.62, h * 0.95, 820);
-  }, [screenSize]);
+    const { width, height } = screenSize;
+
+    if (width < LAYOUT.bpSideBySide) {
+      const verticalBudget =
+        height -
+        (width < LAYOUT.bpSidebar ? LAYOUT.navbarHeight : 0) -
+        LAYOUT.titleBarHeight -
+        2 * LAYOUT.pagePaddingY -
+        2 * LAYOUT.playerHeaderHeight -
+        2 * LAYOUT.boardRowGap;
+      const horizontalBudget =
+        width -
+        (width < LAYOUT.bpSidebar ? 0 : LAYOUT.sidebarWidth) -
+        2 * LAYOUT.pagePaddingX -
+        (engineActive ? LAYOUT.evalBarWidth : 0);
+      return Math.min(horizontalBudget, verticalBudget);
+    }
+
+    const verticalBudget =
+      height -
+      LAYOUT.titleBarHeight -
+      2 * LAYOUT.pagePaddingY -
+      2 * LAYOUT.playerHeaderHeight -
+      2 * LAYOUT.boardRowGap;
+    const horizontalBudget =
+      width -
+      LAYOUT.sidebarWidth -
+      2 * LAYOUT.pagePaddingX -
+      LAYOUT.boardPanelGap -
+      LAYOUT.panelMinWidth -
+      (engineActive ? LAYOUT.evalBarWidth : 0);
+    return Math.min(verticalBudget, horizontalBudget);
+  }, [engineActive, screenSize]);
 
   const playerLabel = useMemo(
     () => ({

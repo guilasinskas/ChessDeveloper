@@ -1,4 +1,6 @@
-import { Box, Typography } from "@mui/material";
+import { Box, IconButton, Tooltip, Typography } from "@mui/material";
+import { Icon } from "@iconify/react";
+import { useRef } from "react";
 
 /*
  * Photo cover card — Stitch "Explorador de Aberturas" pattern.
@@ -49,6 +51,20 @@ export interface FolderCoverCardProps {
   meta?: string;
   /** Aspect ratio of the card. Defaults to 4 / 5 (portrait-ish). */
   aspectRatio?: string;
+  /**
+   * Called with the file the user picked / dropped. Enables the small
+   * camera button in the top-right corner of the card. Omit to render
+   * the card as a read-only thumbnail.
+   */
+  onUploadCover?: (file: File) => void;
+  /**
+   * Called when the user wants to drop the custom cover and fall back
+   * to the default photo. Only relevant when a custom cover is set
+   * (i.e. `hasCustomCover` is true).
+   */
+  onClearCover?: () => void;
+  /** True when the displayed cover is a user-uploaded image. */
+  hasCustomCover?: boolean;
 }
 
 export default function FolderCoverCard({
@@ -60,8 +76,12 @@ export default function FolderCoverCard({
   onClick,
   meta,
   aspectRatio = "4 / 5",
+  onUploadCover,
+  onClearCover,
+  hasCustomCover = false,
 }: FolderCoverCardProps) {
   const src = cover ?? coverForName(title);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const gradient =
     variant === "peach"
       ? "linear-gradient(to top, rgba(117, 87, 84, 0.85) 0%, rgba(117, 87, 84, 0.1) 60%, transparent 100%)"
@@ -85,6 +105,7 @@ export default function FolderCoverCard({
           "outline-color var(--cc-motion-duration-fast) var(--cc-motion-easing), transform var(--cc-motion-duration-fast) var(--cc-motion-easing)",
         "&:hover": onClick ? { transform: "translateY(-2px)" } : undefined,
         "&:hover img": onClick ? { transform: "scale(1.08)" } : undefined,
+        "&:hover .cover-actions": onUploadCover ? { opacity: 1 } : undefined,
         "&:active": onClick ? { transform: "translateY(0)" } : undefined,
       }}
     >
@@ -110,6 +131,72 @@ export default function FolderCoverCard({
           pointerEvents: "none",
         }}
       />
+
+      {/* Upload / clear cover actions — visible on hover when onUploadCover
+          is provided. Stop click propagation so clicking these doesn't
+          select the folder. */}
+      {onUploadCover && (
+        <Box
+          className="cover-actions"
+          onClick={(e) => e.stopPropagation()}
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            display: "flex",
+            gap: 0.5,
+            opacity: { xs: 1, md: 0 },
+            transition: "opacity 120ms ease",
+            zIndex: 1,
+          }}
+        >
+          <Tooltip title={hasCustomCover ? "Replace image" : "Upload image"}>
+            <IconButton
+              size="small"
+              onClick={() => fileInputRef.current?.click()}
+              sx={{
+                backgroundColor: "rgba(0, 0, 0, 0.55)",
+                color: "#fff",
+                width: 28,
+                height: 28,
+                "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.75)" },
+              }}
+            >
+              <Icon icon="material-symbols:photo-camera-outline" width={16} />
+            </IconButton>
+          </Tooltip>
+
+          {hasCustomCover && onClearCover && (
+            <Tooltip title="Restore default image">
+              <IconButton
+                size="small"
+                onClick={onClearCover}
+                sx={{
+                  backgroundColor: "rgba(0, 0, 0, 0.55)",
+                  color: "#fff",
+                  width: 28,
+                  height: 28,
+                  "&:hover": { backgroundColor: "#c45c5c" },
+                }}
+              >
+                <Icon icon="mdi:close" width={14} />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) onUploadCover(file);
+              e.target.value = "";
+            }}
+          />
+        </Box>
+      )}
 
       {/* Text content */}
       <Box

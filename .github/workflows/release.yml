@@ -60,7 +60,7 @@ jobs:
       - name: Upload artifacts (intermediate)
         uses: actions/upload-artifact@v4
         with:
-          name: chesskit-windows
+          name: white-to-move-windows
           path: |
             dist-electron/*.exe
             dist-electron/SHA256SUMS.txt

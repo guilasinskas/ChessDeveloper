@@ -1334,7 +1334,7 @@ export default function StatsPage() {
 
   return (
     <Box>
-      <PageTitle title="Chesskit Statistics" />
+      <PageTitle title="White to Move — Statistics" />
 
       {/* Sticky title bar — Stitch pattern */}
       <Box

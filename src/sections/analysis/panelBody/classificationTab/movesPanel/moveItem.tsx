@@ -3,7 +3,7 @@ import { Grid2 as Grid } from "@mui/material";
 import Image from "next/image";
 import { useAtomValue, useSetAtom } from "jotai";
 import { selectAtom } from "jotai/utils";
-import { currentAnalysisNodeIdAtom } from "../../../states";
+import { currentAnalysisNodeIdAtom, showEngineAtom } from "../../../states";
 import { goToNodeAction } from "../../../actions";
 import { memo, useEffect, useMemo } from "react";
 import { isInViewport } from "@/lib/helpers";
@@ -67,13 +67,16 @@ const hoverSxDark = {
 
 function MoveItem({ san, moveClassification, nodeId, moveColor }: Props) {
   const goToNode = useSetAtom(goToNodeAction);
+  const showEngine = useAtomValue(showEngineAtom);
 
   const isCurrentMoveAtom = useMemo(
     () => selectAtom(currentAnalysisNodeIdAtom, (id) => id === nodeId),
     [nodeId]
   );
   const isCurrentMove = useAtomValue(isCurrentMoveAtom);
-  const color = getMoveColor(moveClassification);
+  // In focus mode (engine hidden), strip the brilliant/blunder/etc. icon
+  // so the move list reads as a neutral navigation list.
+  const color = showEngine ? getMoveColor(moveClassification) : undefined;
 
   useEffect(() => {
     if (!isCurrentMove) return;

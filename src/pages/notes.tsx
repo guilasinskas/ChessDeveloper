@@ -53,7 +53,7 @@ export default function NotesPage() {
 
   return (
     <Box sx={{ px: { xs: 1, sm: 2, md: 3 }, pt: 3, pb: 4 }}>
-      <PageTitle title="Chesskit Notes" />
+      <PageTitle title="White to Move — Notes" />
 
       <Box sx={{ mb: 3, display: "flex", alignItems: "flex-end", gap: 2, flexWrap: "wrap" }}>
         <Box sx={{ flex: 1, minWidth: 240 }}>

@@ -35,6 +35,14 @@ export default function EvaluationBar({
   const blackIsWinning = evalBar.whiteBarPercentage < 50;
   const showLabel = evalBar.whiteBarPercentage !== 50;
 
+  // The eval bar represents White vs Black PIECES — its colors must NOT
+  // flip with the UI theme. Hardcoded so the "black" side is always dark
+  // and the "white" side is always light, matching every other chess UI
+  // (lichess, chess.com, etc.). Theme tokens that invert under dark mode
+  // would make the bar visually confusing.
+  const BLACK_SIDE = "#262421";
+  const WHITE_SIDE = "#f0ece0";
+
   return (
     <Grid
       container
@@ -44,18 +52,18 @@ export default function EvaluationBar({
       width={{ xs: "1.5rem", sm: "2rem" }}
       height={height}
       sx={{
-        border: "1px solid var(--cc-outline-variant)",
+        border: "1px solid rgba(0, 0, 0, 0.2)",
         borderRadius: "var(--cc-radius-pill)",
         overflow: "hidden",
         flexShrink: 0,
-        backgroundColor: "var(--cc-surface-container-high)",
+        backgroundColor: BLACK_SIDE,
         boxShadow: "var(--cc-shadow-soft)",
       }}
     >
       {/* Black section */}
       <Box
         sx={{
-          backgroundColor: "var(--cc-on-surface)",
+          backgroundColor: BLACK_SIDE,
           transition: "height 0.7s ease",
           width: "100%",
           display: "flex",
@@ -67,7 +75,7 @@ export default function EvaluationBar({
         {blackIsWinning && showLabel && (
           <Typography
             sx={{
-              color: "var(--cc-surface)",
+              color: WHITE_SIDE,
               fontFamily: "var(--cc-font-mono)",
               fontSize: { xs: "0.6rem", sm: "0.7rem" },
               fontWeight: 700,
@@ -84,7 +92,7 @@ export default function EvaluationBar({
       {/* White section */}
       <Box
         sx={{
-          backgroundColor: "var(--cc-surface)",
+          backgroundColor: WHITE_SIDE,
           transition: "height 0.7s ease",
           width: "100%",
           display: "flex",
@@ -96,7 +104,7 @@ export default function EvaluationBar({
         {whiteIsWinning && showLabel && (
           <Typography
             sx={{
-              color: "var(--cc-on-surface)",
+              color: BLACK_SIDE,
               fontFamily: "var(--cc-font-mono)",
               fontSize: { xs: "0.6rem", sm: "0.7rem" },
               fontWeight: 700,

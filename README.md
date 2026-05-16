@@ -1,6 +1,6 @@
 <div align="center">
 
-# Chess Developer
+# White to Move
 
 **A personal chess workbench — play, analyze, study openings, and keep notes, all running locally on your machine.**
 
@@ -30,13 +30,13 @@ All data lives locally. Nothing is uploaded anywhere — no telemetry, no analyt
 
 If you don't want to mess with Node and source code, grab the executable from the latest [GitHub Release](../../releases/latest):
 
-1. Run the installer (`Chesskit-Setup-*.exe`) **or** unzip the portable folder
-2. Launch **Chesskit** from the Start Menu / desktop shortcut (or run `Chesskit.exe` from the unzipped folder)
+1. Run the installer (`White to Move Setup *.exe`) **or** unzip the portable folder
+2. Launch **White to Move** from the Start Menu / desktop shortcut (or run `White to Move.exe` from the unzipped folder)
 
 That's it. The first launch creates a data folder at:
 
 ```
-%APPDATA%\Chesskit\data\
+%APPDATA%\White to Move\data\
 ```
 
 Your games (`games.json`), repertoires (`openings.json`), notes (`notes.json`), and any uploaded images live there. Back up that folder if you care about your data — it's not synced anywhere.
@@ -47,7 +47,7 @@ The Windows installer is **not currently code-signed**, which means Windows Smar
 
 ```powershell
 # In PowerShell, from the folder where you downloaded the installer
-Get-FileHash -Algorithm SHA256 .\Chesskit-Setup-*.exe
+Get-FileHash -Algorithm SHA256 .\White to Move Setup *.exe
 ```
 
 Compare the printed hash with the matching line in `SHA256SUMS.txt`. If they match, the file is authentic.
@@ -108,10 +108,10 @@ npm run electron-pack
 Produces a self-contained, no-install folder you can zip and copy anywhere:
 
 ```
-dist-electron\Chesskit-win32-x64\Chesskit.exe
+dist-electron\White to Move-win32-x64\White to Move.exe
 ```
 
-Double-click `Chesskit.exe` to launch — no installation needed.
+Double-click `White to Move.exe` to launch — no installation needed.
 
 ### Installer (.exe)
 
@@ -122,7 +122,7 @@ npm run electron-installer
 Produces a real NSIS installer with desktop + Start Menu shortcuts:
 
 ```
-dist-electron\Chesskit Setup <version>.exe
+dist-electron\White to Move Setup <version>.exe
 ```
 
 Both flavors bundle the Next.js standalone server, Stockfish WASM binaries, and all assets into a single artifact.
@@ -134,10 +134,10 @@ Both flavors bundle the Next.js standalone server, Stockfish WASM binaries, and 
 | Mode | Location |
 |------|----------|
 | `npm run dev` (browser) | `./data/` in the project root |
-| `npm run electron` (dev shell) | `%APPDATA%\Chesskit\data\` |
-| Packaged app | `%APPDATA%\Chesskit\data\` |
+| `npm run electron` (dev shell) | `%APPDATA%\White to Move\data\` |
+| Packaged app | `%APPDATA%\White to Move\data\` |
 
-If you've been running `npm run dev` and want your data to follow you into the packaged app, the Electron entrypoint will migrate `games.json`, `openings.json`, `notes.json`, `notes-images.json` and the `notes-images/` folder on first launch — but only when the destination is missing or empty. To force a re-migration, delete the relevant file in `%APPDATA%\Chesskit\data\` first.
+If you've been running `npm run dev` and want your data to follow you into the packaged app, the Electron entrypoint will migrate `games.json`, `openings.json`, `notes.json`, `notes-images.json` and the `notes-images/` folder on first launch — but only when the destination is missing or empty. To force a re-migration, delete the relevant file in `%APPDATA%\White to Move\data\` first.
 
 ---
 

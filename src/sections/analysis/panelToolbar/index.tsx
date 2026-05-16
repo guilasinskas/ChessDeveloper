@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { ToolbarButton } from "@/components/ToolbarButton";
 import { CopyPgnButton } from "./copyPgnButton";
 import { useAnalysisActions } from "@/hooks/useAnalysisActions";
+import ToggleEngineButton from "./toggleEngineButton";
 
 export default function PanelToolBar() {
   const board = useAtomValue(boardAtom);
@@ -39,12 +40,20 @@ export default function PanelToolBar() {
     <>
       <Stack
         direction="row"
-        justifyContent={{ xs: "space-around", md: "center" }}
+        justifyContent={{ xs: "center", md: "center" }}
         alignItems="center"
-        gap={{ xs: undefined, md: 3 }}
+        gap={{ xs: 0.5, sm: 1, md: 2, xl: 3 }}
         width="100%"
+        flexWrap="wrap"
+        rowGap={0.5}
+        sx={{
+          minWidth: 0,
+          overflow: "visible",
+        }}
       >
         {isSmOrGreater && <FlipBoardButton />}
+
+        {isSmOrGreater && <ToggleEngineButton />}
 
         <ToolbarButton
           tooltip="Reset board"
@@ -76,11 +85,19 @@ export default function PanelToolBar() {
       {!isSmOrGreater && (
         <Stack
           direction="row"
-          justifyContent="space-around"
+          justifyContent="center"
           alignItems="center"
+          gap={0.5}
           width="100%"
+          flexWrap="wrap"
+          rowGap={0.5}
+          sx={{
+            minWidth: 0,
+            overflow: "visible",
+          }}
         >
           <FlipBoardButton />
+          <ToggleEngineButton />
           <CopyPgnButton />
           <SaveButton />
         </Stack>

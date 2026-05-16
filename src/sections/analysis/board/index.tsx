@@ -7,6 +7,7 @@ import {
   currentPositionAtom,
   gameAtom,
   showBestMoveArrowAtom,
+  showEngineAtom,
   showPlayerMoveIconAtom,
 } from "../states";
 import { useMemo } from "react";
@@ -22,6 +23,7 @@ export default function BoardContainer() {
   const screenSize = useScreenSize();
   const boardOrientation = useAtomValue(boardOrientationAtom);
   const showBestMoveArrow = useAtomValue(showBestMoveArrowAtom);
+  const showEngine = useAtomValue(showEngineAtom);
   const { white, black } = usePlayersData(gameAtom);
   const { playMove } = useAnalysisActions();
   const currentNodeId = useAtomValue(currentAnalysisNodeIdAtom);
@@ -91,9 +93,9 @@ export default function BoardContainer() {
       blackPlayer={black}
       boardOrientation={boardOrientation ? Color.White : Color.Black}
       currentPositionAtom={currentPositionAtom}
-      showBestMoveArrow={showBestMoveArrow}
+      showBestMoveArrow={showBestMoveArrow && showEngine}
       showPlayerMoveIconAtom={showPlayerMoveIconAtom}
-      showEvaluationBar={true}
+      showEvaluationBar={showEngine}
       annotationArrows={annotationArrows}
       onPlayMove={playMove}
     />

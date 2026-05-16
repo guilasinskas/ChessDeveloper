@@ -92,7 +92,9 @@
       "Bash(curl -s -o /dev/null -w \"board=%{http_code}\\\\n\" http://localhost:3000/folder-covers/board.jpg)",
       "Bash(curl -s -o /dev/null -w \"/=%{http_code}\\\\n\" http://localhost:3000/)",
       "Bash(curl -s -o /dev/null -w \"/stats=%{http_code}\\\\n\" http://localhost:3000/stats)",
-      "PowerShell(npm run electron-pack 2>&1)"
+      "PowerShell(npm run electron-pack 2>&1)",
+      "Bash(ls \"C:/Users/Usuario/.claude/projects/c--Users-Usuario-Documents-Programming-Chesskit/memory\" 2>&1)",
+      "Read(//c/Users/Usuario/.claude/projects/c--Users-Usuario-Documents-Programming-Chesskit/memory/**)"
     ],
     "additionalDirectories": [
       "\\tmp"

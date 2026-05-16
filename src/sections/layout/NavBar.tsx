@@ -74,7 +74,7 @@ export default function NavBar({ darkMode: d, switchDarkMode }: Props) {
             >
               <Image
                 src="/favicon-32x32.png"
-                alt="Chesskit"
+                alt="White to Move"
                 width={28}
                 height={28}
               />
@@ -88,7 +88,7 @@ export default function NavBar({ darkMode: d, switchDarkMode }: Props) {
                   color: CC.primary,
                 }}
               >
-                chesskit
+                white to move
               </Typography>
             </Box>
           </NavLink>

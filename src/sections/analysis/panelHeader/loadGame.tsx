@@ -88,9 +88,12 @@ export default function LoadGame() {
     };
 
     if (gameFromUrl) {
-      const orientation = !(
-        gameFromUrl.site === "Chesskit" && gameFromUrl.black.name === "You"
-      );
+      // Accept both old ("Chesskit") and new ("White to Move") Site headers
+      // so games saved before the rename still flip the board correctly.
+      const isLocalGame =
+        gameFromUrl.site === "White to Move" ||
+        gameFromUrl.site === "Chesskit";
+      const orientation = !(isLocalGame && gameFromUrl.black.name === "You");
       resetAndSetGamePgn(gameFromUrl.pgn, orientation, gameFromUrl.eval);
     } else if (typeof lichessGameId === "string" && !!lichessGameId) {
       handleLichess(lichessGameId);

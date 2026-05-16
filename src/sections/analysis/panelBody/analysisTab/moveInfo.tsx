@@ -1,6 +1,6 @@
 import { Skeleton, Stack, Typography } from "@mui/material";
 import { useAtomValue } from "jotai";
-import { boardAtom, currentPositionAtom } from "../../states";
+import { boardAtom, currentPositionAtom, showEngineAtom } from "../../states";
 import { useMemo } from "react";
 import { moveLineUciToSan } from "@/lib/chess";
 import { MoveClassification } from "@/types/enums";
@@ -10,6 +10,7 @@ import PrettyMoveSan from "@/components/prettyMoveSan";
 export default function MoveInfo() {
   const position = useAtomValue(currentPositionAtom);
   const board = useAtomValue(boardAtom);
+  const showEngine = useAtomValue(showEngineAtom);
 
   const bestMove = position?.lastEval?.bestMove;
 
@@ -23,6 +24,11 @@ export default function MoveInfo() {
   }, [bestMove, board]);
 
   if (board.history().length === 0) return null;
+
+  // Focus mode — hide the engine's verdict on the played move and the
+  // best-move suggestion. Opening name etc. is rendered by sibling
+  // components, so we just bail out here.
+  if (!showEngine) return null;
 
   if (!bestMoveSan) {
     return (

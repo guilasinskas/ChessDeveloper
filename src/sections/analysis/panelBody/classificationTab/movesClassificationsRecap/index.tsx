@@ -1,6 +1,6 @@
 import { usePlayersData } from "@/hooks/usePlayersData";
 import { Grid2 as Grid, Typography } from "@mui/material";
-import { gameAtom, gameEvalAtom } from "../../../states";
+import { gameAtom, gameEvalAtom, showEngineAtom } from "../../../states";
 import { MoveClassification } from "@/types/enums";
 import ClassificationRow from "./classificationRow";
 import { useAtomValue } from "jotai";
@@ -8,8 +8,10 @@ import { useAtomValue } from "jotai";
 export default function MovesClassificationsRecap() {
   const { white, black } = usePlayersData(gameAtom);
   const gameEval = useAtomValue(gameEvalAtom);
+  const showEngine = useAtomValue(showEngineAtom);
 
   if (!gameEval?.positions.length) return null;
+  if (!showEngine) return null;
 
   return (
     <Grid

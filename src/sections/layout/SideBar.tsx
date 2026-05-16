@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/router";
 import { CC } from "@/constants";
 import NavLink from "@/components/NavLink";
+import Image from "next/image";
 
 export const SIDEBAR_WIDTH = 256;
 
@@ -51,18 +52,43 @@ export default function SideBar({ darkMode, switchDarkMode }: Props) {
     >
       {/* Brand */}
       <NavLink href="/">
-        <Box sx={{ cursor: "pointer" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            cursor: "pointer",
+            minWidth: 0,
+          }}
+        >
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: "8px",
+              overflow: "hidden",
+              flexShrink: 0,
+            }}
+          >
+            <Image
+              src="/favicon.png"
+              alt="White to Move"
+              width={40}
+              height={40}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          </Box>
           <Typography
             sx={{
               fontFamily: "var(--cc-font-headline)",
               fontWeight: 800,
-              fontSize: 28,
+              fontSize: 24,
               letterSpacing: "-0.03em",
               color: CC.primary,
               lineHeight: 1,
             }}
           >
-            Chesskit
+            White to Move
           </Typography>
         </Box>
       </NavLink>
@@ -179,16 +205,18 @@ export default function SideBar({ darkMode, switchDarkMode }: Props) {
             sx={{
               width: 40,
               height: 40,
-              borderRadius: "50%",
-              backgroundColor: CC.primary,
-              color: "var(--cc-on-primary)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              borderRadius: "8px",
+              overflow: "hidden",
               flexShrink: 0,
             }}
           >
-            <Icon icon="mdi:chess-king" width={22} />
+            <Image
+              src="/favicon.png"
+              alt="White to Move"
+              width={40}
+              height={40}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
           </Box>
           <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
             <Typography

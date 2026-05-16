@@ -16,19 +16,19 @@ export const ToolbarButton = ({
   disabled = false,
   iconHeight = 24,
 }: Props) => {
-  const paddingX = `${Math.round(20 - (iconHeight - 24) / 2)}px`;
-
   return (
     <Tooltip title={tooltip}>
-      <span>
+      <span style={{ display: "inline-flex", flex: "0 0 auto" }}>
         <IconButton
           onClick={onClick}
           disabled={disabled}
           sx={{
-            paddingX,
             borderRadius: "4px",
-            width: "auto",
+            width: "40px",
+            minWidth: "40px",
             height: "40px",
+            p: 0,
+            flex: "0 0 auto",
           }}
         >
           <Icon icon={icon} height={iconHeight} />

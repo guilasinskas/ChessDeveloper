@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import type { DotProps } from "recharts";
-import { currentPositionAtom, gameEvalAtom } from "../../states";
+import { currentPositionAtom, gameEvalAtom, showEngineAtom } from "../../states";
 import { useCallback, useMemo } from "react";
 import type { ReactElement } from "react";
 import CustomTooltip from "./tooltip";
@@ -24,6 +24,7 @@ import { useAnalysisActions } from "@/hooks/useAnalysisActions";
 export default function GraphTab(props: GridProps) {
   const gameEval = useAtomValue(gameEvalAtom);
   const currentPosition = useAtomValue(currentPositionAtom);
+  const showEngine = useAtomValue(showEngineAtom);
   const { goToMainlineMove } = useAnalysisActions();
 
   const chartData: ChartItemData[] = useMemo(
@@ -76,6 +77,7 @@ export default function GraphTab(props: GridProps) {
   );
 
   if (!gameEval) return null;
+  if (!showEngine) return null;
 
   return (
     <Grid

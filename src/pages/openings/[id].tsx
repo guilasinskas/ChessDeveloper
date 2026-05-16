@@ -1,4 +1,11 @@
-import { Box, Button, Typography, useTheme, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  useMediaQuery,
+  useTheme,
+  CircularProgress,
+} from "@mui/material";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -27,6 +34,7 @@ export default function RepertoireEditorPage() {
   const router = useRouter();
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
+  const isLgOrGreater = useMediaQuery(theme.breakpoints.up("lg"));
   const { id: idQuery } = router.query;
   const id = useMemo(
     () => (typeof idQuery === "string" ? parseInt(idQuery) : NaN),
@@ -105,8 +113,15 @@ export default function RepertoireEditorPage() {
   }
 
   return (
-    <Box>
-      <PageTitle title={`${repertoire.name} — Chesskit`} />
+    <Box
+      sx={{
+        height: { lg: "100dvh" },
+        display: "flex",
+        flexDirection: "column",
+        overflow: { lg: "hidden" },
+      }}
+    >
+      <PageTitle title={`${repertoire.name} — White to Move`} />
 
       {/* Sticky title bar — Stitch "Repertoire Editor" with repertoire name + back */}
       <Box
@@ -120,13 +135,21 @@ export default function RepertoireEditorPage() {
             "color-mix(in srgb, var(--cc-surface) 80%, transparent)",
           backdropFilter: "blur(20px)",
           borderBottom: `1px solid ${CC.border}`,
-          position: "sticky",
-          top: 0,
+          position: { xs: "sticky", lg: "static" },
+          top: { xs: 0, lg: "auto" },
           zIndex: 10,
           gap: 2,
+          flexShrink: 0,
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            minWidth: 0,
+          }}
+        >
           <Button
             size="small"
             variant="text"
@@ -136,7 +159,10 @@ export default function RepertoireEditorPage() {
               p: "6px",
               borderRadius: "var(--cc-radius-pill)",
               color: CC.textSub,
-              "&:hover": { color: CC.primary, backgroundColor: "var(--cc-primary-fixed)" },
+              "&:hover": {
+                color: CC.primary,
+                backgroundColor: "var(--cc-primary-fixed)",
+              },
             }}
           >
             <Icon icon="material-symbols:arrow-back" width={20} />
@@ -155,50 +181,55 @@ export default function RepertoireEditorPage() {
           >
             {repertoire.name}
           </Typography>
-          <Box
-            sx={{
-              px: 1.5,
-              py: 0.25,
-              borderRadius: "var(--cc-radius-pill)",
-              backgroundColor:
-                repertoire.color === "w"
-                  ? "var(--cc-primary-fixed)"
-                  : "var(--cc-inverse-surface)",
-              color:
-                repertoire.color === "w"
-                  ? "var(--cc-on-primary-fixed)"
-                  : "var(--cc-inverse-on-surface)",
-              fontFamily: "var(--cc-font-body)",
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              flexShrink: 0,
-            }}
-          >
-            {repertoire.color === "w" ? "WHITE LINES" : "BLACK LINES"}
-          </Box>
+          {isLgOrGreater && (
+            <Box
+              sx={{
+                px: 1.5,
+                py: 0.25,
+                borderRadius: "var(--cc-radius-pill)",
+                backgroundColor:
+                  repertoire.color === "w"
+                    ? "var(--cc-primary-fixed)"
+                    : "var(--cc-inverse-surface)",
+                color:
+                  repertoire.color === "w"
+                    ? "var(--cc-on-primary-fixed)"
+                    : "var(--cc-inverse-on-surface)",
+                fontFamily: "var(--cc-font-body)",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                flexShrink: 0,
+              }}
+            >
+              {repertoire.color === "w" ? "WHITE LINES" : "BLACK LINES"}
+            </Box>
+          )}
         </Box>
       </Box>
 
       <Box
         sx={{
-          px: { xs: 1, sm: 2, md: 3 },
-          pt: 3,
-          pb: 4,
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            md: "minmax(0, 2fr) minmax(280px, 1fr)",
-          },
+          py: { xs: 2, lg: 1 },
+          px: { xs: 1, sm: 1.5 },
+          display: "flex",
+          flexDirection: { xs: "column", lg: "row" },
           gap: 2,
-          alignItems: "start",
+          alignItems: { xs: "center", lg: "stretch" },
+          justifyContent: { xs: "flex-start", lg: "space-evenly" },
+          flex: { lg: 1 },
+          minHeight: 0,
+          overflow: { lg: "hidden" },
         }}
       >
         <Box
           sx={{
             display: "flex",
             justifyContent: "center",
+            alignItems: "center",
+            minWidth: 0,
+            flex: { lg: "0 1 auto" },
           }}
         >
           <RepertoireBoard repertoire={repertoire} engine={engine} />
@@ -209,6 +240,13 @@ export default function RepertoireEditorPage() {
             display: "flex",
             flexDirection: "column",
             gap: 2,
+            width: "100%",
+            minWidth: 0,
+            maxWidth: { xs: "min(100%, 820px)", lg: 460, xl: 520 },
+            flex: { lg: "0 1 520px" },
+            height: { lg: "100%" },
+            overflowY: { lg: "auto" },
+            pr: { lg: 0.5 },
           }}
         >
           <RepertoirePanel

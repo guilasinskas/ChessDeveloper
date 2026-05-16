@@ -5,7 +5,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useAtomValue } from "jotai";
-import { boardAtom, gameAtom, gameEvalAtom } from "../../states";
+import { boardAtom, gameAtom, gameEvalAtom, showEngineAtom } from "../../states";
 import PlayersMetric from "./playersMetric";
 import MoveInfo from "./moveInfo";
 import Opening from "./opening";
@@ -15,6 +15,7 @@ export default function AnalysisTab(props: GridProps) {
   const gameEval = useAtomValue(gameEvalAtom);
   const game = useAtomValue(gameAtom);
   const board = useAtomValue(boardAtom);
+  const showEngine = useAtomValue(showEngineAtom);
 
   const boardHistory = board.history();
   const gameHistory = game.history();
@@ -25,15 +26,19 @@ export default function AnalysisTab(props: GridProps) {
       board.isDraw() ||
       boardHistory.join() === gameHistory.join());
 
+  // When engine is hidden the side column has no aggregate metrics or
+  // lines panel — collapse to a centered, single-column layout.
+  const showSideMetrics = showEngine && !!gameEval;
+
   return (
     <Grid
       container
       size={12}
-      justifyContent={{ xs: "center", lg: gameEval ? "start" : "center" }}
+      justifyContent={{ xs: "center", lg: showSideMetrics ? "start" : "center" }}
       alignItems="center"
-      flexWrap={{ lg: gameEval ? "nowrap" : undefined }}
+      flexWrap={{ lg: showSideMetrics ? "nowrap" : undefined }}
       gap={2}
-      marginY={{ lg: gameEval ? 1 : undefined }}
+      marginY={{ lg: showSideMetrics ? 1 : undefined }}
       paddingX={{ xs: 0, lg: "calc(4% - 2rem)" }}
       {...props}
       sx={props.hidden ? { display: "none" } : props.sx}
@@ -42,9 +47,9 @@ export default function AnalysisTab(props: GridProps) {
         justifyContent="center"
         alignItems="center"
         rowGap={1}
-        minWidth={gameEval ? "min(25rem, 95vw)" : undefined}
+        minWidth={showSideMetrics ? "min(25rem, 95vw)" : undefined}
       >
-        {gameEval && (
+        {showEngine && gameEval && (
           <PlayersMetric
             title="Accuracy"
             whiteValue={`${gameEval.accuracy.white.toFixed(1)} %`}
@@ -52,7 +57,7 @@ export default function AnalysisTab(props: GridProps) {
           />
         )}
 
-        {gameEval?.estimatedElo && (
+        {showEngine && gameEval?.estimatedElo && (
           <PlayersMetric
             title="Game Rating"
             whiteValue={Math.round(gameEval.estimatedElo.white)}
@@ -71,7 +76,9 @@ export default function AnalysisTab(props: GridProps) {
         )}
       </Stack>
 
-      <EngineLines size={{ lg: gameEval ? undefined : 12 }} />
+      {showEngine && (
+        <EngineLines size={{ lg: gameEval ? undefined : 12 }} />
+      )}
     </Grid>
   );
 }

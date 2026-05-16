@@ -44,7 +44,7 @@ function waitForServer(retries = 120) {
       });
       req.on("error", () => {
         if (--retries > 0) setTimeout(check, 500);
-        else reject(new Error(`Chesskit server did not start on port ${PORT}`));
+        else reject(new Error(`White to Move server did not start on port ${PORT}`));
       });
       req.end();
     };
@@ -52,52 +52,155 @@ function waitForServer(retries = 120) {
   });
 }
 
-// Returns the userData data dir, migrating data from legacy locations if needed.
+function resolveDataDir() {
+  if (process.env.WHITE_TO_MOVE_DATA_DIR) {
+    return process.env.WHITE_TO_MOVE_DATA_DIR;
+  }
+  if (process.env.CHESSKIT_DATA_DIR) {
+    return process.env.CHESSKIT_DATA_DIR;
+  }
+
+  const appRoot = isDev
+    ? path.join(__dirname, "..")
+    : path.dirname(app.getPath("exe"));
+
+  if (!isDev) {
+    const projectDataDir = path.join(
+      app.getPath("documents"),
+      "Programming",
+      "Chesskit",
+      "data"
+    );
+    if (fs.existsSync(projectDataDir)) {
+      return projectDataDir;
+    }
+  }
+
+  return path.join(appRoot, "data");
+}
+
+// Returns the app data dir, migrating data from legacy locations if needed.
 function ensureDataDir() {
-  const dataDir = path.join(app.getPath("userData"), "data");
+  const previousUserDataDir = path.join(app.getPath("userData"), "data");
+  const dataDir = resolveDataDir();
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
+  const isSamePath = (a, b) =>
+    path.resolve(a).toLowerCase() === path.resolve(b).toLowerCase();
+  const isEmptyJsonContainer = (content) => {
+    const trimmed = content.trim();
+    return trimmed === "" || trimmed === "[]" || trimmed === "{}";
+  };
+  const hasUsefulJson = (filePath) => {
+    try {
+      return !isEmptyJsonContainer(fs.readFileSync(filePath, "utf-8"));
+    } catch (_) {
+      return false;
+    }
+  };
+  const dirHasFiles = (dir) => {
+    try {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const child = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          if (dirHasFiles(child)) return true;
+        } else {
+          return true;
+        }
+      }
+    } catch (_) {
+      return false;
+    }
+    return false;
+  };
+  const gamesDirHasGameFiles = (dir) => {
+    try {
+      return fs
+        .readdirSync(dir, { withFileTypes: true })
+        .some((entry) => entry.isFile() && /^\d+\.json$/.test(entry.name));
+    } catch (_) {
+      return false;
+    }
+  };
+
   // Source dirs to migrate from (project root in dev, packaged standalone fallback)
+  const legacyAppDataDirs = [
+    // Older builds stored the real user library here.
+    path.join(app.getPath("appData"), "chesskit", "data"),
+    path.join(app.getPath("appData"), "white-to-move", "data"),
+    path.join(app.getPath("appData"), "White to Move", "data"),
+  ];
   const sourceDirs = [
+    ...legacyAppDataDirs,
+    previousUserDataDir,
     path.join(__dirname, "..", "data"),
     path.join(process.resourcesPath || "", ".electron-standalone", "data"),
     path.join(process.resourcesPath || "", "electron-standalone", "data"),
-  ];
+  ].filter((dir) => !isSamePath(dir, dataDir));
 
-  // JSON files: migrate if dest is missing OR is an empty "[]"
-  const jsonFiles = ["games.json", "openings.json", "notes.json", "notes-images.json"];
+  // JSON files: migrate if dest is missing OR is an empty container.
+  // folder-covers.json is a map ("{}") rather than an array ("[]") - the
+  // empty-check below accepts both.
+  const jsonFiles = [
+    "games.json",
+    "openings.json",
+    "notes.json",
+    "notes-images.json",
+    "folder-covers.json",
+  ];
   for (const file of jsonFiles) {
     const dest = path.join(dataDir, file);
-    const destEmpty =
-      !fs.existsSync(dest) ||
-      fs.readFileSync(dest, "utf-8").trim() === "[]";
+    const content = fs.existsSync(dest)
+      ? fs.readFileSync(dest, "utf-8").trim()
+      : "";
+    const destEmpty = isEmptyJsonContainer(content);
     if (!destEmpty) continue;
 
     let migrated = false;
     for (const srcDir of sourceDirs) {
       const src = path.join(srcDir, file);
-      try {
-        const content = fs.readFileSync(src, "utf-8").trim();
-        if (content && content !== "[]") {
-          fs.writeFileSync(dest, content, "utf-8");
-          migrated = true;
-          break;
-        }
-      } catch (_) { /* not found, skip */ }
+      if (!hasUsefulJson(src)) continue;
+      fs.writeFileSync(dest, fs.readFileSync(src, "utf-8"), "utf-8");
+      migrated = true;
+      break;
     }
     if (!migrated && !fs.existsSync(dest)) {
-      fs.writeFileSync(dest, "[]", "utf-8");
+      // folder-covers.json is shaped as an object; everything else is an array.
+      const empty = file === "folder-covers.json" ? "{}" : "[]";
+      fs.writeFileSync(dest, empty, "utf-8");
     }
   }
 
-  // Notes images directory: copy if dest doesn't exist yet
-  const destImagesDir = path.join(dataDir, "notes-images");
-  if (!fs.existsSync(destImagesDir)) {
+  // Newer game storage is data/games/index.json plus one JSON file per game.
+  // Copy it when the destination is empty so upgrades reconnect the DB/stats.
+  const destGamesDir = path.join(dataDir, "games");
+  const destGamesIndex = path.join(destGamesDir, "index.json");
+  const destGamesEmpty =
+    !hasUsefulJson(destGamesIndex) && !gamesDirHasGameFiles(destGamesDir);
+  if (destGamesEmpty) {
     for (const srcDir of sourceDirs) {
-      const src = path.join(srcDir, "notes-images");
+      const srcGamesDir = path.join(srcDir, "games");
+      const srcGamesIndex = path.join(srcGamesDir, "index.json");
+      if (!hasUsefulJson(srcGamesIndex) && !gamesDirHasGameFiles(srcGamesDir)) {
+        continue;
+      }
+      fs.mkdirSync(destGamesDir, { recursive: true });
+      try {
+        fs.cpSync(srcGamesDir, destGamesDir, { recursive: true });
+        break;
+      } catch (_) { /* skip on error */ }
+    }
+  }
+
+  // Image directories: copy if dest doesn't exist yet or is still empty.
+  for (const imageDir of ["notes-images", "folder-covers"]) {
+    const destDir = path.join(dataDir, imageDir);
+    if (dirHasFiles(destDir)) continue;
+    for (const srcDir of sourceDirs) {
+      const src = path.join(srcDir, imageDir);
       if (fs.existsSync(src)) {
         try {
-          fs.cpSync(src, destImagesDir, { recursive: true });
+          fs.cpSync(src, destDir, { recursive: true });
           break;
         } catch (_) { /* skip on error */ }
       }
@@ -134,28 +237,24 @@ function startProdServer() {
   process.env.HOSTNAME = "127.0.0.1";
   process.env.DATA_DIR = dataDir;
 
-  // The packaged standalone ships its node deps under `_server_modules/`
-  // (renamed by scripts/electron-build.mjs to avoid electron-builder's
-  // node_modules dedupe filter). Point Node.js's module resolver at it
-  // BEFORE requiring the Next.js server.
-  const serverModulesDir = path.join(standaloneDir, "_server_modules");
-  if (fs.existsSync(serverModulesDir)) {
-    process.env.NODE_PATH = serverModulesDir;
-    // Force Node to re-scan NODE_PATH (it caches paths at startup).
+  // Normal case: scripts/electron-after-pack.mjs already renamed the
+  // shipped `_server_modules` → `node_modules` inside the packaged
+  // standalone, so server.js resolves `require("next")` via stock
+  // Node.js module resolution.
+  //
+  // Fallback for older installs (pre-afterPack builds) that still
+  // ship `_server_modules` and lack a `node_modules`: point NODE_PATH
+  // at it. We do NOT try to create a junction here — the install dir
+  // is read-only for non-admin processes under Program Files, and a
+  // write attempt aborts startup with a permission error.
+  const nodeModulesDir = path.join(standaloneDir, "node_modules");
+  const legacyServerModulesDir = path.join(standaloneDir, "_server_modules");
+  if (!fs.existsSync(nodeModulesDir) && fs.existsSync(legacyServerModulesDir)) {
+    process.env.NODE_PATH = legacyServerModulesDir;
     require("module").Module._initPaths();
-    // Also bridge `node_modules` → `_server_modules` via a symlink so
-    // `require("next/...")` style relative paths inside the bundle work.
-    const bridge = path.join(standaloneDir, "node_modules");
-    if (!fs.existsSync(bridge)) {
-      try {
-        fs.symlinkSync(serverModulesDir, bridge, "junction");
-      } catch (err) {
-        console.error("[startup] symlink failed, falling back to copy:", err?.message ?? err);
-        // junction usually works on Windows without admin; copy is the
-        // last-resort fallback so the app boots even without permissions.
-        fs.cpSync(serverModulesDir, bridge, { recursive: true });
-      }
-    }
+    // Legacy users will get a working install next time they upgrade
+    // (the new build ships `node_modules` directly). For this session
+    // NODE_PATH lets `require('next')` resolve from the global paths.
   }
 
   // Change cwd so Next.js standalone can find its assets
@@ -204,10 +303,10 @@ function setupAutoUpdate(getWindow) {
       buttons: ["Restart now", "Later"],
       defaultId: 0,
       cancelId: 1,
-      title: "Chesskit update ready",
-      message: `Chesskit ${info?.version ?? ""} is ready to install.`,
+      title: "White to Move update ready",
+      message: `White to Move ${info?.version ?? ""} is ready to install.`,
       detail:
-        "Choose 'Restart now' to apply the update immediately, or 'Later' to apply it the next time you quit Chesskit.",
+        "Choose 'Restart now' to apply the update immediately, or 'Later' to apply it the next time you quit White to Move.",
     });
     if (result.response === 0) {
       autoUpdater.quitAndInstall();
@@ -233,7 +332,7 @@ function createWindow() {
     minWidth: 900,
     minHeight: 600,
     icon: iconPath,
-    title: "Chesskit",
+    title: "White to Move",
     backgroundColor: "#2b2b2b",
     show: false,
     webPreferences: {
@@ -270,7 +369,7 @@ app.whenReady().then(async () => {
     const mainWindow = createWindow();
     setupAutoUpdate(() => mainWindow);
   } catch (err) {
-    dialog.showErrorBox("Chesskit failed to start", String(err?.message ?? err));
+    dialog.showErrorBox("White to Move failed to start", String(err?.message ?? err));
     app.quit();
   }
 
