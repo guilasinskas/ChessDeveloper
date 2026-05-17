@@ -37,6 +37,39 @@ let initialized = false;
 let cachedIndex: GameSummary[] = [];
 let nextId = 1;
 
+// Folder counts are O(cachedIndex.length) to compute and the sidebar refetches
+// them on every paginated request. With ~28k games the loop was running per
+// request — cache and invalidate on any mutation.
+interface FolderStats {
+  folders: { name: string; count: number }[];
+  totalUnfoldered: number;
+}
+let cachedFolderStats: FolderStats | null = null;
+
+const computeFolderStats = (): FolderStats => {
+  const counts = new Map<string, number>();
+  let unfoldered = 0;
+  for (const g of cachedIndex) {
+    if (g.folder) counts.set(g.folder, (counts.get(g.folder) ?? 0) + 1);
+    else unfoldered++;
+  }
+  return {
+    folders: [...counts.entries()]
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    totalUnfoldered: unfoldered,
+  };
+};
+
+const getFolderStats = (): FolderStats => {
+  if (!cachedFolderStats) cachedFolderStats = computeFolderStats();
+  return cachedFolderStats;
+};
+
+const invalidateFolderStats = () => {
+  cachedFolderStats = null;
+};
+
 let lock: Promise<unknown> = Promise.resolve();
 function withLock<T>(fn: () => T | Promise<T>): Promise<T> {
   const next = lock.then(fn, fn);
@@ -126,10 +159,29 @@ export const readSummaries = () =>
 
 const NO_FOLDER_KEY = "__none__";
 
+// For light listings we drop fields the database UI never reads: firstPlies
+// and movesCount (used by stats), eval (used only when opening a game), and
+// per-tag metadata (site/round/termination/timeControl). Cuts wire size by
+// roughly 30% on average and avoids shipping 40KB+ eval blobs per analyzed
+// game in every paginated response.
 const slimSummary = (g: GameSummary): GameSummary => {
-  const { firstPlies: _f, movesCount: _m, ...rest } = g;
+  const {
+    firstPlies: _f,
+    movesCount: _m,
+    eval: _e,
+    site: _s,
+    round: _r,
+    termination: _t,
+    timeControl: _tc,
+    ...rest
+  } = g;
   void _f;
   void _m;
+  void _e;
+  void _s;
+  void _r;
+  void _t;
+  void _tc;
   return rest;
 };
 
@@ -183,19 +235,8 @@ export const readFiltered = (
     const items = light ? sliced.map(slimSummary) : sliced;
 
     // Folder counts always come from the full index so the sidebar reflects
-    // the whole DB, not the current filter.
-    const folderCounts = new Map<string, number>();
-    let totalUnfoldered = 0;
-    for (const g of cachedIndex) {
-      if (g.folder) {
-        folderCounts.set(g.folder, (folderCounts.get(g.folder) ?? 0) + 1);
-      } else {
-        totalUnfoldered++;
-      }
-    }
-    const folders = [...folderCounts.entries()]
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    // the whole DB, not the current filter. Memoized — see invalidateFolderStats.
+    const { folders, totalUnfoldered } = getFolderStats();
 
     return {
       items,
@@ -244,6 +285,7 @@ export const appendGames = (newGames: Omit<Game, "id">[]) =>
       added.push(full);
     }
     writeIndex();
+    invalidateFolderStats();
     return added;
   });
 
@@ -262,8 +304,10 @@ export const updateGame = (id: number, patch: Partial<Game>) =>
     fs.writeFileSync(file, JSON.stringify(next), "utf-8");
     const idx = cachedIndex.findIndex((s) => s.id === id);
     if (idx >= 0) {
+      const folderChanged = cachedIndex[idx].folder !== next.folder;
       cachedIndex[idx] = summaryOf(next);
       writeIndex();
+      if (folderChanged) invalidateFolderStats();
     }
     return next;
   });
@@ -283,9 +327,45 @@ export const deleteGame = (id: number) =>
     if (idx >= 0) {
       cachedIndex.splice(idx, 1);
       writeIndex();
+      invalidateFolderStats();
       return true;
     }
     return false;
+  });
+
+// Bulk-delete every game in a folder in one operation. Targets a specific
+// folder name, the special "__none__" key (games with no folder), or "*"
+// to delete the entire library. Cheaper than firing one DELETE per id when
+// the user wants to drop a whole folder.
+const NO_FOLDER_DELETE_KEY = "__none__";
+
+export const deleteByFolder = (folder: string): Promise<number> =>
+  withLock(() => {
+    init();
+    const matches = (g: GameSummary): boolean => {
+      if (folder === "*") return true;
+      if (folder === NO_FOLDER_DELETE_KEY) return !g.folder;
+      return g.folder === folder;
+    };
+
+    const toDelete = cachedIndex.filter(matches);
+    if (toDelete.length === 0) return 0;
+
+    for (const summary of toDelete) {
+      const file = gameFile(summary.id);
+      if (fs.existsSync(file)) {
+        try {
+          fs.unlinkSync(file);
+        } catch {
+          /* ignore — keep going so the index reflects best-effort state */
+        }
+      }
+    }
+
+    cachedIndex = cachedIndex.filter((g) => !matches(g));
+    writeIndex();
+    invalidateFolderStats();
+    return toDelete.length;
   });
 
 export interface BulkImportApi {
@@ -361,10 +441,12 @@ export const withBulkImport = <T>(
     try {
       const result = await cb(api);
       writeIndex();
+      invalidateFolderStats();
       return result;
     } catch (err) {
       // Persist whatever was written so far so a partial import is recoverable.
       writeIndex();
+      invalidateFolderStats();
       throw err;
     }
   });

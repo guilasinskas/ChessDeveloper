@@ -95,6 +95,7 @@ export default function BoardContainer() {
       currentPositionAtom={currentPositionAtom}
       showBestMoveArrow={showBestMoveArrow && showEngine}
       showPlayerMoveIconAtom={showPlayerMoveIconAtom}
+      showEngineAtom={showEngineAtom}
       showEvaluationBar={showEngine}
       annotationArrows={annotationArrows}
       onPlayMove={playMove}

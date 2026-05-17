@@ -247,6 +247,11 @@ export default function RepertoireEditorPage() {
             height: { lg: "100%" },
             overflowY: { lg: "auto" },
             pr: { lg: 0.5 },
+            // Children of a scrolling flex column must not shrink, otherwise
+            // they collapse to their min-content height and the parent never
+            // overflows — meaning the user can't scroll down to reach the
+            // NotesPanel at the bottom.
+            "& > *": { flexShrink: 0 },
           }}
         >
           <RepertoirePanel
@@ -256,10 +261,7 @@ export default function RepertoireEditorPage() {
             hasUnsavedChanges={hasUnsavedChanges}
           />
           <MoveTree />
-          <NotesPanel
-            repertoireId={repertoire.id}
-            scope="repertoire"
-          />
+          <NotesPanel repertoireId={repertoire.id} scope="repertoire" />
         </Box>
       </Box>
     </Box>

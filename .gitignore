@@ -24,6 +24,7 @@ tsconfig.tsbuildinfo
 
 # personal data (games, repertoires, notes, image uploads)
 data/
+data-backups/
 
 # personal AI assistant config (Claude Code, Cursor, etc.)
 CLAUDE.md
@@ -37,3 +38,4 @@ CLAUDE.md
 skills/
 todo.md
 .data
+.stitch-cache

@@ -1,2 +1,33 @@
 [ ] Loading of a huge amount of files. Maybe not read every single one - frozen frames
 [ ] Repertories notes in Openings is broken
+[ ] Adicionar opção de apagar a pasta toda de uma vez (selecionar todos)
+[ ] Tirar o logo do Open Source GPL-3.0
+[ ] Alterar o design para ficar igual amount
+## Stitch Instructions
+
+Get the images and code for the following Stitch project's screens:
+
+## Project
+Title: Chess Analysis Studio
+ID: 14261611721543155276
+
+## Screens:
+1. Importar Partidas Zenith - Refinado
+    ID: 060775f3d0eb4cf481bfc2c7af10e929
+
+Use a utility like `curl -L` to download the hosted URLs.
+
+[ ] Area de jogar igual a
+## Stitch Instructions
+
+Get the images and code for the following Stitch project's screens:
+
+## Project
+Title: Chess Analysis Studio
+ID: 14261611721543155276
+
+## Screens:
+1. Análise de Partida Zenith
+    ID: 598a6a2aa987438ebd8d2c68b2e064b4
+
+Use a utility like `curl -L` to download the hosted URLs.

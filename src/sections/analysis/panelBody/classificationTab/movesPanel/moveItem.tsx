@@ -32,26 +32,17 @@ const baseSx = {
   backgroundColor: "transparent",
 } as const;
 
-// Current-move highlight uses the peach affective tint from the Zenith
-// design system — the same color used in the Stitch reference for the
-// active move row.
-const currentSxLight = {
+// Current-move highlight matches the Zenith "Análise de Partida" reference:
+// solid sage tint (primary-fixed-dim) with the dark on-primary text. Same
+// treatment in light and dark — dark mode redefines the token to a tonally
+// equivalent value, so the contrast holds.
+const currentSx = {
   ...baseSx,
   pl: "6px",
   cursor: "default",
   borderLeft: "2px solid transparent",
   borderRadius: "var(--cc-radius-sm)",
-  backgroundColor: "var(--cc-secondary-container)",
-  color: "var(--cc-on-secondary-container)",
-} as const;
-
-const currentSxDark = {
-  ...baseSx,
-  pl: "6px",
-  cursor: "default",
-  borderLeft: "2px solid transparent",
-  borderRadius: "var(--cc-radius-sm)",
-  backgroundColor: "var(--cc-primary-fixed)",
+  backgroundColor: "var(--cc-primary-fixed-dim)",
   color: "var(--cc-on-primary-fixed)",
 } as const;
 
@@ -101,9 +92,8 @@ function MoveItem({ san, moveClassification, nodeId, moveColor }: Props) {
       alignItems="center"
       gap={0.5}
       sx={(theme) => {
-        const isDark = theme.palette.mode === "dark";
-        if (isCurrentMove) return isDark ? currentSxDark : currentSxLight;
-        return isDark ? hoverSxDark : hoverSxLight;
+        if (isCurrentMove) return currentSx;
+        return theme.palette.mode === "dark" ? hoverSxDark : hoverSxLight;
       }}
       id={`move-${nodeId}`}
       onClick={handleClick}
@@ -123,8 +113,9 @@ function MoveItem({ san, moveClassification, nodeId, moveColor }: Props) {
         san={san}
         color={moveColor}
         typographyProps={{
+          fontFamily: "var(--cc-font-mono)",
           fontSize: "0.8rem",
-          fontWeight: isCurrentMove ? 700 : 400,
+          fontWeight: isCurrentMove ? 700 : 500,
           noWrap: true,
         }}
       />

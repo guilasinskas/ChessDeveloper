@@ -20,7 +20,8 @@
     "electron-build": "node scripts/electron-build.mjs",
     "electron-pack": "npm run electron-build && electron-builder --win dir",
     "electron-installer": "npm run electron-build && electron-builder --win nsis",
-    "make-icon": "node scripts/make-icon.mjs"
+    "make-icon": "node scripts/make-icon.mjs",
+    "backup-data": "node scripts/backup-data.mjs"
   },
   "build": {
     "appId": "app.whitetomove.local",

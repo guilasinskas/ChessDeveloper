@@ -1,5 +1,5 @@
 import { useGameDatabase } from "@/hooks/useGameDatabase";
-import { getGamesFromPgn } from "@/lib/chess";
+import { getGamePgnPairs } from "@/lib/chess";
 import { GameOrigin } from "@/types/enums";
 import {
   MenuItem,
@@ -152,21 +152,24 @@ export default function NewGameDialog({ open, onClose, setGame }: Props) {
     if (!pgn) return;
 
     try {
-      const games = getGamesFromPgn(pgn);
+      // Parse into (Chess, rawBlock) pairs so the raw PGN block — including
+      // variations, comments and NAGs that chess.js drops on round-trip —
+      // is what we actually persist.
+      const pairs = getGamePgnPairs(pgn);
+      if (pairs.length === 0) throw new Error("No valid games in PGN");
 
       if (setGame) {
-        const blocks = pgn
-          .split(/\n(?=\[Event )/)
-          .map((b) => b.trim())
-          .filter((b) => b.length > 0);
-        const firstBlockPgn = blocks[0] ?? pgn;
-        await setGame(games[0], firstBlockPgn);
+        await setGame(pairs[0].game, pairs[0].pgn);
       } else {
         const folderToUse = useFolder ? folder.trim() || undefined : undefined;
-        if (games.length === 1) {
-          await addGame(games[0], folderToUse);
+        if (pairs.length === 1) {
+          await addGame(pairs[0].game, folderToUse, pairs[0].pgn);
         } else {
-          await addGames(games, folderToUse);
+          await addGames(
+            pairs.map((p) => p.game),
+            folderToUse,
+            pairs.map((p) => p.pgn)
+          );
         }
       }
 
@@ -229,11 +232,33 @@ export default function NewGameDialog({ open, onClose, setGame }: Props) {
             width: "calc(100% - 10px)",
             marginY: { xs: "3vh", sm: 5 },
             maxHeight: { xs: "calc(100% - 5vh)", sm: "calc(100% - 64px)" },
+            borderRadius: "var(--cc-radius-xl)",
+            boxShadow: "var(--cc-shadow-ambient)",
+            border: "1px solid var(--cc-outline-variant)",
+            overflow: "hidden",
+          },
+        },
+        backdrop: {
+          sx: {
+            backgroundColor:
+              "color-mix(in srgb, var(--cc-inverse-surface) 40%, transparent)",
+            backdropFilter: "blur(4px)",
           },
         },
       }}
     >
-      <DialogTitle marginY={1} variant="h5">
+      <DialogTitle
+        sx={{
+          fontFamily: "var(--cc-font-headline)",
+          fontSize: 24,
+          fontWeight: 800,
+          letterSpacing: "-0.01em",
+          color: "var(--cc-primary)",
+          px: { xs: 3, md: 4 },
+          pt: 3,
+          pb: 1,
+        }}
+      >
         {setGame ? "Load a game" : "Add games to your database"}
       </DialogTitle>
       <DialogContent sx={{ padding: { xs: 2, md: 3 } }}>
@@ -353,18 +378,35 @@ export default function NewGameDialog({ open, onClose, setGame }: Props) {
           </Snackbar>
         </Grid>
       </DialogContent>
-      <DialogActions sx={{ m: 2 }}>
+      <DialogActions
+        sx={{
+          px: { xs: 3, md: 4 },
+          py: 2.5,
+          gap: 2,
+          backgroundColor: "var(--cc-surface-container-low)",
+          borderTop: "1px solid var(--cc-outline-variant)",
+        }}
+      >
         <Button
-          variant="outlined"
+          variant="text"
           onClick={handleClose}
           disabled={importing && !importAbortRef.current}
+          sx={{
+            color: "var(--cc-on-surface-variant)",
+            fontWeight: 700,
+            fontSize: 13,
+            textTransform: "none",
+            "&:hover": {
+              backgroundColor: "transparent",
+              color: "var(--cc-primary)",
+            },
+          }}
         >
           {importing ? "Cancel import" : "Cancel"}
         </Button>
         {gameOrigin === GameOrigin.Pgn && (
           <Button
             variant="contained"
-            sx={{ marginLeft: 2 }}
             disabled={
               importing ||
               (hasFilesToImport ? false : !pgn.trim() && files.length === 0)
@@ -375,6 +417,20 @@ export default function NewGameDialog({ open, onClose, setGame }: Props) {
               } else {
                 handleAddGame(pgn);
               }
+            }}
+            sx={{
+              borderRadius: "var(--cc-radius-pill)",
+              px: 3.5,
+              py: 1.25,
+              fontWeight: 700,
+              fontSize: 13,
+              textTransform: "none",
+              boxShadow: "var(--cc-shadow-soft)",
+              "&:hover": {
+                transform: "translateY(-1px)",
+                boxShadow: "var(--cc-shadow-ambient)",
+              },
+              transition: "transform 120ms, box-shadow 120ms",
             }}
           >
             {pgnButtonLabel}

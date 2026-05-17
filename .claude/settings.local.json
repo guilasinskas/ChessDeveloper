@@ -94,7 +94,15 @@
       "Bash(curl -s -o /dev/null -w \"/stats=%{http_code}\\\\n\" http://localhost:3000/stats)",
       "PowerShell(npm run electron-pack 2>&1)",
       "Bash(ls \"C:/Users/Usuario/.claude/projects/c--Users-Usuario-Documents-Programming-Chesskit/memory\" 2>&1)",
-      "Read(//c/Users/Usuario/.claude/projects/c--Users-Usuario-Documents-Programming-Chesskit/memory/**)"
+      "Read(//c/Users/Usuario/.claude/projects/c--Users-Usuario-Documents-Programming-Chesskit/memory/**)",
+      "Bash(grep -E \"^[a-z]:.*\\\\.\\(ts|tsx\\)$\")",
+      "Bash(findstr /R \"^c:\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const idx=JSON.parse\\(fs.readFileSync\\('data/games/index.json','utf-8'\\)\\);console.log\\('total games:', idx.length\\);if\\(idx.length>0\\){const sample=idx[0];console.log\\('sample keys:', Object.keys\\(sample\\)\\);console.log\\('avg size per entry:',Math.round\\(fs.statSync\\('data/games/index.json'\\).size/idx.length\\),'bytes'\\);const withEval=idx.filter\\(g=>g.eval\\).length;console.log\\('entries with eval:',withEval\\);if\\(withEval>0\\){const e=idx.find\\(g=>g.eval\\);const evalSize=JSON.stringify\\(e.eval\\).length;console.log\\('one eval object size:', evalSize, 'bytes; sample keys:', Object.keys\\(e.eval\\)\\);}}\")",
+      "mcp__stitch__get_screen",
+      "Bash(curl -sL \"https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ8Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpbCiVodG1sXzg4YjFmNzc2NDA4YzQ3YjE4YjYyZjhlYjgwMDk0OTNjEgsSBxCEj67GqggYAZIBJAoKcHJvamVjdF9pZBIWQhQxNDI2MTYxMTcyMTU0MzE1NTI3Ng&filename=&opi=89354086\" -o .stitch-cache/import.html)",
+      "Bash(curl -sL \"https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ8Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpbCiVodG1sXzdlZDcwM2JhNTc3MzQ4ZDdiNjc2YmE0N2ZjMDBkMTYyEgsSBxCEj67GqggYAZIBJAoKcHJvamVjdF9pZBIWQhQxNDI2MTYxMTcyMTU0MzE1NTI3Ng&filename=&opi=89354086\" -o .stitch-cache/analysis.html)",
+      "Bash(curl -sL \"https://lh3.googleusercontent.com/aida/ADBb0ug8I5pFRpIJNBcMYyP6xMWO0gzCuDL2zJwRIeGa56ZmPaa-SzT4vmHHF8i0hdS2Eqtp5CWfHOF16lc9aWSaU9dCjLJDLh1VDkn3P05TEyuizW0T_AaNog4jOXhi3ANSjuX_4R_Mmc1_39bRcLAOx9n3y3YRjYjIRs9ipsGvKGlIof4jHQegOVtqLJ5w5EHTD2mUN9ciZDrFa1LgXBHn5fr8sLc-9bg4SAkWFfhjblBYy_lZVUdn4fDa90r2\" -o .stitch-cache/import.png)",
+      "Bash(curl -sL \"https://lh3.googleusercontent.com/aida/ADBb0ujs65V9awXYdPi_6wgRQRu5-2KxW6s7_hqbZ_HWiI-ubSDQRn4GAjNb7fpJcSMnFRStXz3SaymLNAOBM1ZK2l0iSZq3tNgxRLs-WO9fT7K2IpoLGFqaAqully1kG0jgJdVKXvaLkdSzy42El1rMEYklAvyyxs0jQ00IK92sfPfLrYNeSXfI-WG2Z_ugYeOQ4djc2GLOGpqJNQEoKmWWRBIkqMP34Qhi20_4-fjofQ_HCwiixo5FxRiCdFi7\" -o .stitch-cache/analysis.png)"
     ],
     "additionalDirectories": [
       "\\tmp"

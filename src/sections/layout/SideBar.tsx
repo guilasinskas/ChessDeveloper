@@ -17,7 +17,11 @@ export const SIDEBAR_WIDTH = 256;
 const NAV_LINKS = [
   { text: "Analyze", icon: "mdi:chart-line", href: "/" },
   { text: "Database", icon: "mdi:database-outline", href: "/database" },
-  { text: "Openings", icon: "mdi:book-open-page-variant-outline", href: "/openings" },
+  {
+    text: "Openings",
+    icon: "mdi:book-open-page-variant-outline",
+    href: "/openings",
+  },
   { text: "Stats", icon: "mdi:chart-bar", href: "/stats" },
   { text: "Notes", icon: "mdi:note-text-outline", href: "/notes" },
 ];
@@ -111,11 +115,7 @@ export default function SideBar({ darkMode, switchDarkMode }: Props) {
                   px: "8px",
                   cursor: "pointer",
                   position: "relative",
-                  color: isActive
-                    ? isDark
-                      ? CC.text
-                      : CC.lText
-                    : CC.textSub,
+                  color: isActive ? (isDark ? CC.text : CC.lText) : CC.textSub,
                   fontWeight: isActive ? 700 : 500,
                   transition: "color 200ms ease",
                   "&:hover": { color: CC.primary },
@@ -151,7 +151,7 @@ export default function SideBar({ darkMode, switchDarkMode }: Props) {
         })}
       </Stack>
 
-      {/* Bottom area: theme toggle + version chip */}
+      {/* Bottom area: theme toggle */}
       <Stack spacing={2}>
         <Tooltip
           title={darkMode ? "Light mode" : "Dark mode"}
@@ -190,61 +190,6 @@ export default function SideBar({ darkMode, switchDarkMode }: Props) {
             </Typography>
           </IconButton>
         </Tooltip>
-
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1.5,
-            p: 1.5,
-            borderRadius: "var(--cc-radius-lg)",
-            backgroundColor: "var(--cc-surface-container-low)",
-          }}
-        >
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: "8px",
-              overflow: "hidden",
-              flexShrink: 0,
-            }}
-          >
-            <Image
-              src="/favicon.png"
-              alt="White to Move"
-              width={40}
-              height={40}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          </Box>
-          <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-            <Typography
-              sx={{
-                fontFamily: "var(--cc-font-body)",
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                color: CC.primary,
-                lineHeight: 1,
-              }}
-            >
-              OPEN SOURCE
-            </Typography>
-            <Typography
-              sx={{
-                fontFamily: "var(--cc-font-body)",
-                fontSize: 13,
-                fontWeight: 700,
-                color: isDark ? CC.text : CC.lText,
-                lineHeight: 1.4,
-              }}
-            >
-              GPL-3.0
-            </Typography>
-          </Box>
-        </Box>
       </Stack>
     </Box>
   );

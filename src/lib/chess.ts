@@ -60,30 +60,43 @@ export const getGameFromPgn = (pgn: string): Chess => {
   return game;
 };
 
-export const getGamesFromPgn = (pgn: string): Chess[] => {
-  const pgnBlocks = pgn
+export const getGamesFromPgn = (pgn: string): Chess[] =>
+  getGamePgnPairs(pgn).map((p) => p.game);
+
+// Parse a multi-game PGN string into (parsed Chess, raw block) pairs. The
+// raw block is the original substring covering one [Event …] header through
+// the final result token — keeping it lets callers preserve variations,
+// comments and NAGs that chess.js drops on loadPgn() → game.pgn().
+export const getGamePgnPairs = (
+  pgn: string
+): { game: Chess; pgn: string }[] => {
+  const blocks = pgn
     .split(/\n(?=\[Event )/)
     .map((block) => block.trim())
     .filter((block) => block.length > 0);
 
-  const games: Chess[] = [];
-  for (const block of pgnBlocks) {
+  const pairs: { game: Chess; pgn: string }[] = [];
+  for (const block of blocks) {
     try {
-      games.push(getGameFromPgn(block));
+      pairs.push({ game: getGameFromPgn(block), pgn: block });
     } catch {
       // skip invalid game blocks
     }
   }
+  if (pairs.length > 0) return pairs;
 
-  if (games.length > 0) return games;
+  // No tag-pair separators found — treat the whole string as one game.
   try {
-    return [getGameFromPgn(pgn)];
+    return [{ game: getGameFromPgn(pgn), pgn }];
   } catch {
-    return [getGameFromPgn(stripPgnVariations(pgn))];
+    return [{ game: getGameFromPgn(stripPgnVariations(pgn)), pgn }];
   }
 };
 
-export const formatGameToDatabase = (game: Chess): Omit<Game, "id"> => {
+export const formatGameToDatabase = (
+  game: Chess,
+  originalPgn?: string
+): Omit<Game, "id"> => {
   const headers: Record<string, string | undefined> = game.getHeaders();
   const history = game.history();
   const opening =
@@ -94,7 +107,11 @@ export const formatGameToDatabase = (game: Chess): Omit<Game, "id"> => {
       : undefined;
 
   return {
-    pgn: game.pgn(),
+    // Prefer the caller-supplied raw PGN so variations / comments / NAGs that
+    // chess.js dropped on loadPgn() are preserved end-to-end. Falls back to
+    // chess.js's mainline-only serialization when no original is provided
+    // (e.g. when the game came from in-app interactive play, not an import).
+    pgn: originalPgn ?? game.pgn(),
     event: headers.Event,
     site: headers.Site,
     date: headers.Date,

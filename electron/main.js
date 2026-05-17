@@ -18,7 +18,7 @@ if (process.env.ELECTRON_RUN_AS_NODE && !_isPackaged) {
   return;
 }
 
-const { app, BrowserWindow, shell, dialog } = require("electron");
+const { app, BrowserWindow, shell, dialog, ipcMain } = require("electron");
 // electron-updater is `require`d lazily inside setupAutoUpdate() — see below.
 // Doing it at the top of the file would force dev runs to resolve the module
 // too, and if node_modules is even briefly out of sync the app crashes
@@ -32,6 +32,28 @@ const isDev = !app.isPackaged;
 const PORT = isDev ? 3000 : 3001;
 
 let devServer = null;
+
+// Fire-and-forget warm-up requests so the user does not pay the cold-start
+// cost (10MB index parse, route compilation) when they first navigate to a
+// page. Triggered right after the window is created — runs in parallel with
+// the first frame render.
+function prewarmServer() {
+  const paths = [
+    "/api/games?light=1&limit=1",
+    "/api/openings",
+    "/api/folders/cover",
+  ];
+  for (const p of paths) {
+    const req = http.get(`http://127.0.0.1:${PORT}${p}`, (res) => {
+      res.resume();
+      res.on("end", () => {});
+    });
+    req.on("error", () => {
+      /* swallow — warm-up is best-effort */
+    });
+    req.end();
+  }
+}
 
 function waitForServer(retries = 120) {
   return new Promise((resolve, reject) => {
@@ -284,32 +306,47 @@ function setupAutoUpdate(getWindow) {
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
 
+  // Forwards an event from electron-updater to the renderer banner.
+  // Safe no-op if the window has already been destroyed.
+  const send = (channel, payload) => {
+    const win = getWindow();
+    if (!win || win.isDestroyed()) return;
+    win.webContents.send(channel, payload);
+  };
+
   autoUpdater.on("error", (err) => {
     console.error("[updater] error:", err?.message ?? err);
   });
 
   autoUpdater.on("update-available", (info) => {
     console.log(`[updater] update available: v${info?.version}`);
+    send("update-available", { version: info?.version });
   });
 
   autoUpdater.on("update-not-available", () => {
     console.log("[updater] up to date");
   });
 
-  autoUpdater.on("update-downloaded", async (info) => {
-    const win = getWindow();
-    const result = await dialog.showMessageBox(win, {
-      type: "info",
-      buttons: ["Restart now", "Later"],
-      defaultId: 0,
-      cancelId: 1,
-      title: "White to Move update ready",
-      message: `White to Move ${info?.version ?? ""} is ready to install.`,
-      detail:
-        "Choose 'Restart now' to apply the update immediately, or 'Later' to apply it the next time you quit White to Move.",
+  autoUpdater.on("download-progress", (progress) => {
+    send("update-download-progress", {
+      percent: progress?.percent ?? 0,
+      bytesPerSecond: progress?.bytesPerSecond ?? 0,
+      transferred: progress?.transferred ?? 0,
+      total: progress?.total ?? 0,
     });
-    if (result.response === 0) {
+  });
+
+  autoUpdater.on("update-downloaded", (info) => {
+    console.log(`[updater] update downloaded: v${info?.version}`);
+    send("update-downloaded", { version: info?.version });
+  });
+
+  // Renderer triggers the install from the in-app banner.
+  ipcMain.on("update-quit-and-install", () => {
+    try {
       autoUpdater.quitAndInstall();
+    } catch (err) {
+      console.error("[updater] quitAndInstall failed:", err?.message ?? err);
     }
   });
 
@@ -368,6 +405,7 @@ app.whenReady().then(async () => {
     await waitForServer();
     const mainWindow = createWindow();
     setupAutoUpdate(() => mainWindow);
+    prewarmServer();
   } catch (err) {
     dialog.showErrorBox("White to Move failed to start", String(err?.message ?? err));
     app.quit();

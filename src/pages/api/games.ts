@@ -1,6 +1,7 @@
 import { Game } from "@/types/game";
 import {
   appendGames,
+  deleteByFolder,
   deleteGame,
   readAllFull,
   readFiltered,
@@ -61,6 +62,14 @@ export default async function handler(
   }
 
   if (req.method === "DELETE") {
+    // Bulk: ?folder=NAME deletes every game in that folder. Use "__none__"
+    // for unfoldered games or "*" for the whole library. Returns the count
+    // of games actually removed so the client can confirm the operation.
+    if (typeof req.query.folder === "string" && req.query.folder.length > 0) {
+      const deleted = await deleteByFolder(req.query.folder);
+      return res.status(200).json({ success: true, deleted });
+    }
+
     const id = parseInt(req.query.id as string);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
 

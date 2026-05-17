@@ -307,6 +307,7 @@ function MovesLine({
           sx={{
             width: "2.2rem",
             minWidth: "2.2rem",
+            fontFamily: "var(--cc-font-mono)",
             fontSize: "0.78rem",
             color: isDark ? CC.textMuted : "#a0a09e",
             fontWeight: 500,
@@ -314,6 +315,7 @@ function MovesLine({
             py: "4px",
             flexShrink: 0,
             userSelect: "none",
+            textAlign: "center",
           }}
         >
           {moveLabel}

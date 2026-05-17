@@ -4,6 +4,7 @@ import { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import Layout from "@/sections/layout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import UpdateNotification from "@/components/UpdateNotification";
 
 // Fonts are declared here (next/font is not allowed in _document.tsx) and
 // their resolved font-family strings are injected directly onto :root via a
@@ -44,6 +45,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
         </div>
       </Layout>
+      <UpdateNotification />
     </QueryClientProvider>
   );
 }

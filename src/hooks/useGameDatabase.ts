@@ -68,9 +68,15 @@ export const useGameDatabase = (shouldFetchGames?: boolean) => {
     setIsReady(true);
   }, []);
 
+  // `originalPgn`: pass the raw PGN block (as received from the user / API)
+  // so variations, comments and annotations survive the round-trip. Without
+  // it the saved PGN is chess.js's mainline-only re-serialization.
   const addGame = useCallback(
-    async (game: Chess, folder?: string) => {
-      const gameToAdd = { ...formatGameToDatabase(game), folder };
+    async (game: Chess, folder?: string, originalPgn?: string) => {
+      const gameToAdd = {
+        ...formatGameToDatabase(game, originalPgn),
+        folder,
+      };
       const res = await fetch("/api/games", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -86,10 +92,12 @@ export const useGameDatabase = (shouldFetchGames?: boolean) => {
     [setGames]
   );
 
+  // `originalPgns`: same as addGame but per-index — pass the raw block for
+  // each parsed Chess instance so multi-game imports keep their variations.
   const addGames = useCallback(
-    async (chessGames: Chess[], folder?: string) => {
-      const gamesToAdd = chessGames.map((g) => ({
-        ...formatGameToDatabase(g),
+    async (chessGames: Chess[], folder?: string, originalPgns?: string[]) => {
+      const gamesToAdd = chessGames.map((g, i) => ({
+        ...formatGameToDatabase(g, originalPgns?.[i]),
         folder,
       }));
       const res = await fetch("/api/games", {

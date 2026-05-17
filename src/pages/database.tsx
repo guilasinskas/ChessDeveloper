@@ -37,10 +37,17 @@ const ALL_FOLDER = "__all__";
 const NO_FOLDER = "__none__";
 
 function resultColor(result?: string) {
-  if (result === "1-0") return { bg: "rgba(92,140,62,0.18)", text: "#6ba048", label: "1–0" };
-  if (result === "0-1") return { bg: "rgba(196,92,92,0.18)", text: "#c45c5c", label: "0–1" };
-  if (result === "1/2-1/2") return { bg: "rgba(200,168,75,0.18)", text: "#c8a84b", label: "½–½" };
-  return { bg: "rgba(100,100,100,0.15)", text: "#9c9794", label: result ?? "?" };
+  if (result === "1-0")
+    return { bg: "rgba(92,140,62,0.18)", text: "#6ba048", label: "1–0" };
+  if (result === "0-1")
+    return { bg: "rgba(196,92,92,0.18)", text: "#c45c5c", label: "0–1" };
+  if (result === "1/2-1/2")
+    return { bg: "rgba(200,168,75,0.18)", text: "#c8a84b", label: "½–½" };
+  return {
+    bg: "rgba(100,100,100,0.15)",
+    text: "#9c9794",
+    label: result ?? "?",
+  };
 }
 
 function PlayerAvatar({ name, isDark }: { name: string; isDark: boolean }) {
@@ -111,14 +118,22 @@ function GameRow({
           ? `1.5px solid ${CC.green}`
           : `1px solid ${isDark ? CC.border : CC.lBorder}`,
         backgroundColor: selected
-          ? isDark ? CC.greenMuted : "#e8f2de"
-          : isDark ? CC.bg3 : "#fafaf8",
+          ? isDark
+            ? CC.greenMuted
+            : "#e8f2de"
+          : isDark
+            ? CC.bg3
+            : "#fafaf8",
         transition: "all 150ms cubic-bezier(0.0,0,0.2,1)",
         cursor: "pointer",
         "&:hover": {
           backgroundColor: selected
-            ? isDark ? "#33481f" : "#e0ecd6"
-            : isDark ? CC.bg4 : "#f0ede8",
+            ? isDark
+              ? "#33481f"
+              : "#e0ecd6"
+            : isDark
+              ? CC.bg4
+              : "#f0ede8",
           transform: "translateY(-1px)",
           boxShadow: isDark
             ? "0 4px 16px rgba(0,0,0,0.4)"
@@ -142,13 +157,19 @@ function GameRow({
           transition: "all 150ms ease-out",
         }}
       >
-        {selected && (
-          <Icon icon="mdi:check" width={12} color="#fff" />
-        )}
+        {selected && <Icon icon="mdi:check" width={12} color="#fff" />}
       </Box>
 
       {/* White player */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0, flex: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          minWidth: 0,
+          flex: 1,
+        }}
+      >
         <PlayerAvatar name={white} isDark={isDark} />
         <Box sx={{ minWidth: 0 }}>
           <Typography
@@ -165,7 +186,13 @@ function GameRow({
             {white}
           </Typography>
           {wRating && (
-            <Typography sx={{ fontSize: 11, color: isDark ? CC.textMuted : "#8a8480", lineHeight: 1 }}>
+            <Typography
+              sx={{
+                fontSize: 11,
+                color: isDark ? CC.textMuted : "#8a8480",
+                lineHeight: 1,
+              }}
+            >
               {wRating}
             </Typography>
           )}
@@ -184,13 +211,29 @@ function GameRow({
           textAlign: "center",
         }}
       >
-        <Typography sx={{ fontSize: 13, fontWeight: 800, color: result.text, letterSpacing: "0.3px" }}>
+        <Typography
+          sx={{
+            fontSize: 13,
+            fontWeight: 800,
+            color: result.text,
+            letterSpacing: "0.3px",
+          }}
+        >
           {result.label}
         </Typography>
       </Box>
 
       {/* Black player */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0, flex: 1, justifyContent: "flex-end" }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          minWidth: 0,
+          flex: 1,
+          justifyContent: "flex-end",
+        }}
+      >
         <Box sx={{ minWidth: 0, textAlign: "right" }}>
           <Typography
             sx={{
@@ -206,7 +249,13 @@ function GameRow({
             {black}
           </Typography>
           {bRating && (
-            <Typography sx={{ fontSize: 11, color: isDark ? CC.textMuted : "#8a8480", lineHeight: 1 }}>
+            <Typography
+              sx={{
+                fontSize: 11,
+                color: isDark ? CC.textMuted : "#8a8480",
+                lineHeight: 1,
+              }}
+            >
               {bRating}
             </Typography>
           )}
@@ -215,22 +264,55 @@ function GameRow({
       </Box>
 
       {/* Meta */}
-      <Box sx={{ display: { xs: "none", sm: "flex" }, flexDirection: "column", alignItems: "flex-end", flexShrink: 0, minWidth: 100 }}>
+      <Box
+        sx={{
+          display: { xs: "none", sm: "flex" },
+          flexDirection: "column",
+          alignItems: "flex-end",
+          flexShrink: 0,
+          minWidth: 100,
+        }}
+      >
         {game.event && (
           <Typography
-            sx={{ fontSize: 11, color: isDark ? CC.textSub : CC.lTextSub, fontWeight: 500, lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 100 }}
+            sx={{
+              fontSize: 11,
+              color: isDark ? CC.textSub : CC.lTextSub,
+              fontWeight: 500,
+              lineHeight: 1.3,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              maxWidth: 100,
+            }}
             title={game.event}
           >
             {game.event}
           </Typography>
         )}
-        <Typography sx={{ fontSize: 11, color: isDark ? CC.textMuted : "#8a8480", lineHeight: 1.3 }}>
+        <Typography
+          sx={{
+            fontSize: 11,
+            color: isDark ? CC.textMuted : "#8a8480",
+            lineHeight: 1.3,
+          }}
+        >
           {game.date ?? "—"}
         </Typography>
         {game.folder && (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.25 }}>
-            <Icon icon="material-symbols:folder-outline" width={10} color={CC.textMuted} />
-            <Typography sx={{ fontSize: 10, color: isDark ? CC.textMuted : "#8a8480" }}>{game.folder}</Typography>
+          <Box
+            sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.25 }}
+          >
+            <Icon
+              icon="material-symbols:folder-outline"
+              width={10}
+              color={CC.textMuted}
+            />
+            <Typography
+              sx={{ fontSize: 10, color: isDark ? CC.textMuted : "#8a8480" }}
+            >
+              {game.folder}
+            </Typography>
           </Box>
         )}
       </Box>
@@ -241,17 +323,29 @@ function GameRow({
         onClick={(e) => e.stopPropagation()}
       >
         <Tooltip title="Analyze">
-          <IconButton size="small" onClick={onAnalyze} sx={{ color: isDark ? CC.textSub : CC.lTextSub }}>
+          <IconButton
+            size="small"
+            onClick={onAnalyze}
+            sx={{ color: isDark ? CC.textSub : CC.lTextSub }}
+          >
             <Icon icon="streamline:magnifying-glass-solid" width={15} />
           </IconButton>
         </Tooltip>
         <Tooltip title="Move to folder">
-          <IconButton size="small" onClick={onFolder} sx={{ color: isDark ? CC.textSub : CC.lTextSub }}>
+          <IconButton
+            size="small"
+            onClick={onFolder}
+            sx={{ color: isDark ? CC.textSub : CC.lTextSub }}
+          >
             <Icon icon="material-symbols:folder-outline" width={15} />
           </IconButton>
         </Tooltip>
         <Tooltip title="Copy PGN">
-          <IconButton size="small" onClick={onCopy} sx={{ color: isDark ? CC.textSub : CC.lTextSub }}>
+          <IconButton
+            size="small"
+            onClick={onCopy}
+            sx={{ color: isDark ? CC.textSub : CC.lTextSub }}
+          >
             <Icon icon="ri:clipboard-line" width={15} />
           </IconButton>
         </Tooltip>
@@ -287,9 +381,18 @@ export default function GameDatabase() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  // "Select all in folder" mode — when active, every game matching the
+  // current folder filter is logically selected (across pages) and bulk
+  // delete uses the server-side folder-delete endpoint so we don't fire
+  // thousands of DELETE requests for a large folder.
+  const [selectAllInFolder, setSelectAllInFolder] = useState(false);
+  const [confirmDeleteAllOpen, setConfirmDeleteAllOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuGameId, setMenuGameId] = useState<number | null>(null);
-  const [bulkMenuAnchor, setBulkMenuAnchor] = useState<null | HTMLElement>(null);
+  const [bulkMenuAnchor, setBulkMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [pendingFolderGameId, setPendingFolderGameId] = useState<number | null>(
@@ -301,6 +404,14 @@ export default function GameDatabase() {
     const t = setTimeout(() => setSearch(searchInput.trim()), 250);
     return () => clearTimeout(t);
   }, [searchInput]);
+
+  // Selection mode is scoped to a specific filter — moving to a different
+  // folder or typing in the search box has to clear it, otherwise the
+  // "Delete N" button would target a stale set.
+  useEffect(() => {
+    setSelectAllInFolder(false);
+    setSelected(new Set());
+  }, [selectedFolder, search]);
 
   const folderParam =
     selectedFolder === ALL_FOLDER
@@ -350,10 +461,7 @@ export default function GameDatabase() {
   const total = data?.pages[0]?.total ?? 0;
   const totalAll = data?.pages[0]?.totalAll ?? 0;
   const totalUnfoldered = data?.pages[0]?.totalUnfoldered ?? 0;
-  const folders = useMemo(
-    () => data?.pages[0]?.folders ?? [],
-    [data]
-  );
+  const folders = useMemo(() => data?.pages[0]?.folders ?? [], [data]);
   const folderNames = useMemo(() => folders.map((f) => f.name), [folders]);
 
   const invalidateGames = useCallback(() => {
@@ -374,6 +482,34 @@ export default function GameDatabase() {
     },
     [invalidateGames]
   );
+
+  // Bulk-delete every game in the current folder filter in one request.
+  // Resolves to the server-reported count of deleted games. Skipped when
+  // a search is active — the folder endpoint doesn't honor the search
+  // filter and we don't want to silently nuke unrelated games.
+  const deleteFolderMutation = useCallback(async (): Promise<number> => {
+    const folderKey =
+      selectedFolder === ALL_FOLDER
+        ? "*"
+        : selectedFolder === NO_FOLDER
+          ? "__none__"
+          : selectedFolder;
+    const res = await fetch(
+      `/api/games?folder=${encodeURIComponent(folderKey)}`,
+      { method: "DELETE" }
+    );
+    if (!res.ok) throw new Error("Failed to delete folder");
+    const data = (await res.json()) as { deleted?: number };
+    setSelected(new Set());
+    setSelectAllInFolder(false);
+    // If a real folder was just emptied, fall back to "All games" so the
+    // sidebar doesn't keep a now-non-existent folder selected.
+    if (selectedFolder !== ALL_FOLDER && selectedFolder !== NO_FOLDER) {
+      setSelectedFolder(ALL_FOLDER);
+    }
+    invalidateGames();
+    return data.deleted ?? 0;
+  }, [selectedFolder, invalidateGames]);
 
   const moveGameToFolderMutation = useCallback(
     async (id: number, folder: string | undefined) => {
@@ -512,7 +648,11 @@ export default function GameDatabase() {
               border: `1px solid ${CC.border}`,
             }}
           >
-            <Icon icon="material-symbols:lock-outline" width={14} color={CC.primary} />
+            <Icon
+              icon="material-symbols:lock-outline"
+              width={14}
+              color={CC.primary}
+            />
             <Typography
               sx={{
                 fontFamily: "var(--cc-font-body)",
@@ -528,8 +668,15 @@ export default function GameDatabase() {
         </Box>
       </Box>
 
-      <Box sx={{ px: { xs: 1, sm: 2, md: 3 }, py: 3, display: "flex", gap: 2, alignItems: "flex-start" }}>
-
+      <Box
+        sx={{
+          px: { xs: 1, sm: 2, md: 3 },
+          py: 3,
+          display: "flex",
+          gap: 2,
+          alignItems: "flex-start",
+        }}
+      >
         {/* Folder sidebar */}
         <Box
           sx={{
@@ -595,18 +742,33 @@ export default function GameDatabase() {
                   "&.Mui-selected": {
                     backgroundColor: "var(--cc-primary-fixed)",
                     color: "var(--cc-on-primary-fixed)",
-                    "&:hover": { backgroundColor: "var(--cc-primary-fixed-dim)" },
+                    "&:hover": {
+                      backgroundColor: "var(--cc-primary-fixed-dim)",
+                    },
                   },
                 }}
               >
                 <ListItemIcon sx={{ minWidth: 28 }}>
-                  <Icon icon={icon} width={16} color={selectedFolder === key ? CC.green : undefined} />
+                  <Icon
+                    icon={icon}
+                    width={16}
+                    color={selectedFolder === key ? CC.green : undefined}
+                  />
                 </ListItemIcon>
                 <ListItemText
                   primary={label}
-                  primaryTypographyProps={{ fontSize: 13, fontWeight: selectedFolder === key ? 700 : 500 }}
+                  primaryTypographyProps={{
+                    fontSize: 13,
+                    fontWeight: selectedFolder === key ? 700 : 500,
+                  }}
                 />
-                <Typography sx={{ fontSize: 11, color: isDark ? CC.textMuted : "#a0a09e", fontWeight: 600 }}>
+                <Typography
+                  sx={{
+                    fontSize: 11,
+                    color: isDark ? CC.textMuted : "#a0a09e",
+                    fontWeight: 600,
+                  }}
+                >
                   {count.toLocaleString()}
                 </Typography>
               </ListItemButton>
@@ -626,7 +788,9 @@ export default function GameDatabase() {
                   "&.Mui-selected": {
                     backgroundColor: "var(--cc-primary-fixed)",
                     color: "var(--cc-on-primary-fixed)",
-                    "&:hover": { backgroundColor: "var(--cc-primary-fixed-dim)" },
+                    "&:hover": {
+                      backgroundColor: "var(--cc-primary-fixed-dim)",
+                    },
                   },
                 }}
               >
@@ -639,9 +803,19 @@ export default function GameDatabase() {
                 </ListItemIcon>
                 <ListItemText
                   primary={name}
-                  primaryTypographyProps={{ fontSize: 13, fontWeight: selectedFolder === name ? 700 : 500, noWrap: true }}
+                  primaryTypographyProps={{
+                    fontSize: 13,
+                    fontWeight: selectedFolder === name ? 700 : 500,
+                    noWrap: true,
+                  }}
                 />
-                <Typography sx={{ fontSize: 11, color: isDark ? CC.textMuted : "#a0a09e", fontWeight: 600 }}>
+                <Typography
+                  sx={{
+                    fontSize: 11,
+                    color: isDark ? CC.textMuted : "#a0a09e",
+                    fontWeight: 600,
+                  }}
+                >
                   {count.toLocaleString()}
                 </Typography>
               </ListItemButton>
@@ -697,10 +871,7 @@ export default function GameDatabase() {
               </Box>
             )}
             {folders.map(({ name, count }) => (
-              <Box
-                key={name}
-                sx={{ minWidth: 180, width: 180, flexShrink: 0 }}
-              >
+              <Box key={name} sx={{ minWidth: 180, width: 180, flexShrink: 0 }}>
                 <FolderCoverCard
                   title={name}
                   label="Folder"
@@ -717,7 +888,15 @@ export default function GameDatabase() {
           </Box>
 
           {/* Toolbar */}
-          <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1.5, flexWrap: "wrap" }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              mb: 2,
+              gap: 1.5,
+              flexWrap: "wrap",
+            }}
+          >
             <LoadGameButton />
 
             <TextField
@@ -750,7 +929,65 @@ export default function GameDatabase() {
 
             <Box sx={{ flex: 1 }} />
 
-            {selected.size > 0 && (
+            {/* "Select all" — only available when no search is active, since
+             * the bulk-delete-by-folder endpoint doesn't honor the search
+             * filter. Hidden once a manual selection exists or select-all
+             * is already on, to keep the toolbar uncluttered. */}
+            {!search &&
+              selected.size === 0 &&
+              !selectAllInFolder &&
+              total > 0 && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={
+                    <Icon icon="material-symbols:select-all" width={14} />
+                  }
+                  onClick={() => setSelectAllInFolder(true)}
+                  sx={{ fontSize: 13 }}
+                >
+                  Select all ({total.toLocaleString()})
+                </Button>
+              )}
+
+            {selectAllInFolder && (
+              <>
+                <Chip
+                  label={`All ${total.toLocaleString()} selected`}
+                  size="small"
+                  sx={{
+                    backgroundColor: CC.greenMuted,
+                    color: CC.greenHover,
+                    fontWeight: 700,
+                    fontSize: 12,
+                  }}
+                />
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  startIcon={<Icon icon="mdi:delete-outline" width={14} />}
+                  onClick={() => setConfirmDeleteAllOpen(true)}
+                  disabled={bulkDeleting}
+                  sx={{ fontSize: 13 }}
+                >
+                  Delete folder
+                </Button>
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={() => setSelectAllInFolder(false)}
+                  sx={{
+                    fontSize: 12,
+                    color: isDark ? CC.textSub : CC.lTextSub,
+                  }}
+                >
+                  Clear
+                </Button>
+              </>
+            )}
+
+            {selected.size > 0 && !selectAllInFolder && (
               <>
                 <Chip
                   label={`${selected.size} selected`}
@@ -768,7 +1005,9 @@ export default function GameDatabase() {
                 <Button
                   size="small"
                   variant="outlined"
-                  startIcon={<Icon icon="material-symbols:folder-outline" width={14} />}
+                  startIcon={
+                    <Icon icon="material-symbols:folder-outline" width={14} />
+                  }
                   onClick={(e) => setBulkMenuAnchor(e.currentTarget)}
                   sx={{ fontSize: 13 }}
                 >
@@ -791,7 +1030,10 @@ export default function GameDatabase() {
                   size="small"
                   variant="text"
                   onClick={() => setSelected(new Set())}
-                  sx={{ fontSize: 12, color: isDark ? CC.textSub : CC.lTextSub }}
+                  sx={{
+                    fontSize: 12,
+                    color: isDark ? CC.textSub : CC.lTextSub,
+                  }}
                 >
                   Clear
                 </Button>
@@ -802,7 +1044,12 @@ export default function GameDatabase() {
           {/* Section label */}
           {(selectedFolder !== ALL_FOLDER || search) && (
             <Typography
-              sx={{ fontSize: 13, color: isDark ? CC.textSub : CC.lTextSub, mb: 1.5, fontWeight: 500 }}
+              sx={{
+                fontSize: 13,
+                color: isDark ? CC.textSub : CC.lTextSub,
+                mb: 1.5,
+                fontWeight: 500,
+              }}
             >
               {total.toLocaleString()} game{total !== 1 && "s"}
               {search ? ` matching "${search}"` : ""}
@@ -851,7 +1098,11 @@ export default function GameDatabase() {
                   mb: 2,
                 }}
               >
-                <Icon icon="material-symbols:library-books-outline" width={36} color={CC.primary} />
+                <Icon
+                  icon="material-symbols:library-books-outline"
+                  width={36}
+                  color={CC.primary}
+                />
               </Box>
               <Typography
                 sx={{
@@ -878,7 +1129,9 @@ export default function GameDatabase() {
                   isDark={isDark}
                   selected={selected.has(game.id)}
                   onToggleSelect={() => toggleSelect(game.id)}
-                  onAnalyze={() => router.push({ pathname: "/", query: { gameId: game.id } })}
+                  onAnalyze={() =>
+                    router.push({ pathname: "/", query: { gameId: game.id } })
+                  }
                   onFolder={(e) => {
                     setMenuAnchor(e.currentTarget);
                     setMenuGameId(game.id);
@@ -926,20 +1179,36 @@ export default function GameDatabase() {
       </Box>
 
       {/* Bulk folder menu */}
-      <Menu anchorEl={bulkMenuAnchor} open={!!bulkMenuAnchor} onClose={closeBulkMenu}>
+      <Menu
+        anchorEl={bulkMenuAnchor}
+        open={!!bulkMenuAnchor}
+        onClose={closeBulkMenu}
+      >
         {folderNames.map((name) => (
           <MenuItem key={name} onClick={() => handleBulkMoveToFolder(name)}>
-            <Icon icon="material-symbols:folder-outline" width={16} style={{ marginRight: 8 }} />
+            <Icon
+              icon="material-symbols:folder-outline"
+              width={16}
+              style={{ marginRight: 8 }}
+            />
             {name}
           </MenuItem>
         ))}
         {folderNames.length > 0 && <Divider />}
         <MenuItem onClick={() => handleOpenNewFolder(true)}>
-          <Icon icon="material-symbols:create-new-folder-outline" width={16} style={{ marginRight: 8 }} />
+          <Icon
+            icon="material-symbols:create-new-folder-outline"
+            width={16}
+            style={{ marginRight: 8 }}
+          />
           New folder…
         </MenuItem>
         <MenuItem onClick={() => handleBulkMoveToFolder(undefined)}>
-          <Icon icon="material-symbols:folder-off-outline" width={16} style={{ marginRight: 8 }} />
+          <Icon
+            icon="material-symbols:folder-off-outline"
+            width={16}
+            style={{ marginRight: 8 }}
+          />
           Remove from folder
         </MenuItem>
       </Menu>
@@ -947,26 +1216,47 @@ export default function GameDatabase() {
       {/* Single-game folder menu */}
       <Menu anchorEl={menuAnchor} open={!!menuAnchor} onClose={closeFolderMenu}>
         {folderNames.map((name) => (
-          <MenuItem key={name} onClick={() => handleMoveToFolder(name)} selected={menuGame?.folder === name}>
-            <Icon icon="material-symbols:folder-outline" width={16} style={{ marginRight: 8 }} />
+          <MenuItem
+            key={name}
+            onClick={() => handleMoveToFolder(name)}
+            selected={menuGame?.folder === name}
+          >
+            <Icon
+              icon="material-symbols:folder-outline"
+              width={16}
+              style={{ marginRight: 8 }}
+            />
             {name}
           </MenuItem>
         ))}
         {folderNames.length > 0 && <Divider />}
         <MenuItem onClick={() => handleOpenNewFolder(false)}>
-          <Icon icon="material-symbols:create-new-folder-outline" width={16} style={{ marginRight: 8 }} />
+          <Icon
+            icon="material-symbols:create-new-folder-outline"
+            width={16}
+            style={{ marginRight: 8 }}
+          />
           New folder…
         </MenuItem>
         {menuGame?.folder && (
           <MenuItem onClick={() => handleMoveToFolder(undefined)}>
-            <Icon icon="material-symbols:folder-off-outline" width={16} style={{ marginRight: 8 }} />
+            <Icon
+              icon="material-symbols:folder-off-outline"
+              width={16}
+              style={{ marginRight: 8 }}
+            />
             Remove from folder
           </MenuItem>
         )}
       </Menu>
 
       {/* New folder dialog */}
-      <Dialog open={newFolderOpen} onClose={() => setNewFolderOpen(false)} maxWidth="xs" fullWidth>
+      <Dialog
+        open={newFolderOpen}
+        onClose={() => setNewFolderOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle>Create folder</DialogTitle>
         <DialogContent>
           <TextField
@@ -975,7 +1265,9 @@ export default function GameDatabase() {
             label="Folder name"
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") handleCreateFolder(); }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleCreateFolder();
+            }}
             sx={{ mt: 1 }}
           />
         </DialogContent>
@@ -983,8 +1275,69 @@ export default function GameDatabase() {
           <Button variant="text" onClick={() => setNewFolderOpen(false)}>
             Cancel
           </Button>
-          <Button variant="contained" onClick={handleCreateFolder} disabled={!newFolderName.trim()}>
+          <Button
+            variant="contained"
+            onClick={handleCreateFolder}
+            disabled={!newFolderName.trim()}
+          >
             Create
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirm bulk-delete dialog */}
+      <Dialog
+        open={confirmDeleteAllOpen}
+        onClose={() => !bulkDeleting && setConfirmDeleteAllOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Delete folder?</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ fontSize: 14 }}>
+            This will permanently delete{" "}
+            <strong>{total.toLocaleString()}</strong> game
+            {total !== 1 ? "s" : ""}
+            {selectedFolder === ALL_FOLDER
+              ? " from the entire library"
+              : selectedFolder === NO_FOLDER
+                ? " without a folder"
+                : ` in "${selectedFolder}"`}
+            . This action can't be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button
+            variant="text"
+            onClick={() => setConfirmDeleteAllOpen(false)}
+            disabled={bulkDeleting}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            disabled={bulkDeleting}
+            startIcon={
+              bulkDeleting ? (
+                <CircularProgress size={14} color="inherit" />
+              ) : (
+                <Icon icon="mdi:delete-outline" width={14} />
+              )
+            }
+            onClick={async () => {
+              setBulkDeleting(true);
+              try {
+                await deleteFolderMutation();
+              } catch (err) {
+                console.error("Bulk folder delete failed", err);
+              } finally {
+                setBulkDeleting(false);
+                setConfirmDeleteAllOpen(false);
+              }
+            }}
+          >
+            {bulkDeleting ? "Deleting…" : "Delete"}
           </Button>
         </DialogActions>
       </Dialog>

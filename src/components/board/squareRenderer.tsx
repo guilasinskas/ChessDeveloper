@@ -17,14 +17,21 @@ export interface Props {
   clickedSquaresAtom: PrimitiveAtom<Square[]>;
   playableSquaresAtom: PrimitiveAtom<Square[]>;
   showPlayerMoveIconAtom?: PrimitiveAtom<boolean>;
+  // When provided and false, suppresses engine-derived visuals
+  // (move classification icon on the to-square and the colored
+  // highlight on the from/to squares).
+  showEngineAtom?: PrimitiveAtom<boolean>;
   boardSize: number;
 }
+
+const alwaysTrueAtom = atom(true);
 
 export function getSquareRenderer({
   currentPositionAtom,
   clickedSquaresAtom,
   playableSquaresAtom,
   showPlayerMoveIconAtom = atom(false),
+  showEngineAtom = alwaysTrueAtom,
   boardSize,
 }: Props) {
   const squareRenderer = memo(
@@ -76,6 +83,8 @@ export function getSquareRenderer({
         useMemo(
           () =>
             atom((get) => {
+              if (!get(showEngineAtom)) return undefined;
+
               const evalData = get(currentPositionAtom).eval;
 
               const isNeeded = isFromSquare || isToSquare;

@@ -34,6 +34,7 @@ export interface Props {
   currentPositionAtom?: PrimitiveAtom<CurrentPosition>;
   showBestMoveArrow?: boolean;
   showPlayerMoveIconAtom?: PrimitiveAtom<boolean>;
+  showEngineAtom?: PrimitiveAtom<boolean>;
   showEvaluationBar?: boolean;
   annotationArrows?: Arrow[];
   onPlayMove?: (params: {
@@ -56,6 +57,7 @@ export default function Board({
   currentPositionAtom = defaultCurrentPositionAtom,
   showBestMoveArrow = false,
   showPlayerMoveIconAtom,
+  showEngineAtom,
   showEvaluationBar = false,
   annotationArrows,
   onPlayMove,
@@ -256,6 +258,7 @@ export default function Board({
       clickedSquaresAtom,
       playableSquaresAtom,
       showPlayerMoveIconAtom,
+      showEngineAtom,
       boardSize: boardSize || 400,
     });
   }, [
@@ -263,6 +266,7 @@ export default function Board({
     clickedSquaresAtom,
     playableSquaresAtom,
     showPlayerMoveIconAtom,
+    showEngineAtom,
     boardSize,
   ]);
 
@@ -351,46 +355,60 @@ export default function Board({
           player={boardOrientation === Color.White ? blackPlayer : whitePlayer}
         />
 
+        {/* Outer "frame" matches the Stitch reference: surface-container-highest
+         * tint + 24px rounded corners + soft padding around the inner board.
+         * The padding lives on THIS wrapper, not on the chessboard's immediate
+         * parent — react-chessboard reads its container's bounding rect for
+         * hit detection, so any inset between the wrapper and the actual
+         * <Chessboard /> div would make piece-drag positions drift. */}
         <Grid
           container
           justifyContent="center"
           alignItems="center"
-          ref={boardRef}
           size={12}
           sx={{
-            // Frame is rendered via shadow only — no padding. Adding padding
-            // here breaks react-chessboard's hit detection: the library reads
-            // its container's bounding rect to calculate piece positions, so
-            // any inset between the wrapper and the actual <Chessboard /> div
-            // makes the mouse drift away from the squares.
             borderRadius: "24px",
+            backgroundColor: "var(--cc-surface-container-highest)",
             boxShadow: "var(--cc-shadow-ambient)",
-            overflow: "hidden",
+            padding: "8px",
           }}
         >
-          <Chessboard
-            id={`${boardId}-${canPlay}`}
-            position={gameFen}
-            onPieceDrop={onPieceDrop}
-            boardOrientation={
-              boardOrientation === Color.White ? "white" : "black"
-            }
-            customBoardStyle={customBoardStyle}
-            customLightSquareStyle={{ backgroundColor: "#e8e4d7" }}
-            customDarkSquareStyle={{ backgroundColor: "#55624d" }}
-            customArrows={customArrows}
-            isDraggablePiece={isPiecePlayable}
-            customSquare={SquareRenderer}
-            onSquareClick={handleSquareLeftClick}
-            onSquareRightClick={handleSquareRightClick}
-            onPieceDragBegin={handlePieceDragBegin}
-            onPieceDragEnd={handlePieceDragEnd}
-            onPromotionPieceSelect={onPromotionPieceSelect}
-            showPromotionDialog={showPromotionDialog}
-            promotionToSquare={moveClickTo}
-            animationDuration={200}
-            customPieces={customPieces}
-          />
+          <Grid
+            container
+            justifyContent="center"
+            alignItems="center"
+            ref={boardRef}
+            size={12}
+            sx={{
+              borderRadius: "12px",
+              border: "1px solid var(--cc-outline-variant)",
+              overflow: "hidden",
+            }}
+          >
+            <Chessboard
+              id={`${boardId}-${canPlay}`}
+              position={gameFen}
+              onPieceDrop={onPieceDrop}
+              boardOrientation={
+                boardOrientation === Color.White ? "white" : "black"
+              }
+              customBoardStyle={customBoardStyle}
+              customLightSquareStyle={{ backgroundColor: "#e8e4d7" }}
+              customDarkSquareStyle={{ backgroundColor: "#55624d" }}
+              customArrows={customArrows}
+              isDraggablePiece={isPiecePlayable}
+              customSquare={SquareRenderer}
+              onSquareClick={handleSquareLeftClick}
+              onSquareRightClick={handleSquareRightClick}
+              onPieceDragBegin={handlePieceDragBegin}
+              onPieceDragEnd={handlePieceDragEnd}
+              onPromotionPieceSelect={onPromotionPieceSelect}
+              showPromotionDialog={showPromotionDialog}
+              promotionToSquare={moveClickTo}
+              animationDuration={200}
+              customPieces={customPieces}
+            />
+          </Grid>
         </Grid>
 
         <PlayerHeader
